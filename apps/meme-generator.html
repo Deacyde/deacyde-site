@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meme Generator — dev.deacyde.com</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0d0d; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  header { background: #111; border-bottom: 1px solid #222; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; }
+  header a { color: #888; text-decoration: none; font-size: 0.85rem; }
+  header a:hover { color: #fff; }
+  header h1 { font-size: 1.2rem; }
+
+  .app { display: grid; grid-template-columns: 260px 1fr; gap: 0; min-height: calc(100vh - 57px); }
+
+  /* Sidebar */
+  .sidebar { background: #111; border-right: 1px solid #222; padding: 1rem; overflow-y: auto; }
+  .sidebar h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .08em; color: #666; margin-bottom: .75rem; }
+  .section-block { margin-bottom: 1.5rem; }
+
+  .template-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .template-thumb { cursor: pointer; border: 2px solid transparent; border-radius: 6px; overflow: hidden; aspect-ratio: 1; background: #1a1a1a; transition: border-color .15s; }
+  .template-thumb:hover, .template-thumb.active { border-color: #f59e0b; }
+  .template-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .template-name { font-size: 0.65rem; color: #888; text-align: center; padding: 2px 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .upload-btn { width: 100%; padding: .6rem; background: #1a1a1a; border: 1px dashed #444; border-radius: 8px; color: #aaa; cursor: pointer; font-size: 0.85rem; text-align: center; transition: border-color .15s, color .15s; }
+  .upload-btn:hover { border-color: #f59e0b; color: #fff; }
+
+  label { font-size: 0.8rem; color: #aaa; display: block; margin-bottom: 4px; }
+  input[type=text], textarea { width: 100%; background: #1a1a1a; border: 1px solid #333; border-radius: 6px; color: #fff; padding: .5rem .6rem; font-size: 0.85rem; outline: none; resize: none; }
+  input[type=text]:focus, textarea:focus { border-color: #f59e0b; }
+
+  input[type=range] { width: 100%; accent-color: #f59e0b; cursor: pointer; }
+  input[type=color] { width: 36px; height: 28px; border: none; border-radius: 4px; cursor: pointer; padding: 0; background: none; }
+
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: .5rem; }
+  .row label { margin: 0; flex: 1; }
+
+  select { background: #1a1a1a; border: 1px solid #333; border-radius: 6px; color: #fff; padding: .4rem .5rem; font-size: 0.82rem; outline: none; cursor: pointer; }
+  select:focus { border-color: #f59e0b; }
+
+  .tool-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tool-btn { padding: .4rem .7rem; background: #1a1a1a; border: 1px solid #333; border-radius: 6px; color: #aaa; font-size: 0.8rem; cursor: pointer; transition: all .15s; white-space: nowrap; }
+  .tool-btn:hover { border-color: #555; color: #fff; }
+  .tool-btn.active { background: #f59e0b22; border-color: #f59e0b; color: #f59e0b; }
+
+  .download-btn { width: 100%; padding: .7rem; background: #f59e0b; border: none; border-radius: 8px; color: #000; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background .15s; }
+  .download-btn:hover { background: #fbbf24; }
+
+  /* Main canvas area */
+  .main { background: #0a0a0a; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; position: relative; }
+  .canvas-wrap { position: relative; cursor: crosshair; box-shadow: 0 0 0 1px #333; }
+  canvas { display: block; }
+  #overlay { position: absolute; top: 0; left: 0; pointer-events: none; }
+
+  .text-label { position: absolute; top: 0; left: 0; pointer-events: none; color: transparent; }
+
+  .hint { color: #555; font-size: 0.8rem; margin-top: 1rem; text-align: center; }
+  hr { border: none; border-top: 1px solid #222; margin: .75rem 0; }
+
+  .mode-tabs { display: flex; gap: 0; border: 1px solid #333; border-radius: 6px; overflow: hidden; margin-bottom: .75rem; }
+  .mode-tab { flex: 1; padding: .4rem; background: #1a1a1a; border: none; color: #888; font-size: 0.78rem; cursor: pointer; transition: all .15s; }
+  .mode-tab.active { background: #f59e0b22; color: #f59e0b; }
+
+  .panel { display: none; }
+  .panel.visible { display: block; }
+
+  .size-val { font-size: 0.75rem; color: #888; min-width: 24px; text-align: right; }
+
+  .undo-row { display: flex; gap: 6px; }
+  .undo-row button { flex: 1; padding: .35rem; background: #1a1a1a; border: 1px solid #333; border-radius: 6px; color: #aaa; font-size: 0.78rem; cursor: pointer; }
+  .undo-row button:hover { border-color: #555; color: #fff; }
+  .undo-row button:disabled { opacity: .3; cursor: default; }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/">← dev.deacyde.com</a>
+  <span style="color:#333">|</span>
+  <h1>🎭 Meme Generator</h1>
+</header>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+
+    <!-- Templates -->
+    <div class="section-block">
+      <h2>Templates</h2>
+      <div class="template-grid" id="templateGrid"></div>
+      <div style="margin-top: 8px;">
+        <div class="upload-btn" onclick="document.getElementById('imgUpload').click()">📁 Upload your own image</div>
+        <input type="file" id="imgUpload" accept="image/*" style="display:none">
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Mode tabs -->
+    <div class="section-block">
+      <h2>Tools</h2>
+      <div class="mode-tabs">
+        <button class="mode-tab active" onclick="switchMode('quick')" id="tab-quick">Quick Text</button>
+        <button class="mode-tab" onclick="switchMode('place')" id="tab-place">Place Text</button>
+        <button class="mode-tab" onclick="switchMode('draw')" id="tab-draw">Draw</button>
+      </div>
+
+      <!-- Quick Text Panel -->
+      <div class="panel visible" id="panel-quick">
+        <div style="margin-bottom:.6rem">
+          <label>Top text</label>
+          <input type="text" id="topText" placeholder="Top text..." oninput="renderMeme()">
+        </div>
+        <div style="margin-bottom:.6rem">
+          <label>Bottom text</label>
+          <input type="text" id="botText" placeholder="Bottom text..." oninput="renderMeme()">
+        </div>
+        <div class="row">
+          <label>Font</label>
+          <select id="quickFont" onchange="renderMeme()">
+            <option value="Impact">Impact</option>
+            <option value="Arial Black">Arial Black</option>
+            <option value="Comic Sans MS">Comic Sans</option>
+            <option value="Georgia">Georgia</option>
+          </select>
+        </div>
+        <div class="row">
+          <label>Size</label>
+          <input type="range" id="quickSize" min="20" max="100" value="48" oninput="renderMeme(); document.getElementById('quickSizeVal').textContent=this.value">
+          <span class="size-val" id="quickSizeVal">48</span>
+        </div>
+        <div class="row">
+          <label>Color</label>
+          <input type="color" id="quickColor" value="#ffffff" oninput="renderMeme()">
+          <label style="margin-left:8px">Outline</label>
+          <input type="color" id="quickOutline" value="#000000" oninput="renderMeme()">
+        </div>
+      </div>
+
+      <!-- Place Text Panel -->
+      <div class="panel" id="panel-place">
+        <p style="color:#888;font-size:0.8rem;margin-bottom:.6rem">Click on the canvas to place a text box. Drag to move it.</p>
+        <div style="margin-bottom:.5rem">
+          <label>Text</label>
+          <input type="text" id="placeText" placeholder="Text to place..." value="Your text">
+        </div>
+        <div class="row">
+          <label>Font</label>
+          <select id="placeFont">
+            <option value="Impact">Impact</option>
+            <option value="Arial Black">Arial Black</option>
+            <option value="Comic Sans MS">Comic Sans</option>
+            <option value="Georgia">Georgia</option>
+          </select>
+        </div>
+        <div class="row">
+          <label>Size</label>
+          <input type="range" id="placeSize" min="12" max="100" value="36" oninput="document.getElementById('placeSizeVal').textContent=this.value">
+          <span class="size-val" id="placeSizeVal">36</span>
+        </div>
+        <div class="row">
+          <label>Color</label>
+          <input type="color" id="placeColor" value="#ffffff">
+          <label style="margin-left:8px">Outline</label>
+          <input type="color" id="placeOutline" value="#000000">
+        </div>
+        <div class="tool-group" style="margin-top:.5rem">
+          <button class="tool-btn" onclick="clearTextBoxes()">🗑 Clear all text</button>
+        </div>
+      </div>
+
+      <!-- Draw Panel -->
+      <div class="panel" id="panel-draw">
+        <div class="tool-group" style="margin-bottom:.6rem">
+          <button class="tool-btn active" id="toolPen" onclick="setDrawTool('pen')">✏️ Pen</button>
+          <button class="tool-btn" id="toolEraser" onclick="setDrawTool('eraser')">⬜ Eraser</button>
+        </div>
+        <div class="row">
+          <label>Color</label>
+          <input type="color" id="drawColor" value="#ff0000">
+        </div>
+        <div class="row">
+          <label>Size</label>
+          <input type="range" id="brushSize" min="1" max="40" value="4" oninput="document.getElementById('brushSizeVal').textContent=this.value">
+          <span class="size-val" id="brushSizeVal">4</span>
+        </div>
+        <div class="row" style="margin-top:.3rem">
+          <label>Opacity</label>
+          <input type="range" id="brushOpacity" min="10" max="100" value="100" oninput="document.getElementById('brushOpacityVal').textContent=this.value+'%'">
+          <span class="size-val" id="brushOpacityVal">100%</span>
+        </div>
+        <div class="undo-row" style="margin-top:.5rem">
+          <button id="undoBtn" onclick="undo()" disabled>↩ Undo</button>
+          <button id="redoBtn" onclick="redo()" disabled>↪ Redo</button>
+          <button onclick="clearDrawing()">🗑 Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Download -->
+    <div class="section-block">
+      <button class="download-btn" onclick="downloadMeme()">⬇ Download Meme</button>
+    </div>
+
+  </div>
+
+  <!-- Canvas area -->
+  <div class="main">
+    <div class="canvas-wrap" id="canvasWrap">
+      <canvas id="baseCanvas"></canvas>
+      <canvas id="drawCanvas" style="position:absolute;top:0;left:0;"></canvas>
+    </div>
+    <div class="hint" id="hint">← Pick a template or upload an image to get started</div>
+  </div>
+</div>
+
+<script>
+// ─── Templates ───────────────────────────────────────────────────────────────
+const TEMPLATES = [
+  { name: 'Drake',          url: 'https://i.imgflip.com/30b1gx.jpg' },
+  { name: 'Distracted BF',  url: 'https://i.imgflip.com/1ur9b0.jpg' },
+  { name: 'This Is Fine',   url: 'https://i.imgflip.com/wxica.jpg' },
+  { name: 'Woman Yelling',  url: 'https://i.imgflip.com/345v97.jpg' },
+  { name: 'Gru\'s Plan',    url: 'https://i.imgflip.com/26am.jpg' },
+  { name: 'Two Buttons',    url: 'https://i.imgflip.com/1g8my4.jpg' },
+  { name: 'Change My Mind', url: 'https://i.imgflip.com/24y43o.jpg' },
+  { name: 'Disaster Girl',  url: 'https://i.imgflip.com/23ls.jpg' },
+  { name: 'Doge',           url: 'https://i.imgflip.com/4t0m5.jpg' },
+  { name: 'Hide The Pain',  url: 'https://i.imgflip.com/gk5el.jpg' },
+  { name: 'Picard FP',      url: 'https://i.imgflip.com/2cp1.jpg' },
+  { name: 'Futurama Fry',   url: 'https://i.imgflip.com/1otk96.jpg' },
+  { name: 'Mocking SpongeBob', url: 'https://i.imgflip.com/1otk96.jpg' },
+  { name: 'Epic Handshake', url: 'https://i.imgflip.com/28j0te.jpg' },
+  { name: 'Boardroom',      url: 'https://i.imgflip.com/m78d.jpg' },
+  { name: 'Expanding Brain',url: 'https://i.imgflip.com/1jwhww.jpg' },
+  { name: 'Galaxy Brain',   url: 'https://i.imgflip.com/1jwhww.jpg' },
+  { name: 'Uno Reverse',    url: 'https://i.imgflip.com/3lmzyx.jpg' },
+  { name: 'Chad vs Virgin', url: 'https://i.imgflip.com/261o3j.jpg' },
+  { name: 'Is This a...',   url: 'https://i.imgflip.com/1o00in.jpg' },
+];
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let currentImg = null;
+let mode = 'quick';
+let drawTool = 'pen';
+let isDrawing = false;
+let lastX = 0, lastY = 0;
+let textBoxes = [];
+let dragging = null;
+let dragOffX = 0, dragOffY = 0;
+let undoStack = [], redoStack = [];
+const MAX_UNDO = 20;
+
+const baseCanvas = document.getElementById('baseCanvas');
+const drawCanvas = document.getElementById('drawCanvas');
+const bctx = baseCanvas.getContext('2d');
+const dctx = drawCanvas.getContext('2d');
+
+// ─── Build template grid ──────────────────────────────────────────────────────
+const grid = document.getElementById('templateGrid');
+TEMPLATES.forEach((t, i) => {
+  const div = document.createElement('div');
+  div.className = 'template-thumb';
+  div.dataset.idx = i;
+  div.innerHTML = `<img src="${t.url}" crossorigin="anonymous" alt="${t.name}" loading="lazy"><div class="template-name">${t.name}</div>`;
+  div.onclick = () => loadTemplate(t.url, div);
+  grid.appendChild(div);
+});
+
+// ─── Load image ───────────────────────────────────────────────────────────────
+function loadTemplate(url, el) {
+  document.querySelectorAll('.template-thumb').forEach(d => d.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => { currentImg = img; setupCanvas(img.width, img.height); renderMeme(); };
+  img.src = url;
+  document.getElementById('hint').style.display = 'none';
+}
+
+document.getElementById('imgUpload').onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => { currentImg = img; setupCanvas(img.width, img.height); renderMeme(); };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  document.querySelectorAll('.template-thumb').forEach(d => d.classList.remove('active'));
+  document.getElementById('hint').style.display = 'none';
+};
+
+function setupCanvas(w, h) {
+  // Scale to max 700px wide
+  const maxW = Math.min(700, window.innerWidth - 300);
+  const scale = w > maxW ? maxW / w : 1;
+  const cw = Math.round(w * scale), ch = Math.round(h * scale);
+
+  baseCanvas.width = cw; baseCanvas.height = ch;
+  drawCanvas.width = cw; drawCanvas.height = ch;
+  dctx.clearRect(0, 0, cw, ch);
+  undoStack = []; redoStack = [];
+  textBoxes = [];
+  updateUndoButtons();
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function renderMeme() {
+  if (!currentImg) return;
+  bctx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+  bctx.drawImage(currentImg, 0, 0, baseCanvas.width, baseCanvas.height);
+
+  // Quick text
+  const font = document.getElementById('quickFont').value;
+  const size = parseInt(document.getElementById('quickSize').value);
+  const color = document.getElementById('quickColor').value;
+  const outline = document.getElementById('quickOutline').value;
+  const topText = document.getElementById('topText').value;
+  const botText = document.getElementById('botText').value;
+
+  bctx.font = `900 ${size}px "${font}", Impact, sans-serif`;
+  bctx.textAlign = 'center';
+  bctx.lineWidth = size / 8;
+  bctx.strokeStyle = outline;
+  bctx.fillStyle = color;
+  bctx.lineJoin = 'round';
+
+  if (topText) {
+    bctx.strokeText(topText, baseCanvas.width / 2, size + 8);
+    bctx.fillText(topText, baseCanvas.width / 2, size + 8);
+  }
+  if (botText) {
+    bctx.strokeText(botText, baseCanvas.width / 2, baseCanvas.height - 12);
+    bctx.fillText(botText, baseCanvas.width / 2, baseCanvas.height - 12);
+  }
+
+  // Placed text boxes
+  textBoxes.forEach(tb => {
+    const f = `900 ${tb.size}px "${tb.font}", Impact, sans-serif`;
+    bctx.font = f;
+    bctx.textAlign = 'left';
+    bctx.lineWidth = tb.size / 8;
+    bctx.strokeStyle = tb.outline;
+    bctx.fillStyle = tb.color;
+    bctx.lineJoin = 'round';
+    bctx.strokeText(tb.text, tb.x, tb.y);
+    bctx.fillText(tb.text, tb.x, tb.y);
+  });
+}
+
+// ─── Mode switching ───────────────────────────────────────────────────────────
+function switchMode(m) {
+  mode = m;
+  ['quick','place','draw'].forEach(id => {
+    document.getElementById(`tab-${id}`).classList.toggle('active', id === m);
+    document.getElementById(`panel-${id}`).classList.toggle('visible', id === m);
+  });
+  drawCanvas.style.cursor = m === 'draw' ? 'crosshair' : (m === 'place' ? 'cell' : 'default');
+  drawCanvas.style.pointerEvents = (m === 'draw' || m === 'place') ? 'auto' : 'none';
+}
+
+// ─── Draw tool ────────────────────────────────────────────────────────────────
+function setDrawTool(t) {
+  drawTool = t;
+  document.getElementById('toolPen').classList.toggle('active', t === 'pen');
+  document.getElementById('toolEraser').classList.toggle('active', t === 'eraser');
+}
+
+drawCanvas.addEventListener('mousedown', e => {
+  if (!currentImg) return;
+  if (mode === 'draw') {
+    saveUndoState();
+    isDrawing = true;
+    const r = drawCanvas.getBoundingClientRect();
+    lastX = e.clientX - r.left;
+    lastY = e.clientY - r.top;
+  } else if (mode === 'place') {
+    const r = drawCanvas.getBoundingClientRect();
+    const cx = e.clientX - r.left, cy = e.clientY - r.top;
+    // Check if clicking existing box
+    const hit = textBoxes.slice().reverse().find(tb => {
+      dctx.font = `900 ${tb.size}px "${tb.font}"`;
+      const w = dctx.measureText(tb.text).width;
+      return cx >= tb.x && cx <= tb.x + w && cy <= tb.y && cy >= tb.y - tb.size;
+    });
+    if (hit) {
+      dragging = hit;
+      dragOffX = cx - hit.x;
+      dragOffY = cy - hit.y;
+    } else {
+      const tb = {
+        text: document.getElementById('placeText').value || 'Text',
+        font: document.getElementById('placeFont').value,
+        size: parseInt(document.getElementById('placeSize').value),
+        color: document.getElementById('placeColor').value,
+        outline: document.getElementById('placeOutline').value,
+        x: cx, y: cy
+      };
+      textBoxes.push(tb);
+      renderMeme();
+    }
+  }
+});
+
+drawCanvas.addEventListener('mousemove', e => {
+  if (mode === 'draw' && isDrawing) {
+    const r = drawCanvas.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    const size = parseInt(document.getElementById('brushSize').value);
+    const opacity = parseInt(document.getElementById('brushOpacity').value) / 100;
+    const color = document.getElementById('drawColor').value;
+
+    dctx.globalCompositeOperation = drawTool === 'eraser' ? 'destination-out' : 'source-over';
+    dctx.globalAlpha = opacity;
+    dctx.strokeStyle = color;
+    dctx.lineWidth = size;
+    dctx.lineCap = 'round';
+    dctx.lineJoin = 'round';
+    dctx.beginPath();
+    dctx.moveTo(lastX, lastY);
+    dctx.lineTo(x, y);
+    dctx.stroke();
+    lastX = x; lastY = y;
+  } else if (mode === 'place' && dragging) {
+    const r = drawCanvas.getBoundingClientRect();
+    dragging.x = e.clientX - r.left - dragOffX;
+    dragging.y = e.clientY - r.top - dragOffY;
+    renderMeme();
+  }
+});
+
+window.addEventListener('mouseup', () => {
+  isDrawing = false;
+  dragging = null;
+  dctx.globalCompositeOperation = 'source-over';
+  dctx.globalAlpha = 1;
+});
+
+// Touch support
+drawCanvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const touch = e.touches[0];
+  drawCanvas.dispatchEvent(new MouseEvent('mousedown', { clientX: touch.clientX, clientY: touch.clientY }));
+}, { passive: false });
+drawCanvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const touch = e.touches[0];
+  drawCanvas.dispatchEvent(new MouseEvent('mousemove', { clientX: touch.clientX, clientY: touch.clientY }));
+}, { passive: false });
+drawCanvas.addEventListener('touchend', () => drawCanvas.dispatchEvent(new MouseEvent('mouseup')));
+
+// ─── Undo / Redo ─────────────────────────────────────────────────────────────
+function saveUndoState() {
+  undoStack.push(dctx.getImageData(0, 0, drawCanvas.width, drawCanvas.height));
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+  redoStack = [];
+  updateUndoButtons();
+}
+function undo() {
+  if (!undoStack.length) return;
+  redoStack.push(dctx.getImageData(0, 0, drawCanvas.width, drawCanvas.height));
+  const state = undoStack.pop();
+  dctx.putImageData(state, 0, 0);
+  updateUndoButtons();
+}
+function redo() {
+  if (!redoStack.length) return;
+  undoStack.push(dctx.getImageData(0, 0, drawCanvas.width, drawCanvas.height));
+  const state = redoStack.pop();
+  dctx.putImageData(state, 0, 0);
+  updateUndoButtons();
+}
+function clearDrawing() {
+  saveUndoState();
+  dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+}
+function clearTextBoxes() {
+  textBoxes = [];
+  renderMeme();
+}
+function updateUndoButtons() {
+  document.getElementById('undoBtn').disabled = undoStack.length === 0;
+  document.getElementById('redoBtn').disabled = redoStack.length === 0;
+}
+
+// ─── Download ─────────────────────────────────────────────────────────────────
+function downloadMeme() {
+  if (!currentImg) { alert('Pick a template first!'); return; }
+  // Flatten base + draw layers
+  const out = document.createElement('canvas');
+  out.width = baseCanvas.width; out.height = baseCanvas.height;
+  const ctx = out.getContext('2d');
+  ctx.drawImage(baseCanvas, 0, 0);
+  ctx.drawImage(drawCanvas, 0, 0);
+  const a = document.createElement('a');
+  a.download = 'meme.png';
+  a.href = out.toDataURL('image/png');
+  a.click();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+switchMode('quick');
+</script>
+</body>
+</html>
