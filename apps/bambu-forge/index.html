@@ -1294,7 +1294,7 @@ function refreshDots(k) {
 // ══════════════════════════════════════════════════════════════
 //  AI MESH MODE — Tripo3D / Meshy.ai direct API calls (no proxy needed)
 // ══════════════════════════════════════════════════════════════
-const APP_VERSION = 'v0.4.6';
+const APP_VERSION = 'v0.4.7';
 let currentMode = 'cad'; // 'cad' | 'mesh-text' | 'mesh-image'
 
 // Safe JSON fetch — always throws a useful error
@@ -1450,28 +1450,30 @@ async function loadGLBIntoScene(glbUrl) {
         const loader = new THREE.GLTFLoader();
         loader.load(glbUrl, (gltf) => {
             const obj = gltf.scene;
-            // Center and scale the model
+            // Apply rotation first so bounding box is correct
+            obj.rotation.x = Math.PI / 2; // Tripo3D → Three.js Y-up
+            modelGroup.add(obj);
+            // Now calculate bounding box after rotation
             const box = new THREE.Box3().setFromObject(obj);
             const size = new THREE.Vector3(), center = new THREE.Vector3();
             box.getSize(size); box.getCenter(center);
-            // Move to origin, base at Z=0
-            obj.position.sub(center);
             const maxDim = Math.max(size.x, size.y, size.z);
-            if (maxDim > 0.001) obj.scale.setScalar(150 / maxDim); // normalize to ~150mm
-            obj.position.y = -(box.min.y - center.y) * (150 / maxDim);
-            // Apply nice material to all meshes
+            const scale = maxDim > 0.001 ? 150 / maxDim : 1;
+            obj.scale.setScalar(scale);
+            // Re-compute after scale, sit base on grid (Y=0)
+            const box2 = new THREE.Box3().setFromObject(obj);
+            obj.position.x = -(box2.min.x + box2.max.x) / 2;
+            obj.position.z = -(box2.min.z + box2.max.z) / 2;
+            obj.position.y = -box2.min.y;
+            // Apply material to meshes without one
             obj.traverse(child => {
                 if (child.isMesh) {
                     child.castShadow = child.receiveShadow = true;
                     if (!child.material || child.material.type === 'MeshBasicMaterial') {
-                        child.material = new THREE.MeshStandardMaterial({
-                            color: 0xaaccee, metalness: 0.1, roughness: 0.6
-                        });
+                        child.material = new THREE.MeshStandardMaterial({ color: 0xaaccee, metalness: 0.1, roughness: 0.6 });
                     }
                 }
             });
-            modelGroup.add(obj);
-            obj.rotation.x = Math.PI / 2; // Tripo3D → Three.js Y-up
             state.meshMode = true; // flag for STL export
             lastJSCADSolids = []; // no JSCAD solids for mesh mode
             // Fit camera
