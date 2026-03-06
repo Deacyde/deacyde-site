@@ -425,6 +425,7 @@
             <!-- Download -->
             <div class="viewer-download" id="downloadArea">
                 <button class="btn btn-ghost" id="copyScadBtn" title="Copy generated code">📋 Copy Code</button>
+                <button class="btn btn-ghost" id="snapBedBtn" title="Snap model base to print bed" style="display:none">📐 Snap to Bed</button>
                 <button class="btn btn-ghost" id="downloadStlBtn">⬇️ STL</button>
                 <button class="btn" id="download3mfBtn">🖨️ Download 3MF</button>
             </div>
@@ -1294,7 +1295,7 @@ function refreshDots(k) {
 // ══════════════════════════════════════════════════════════════
 //  AI MESH MODE — Tripo3D / Meshy.ai direct API calls (no proxy needed)
 // ══════════════════════════════════════════════════════════════
-const APP_VERSION = 'v0.4.7';
+const APP_VERSION = 'v0.4.8';
 let currentMode = 'cad'; // 'cad' | 'mesh-text' | 'mesh-image'
 
 // Safe JSON fetch — always throws a useful error
@@ -1476,6 +1477,7 @@ async function loadGLBIntoScene(glbUrl) {
             });
             state.meshMode = true; // flag for STL export
             lastJSCADSolids = []; // no JSCAD solids for mesh mode
+            document.getElementById('snapBedBtn').style.display = '';
             // Fit camera
             const newBox = new THREE.Box3().setFromObject(modelGroup);
             const newSize = new THREE.Vector3(), newCenter = new THREE.Vector3();
@@ -1612,6 +1614,17 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
 document.getElementById('providerSelect').addEventListener('change', updateModelSelect);
 
 // Settings
+// Snap to bed — recalculate bounding box and move model so base sits at Y=0
+document.getElementById('snapBedBtn').addEventListener('click', () => {
+    if (!threeReady || !modelGroup.children.length) return;
+    const obj = modelGroup.children[0];
+    obj.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(obj);
+    obj.position.x -= (box.min.x + box.max.x) / 2;
+    obj.position.z -= (box.min.z + box.max.z) / 2;
+    obj.position.y += -box.min.y;
+});
+
 document.getElementById('settingsBtn').addEventListener('click', openSettings);
 document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
 document.getElementById('cancelSettingsBtn').addEventListener('click', () => document.getElementById('settingsOverlay').classList.remove('open'));
