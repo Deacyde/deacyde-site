@@ -1294,7 +1294,7 @@ function refreshDots(k) {
 // ══════════════════════════════════════════════════════════════
 //  AI MESH MODE — Tripo3D / Meshy.ai direct API calls (no proxy needed)
 // ══════════════════════════════════════════════════════════════
-const APP_VERSION = 'v0.4.0';
+const APP_VERSION = 'v0.4.1';
 let currentMode = 'cad'; // 'cad' | 'mesh-text' | 'mesh-image'
 
 // Safe JSON fetch — always throws a useful error
@@ -1399,14 +1399,10 @@ async function generateWithMeshy(prompt, mode) {
         document.getElementById('aiImagePreview').style.display = 'block';
 
         setLoading(true, `Converting image to 3D mesh (${providerLabel})… this takes ~2 min`);
-        taskId = provider === 'tripo3d'
-            ? await tripoCreate(apiKey, { type: 'image_to_model', file: { type: 'jpg', url: imageUrl } })
-            : await meshyCreate(apiKey, action, { image_url: imageUrl });
+        taskId = await proxyCreate(provider, apiKey, action, { image_url: imageUrl });
     } else {
         setLoading(true, `${providerLabel} generating 3D mesh… this takes ~2 min`);
-        taskId = provider === 'tripo3d'
-            ? await tripoCreate(apiKey, { type: 'text_to_model', model_version: 'v2.5-20250123', prompt })
-            : await meshyCreate(apiKey, action, { prompt });
+        taskId = await proxyCreate(provider, apiKey, action, { prompt });
     }
 
     const glbUrl = await pollMeshyTask(taskId, apiKey, provider, action);
@@ -1414,14 +1410,24 @@ async function generateWithMeshy(prompt, mode) {
     await loadGLBIntoScene(glbUrl);
 }
 
+// Proxy helpers — route through _worker.js to avoid CORS
+async function proxyCreate(provider, apiKey, action, params) {
+    const data = await apiFetch('/api/meshy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider, action, apiKey, ...params })
+    });
+    return data.taskId;
+}
+
 async function pollMeshyTask(taskId, apiKey, provider, action) {
     const label = provider === 'tripo3d' ? 'Tripo3D' : 'Meshy.ai';
     const MAX_POLLS = 80;
     for (let i = 0; i < MAX_POLLS; i++) {
         await new Promise(r => setTimeout(r, 3000));
-        const data = provider === 'tripo3d'
-            ? await tripoPoll(apiKey, taskId)
-            : await meshyPoll(apiKey, taskId, action);
+        const data = await apiFetch(
+            `/api/meshy?provider=${provider}&action=${encodeURIComponent(action)}&apiKey=${encodeURIComponent(apiKey)}&id=${encodeURIComponent(taskId)}`
+        );
 
         setLoading(true, `${label} generating… ${data.progress || 0}%`);
 
