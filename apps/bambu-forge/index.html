@@ -9,6 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/exporters/STLExporter.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/utils/BufferGeometryUtils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@jscad/modeling@2.13.0/dist/jscad-modeling.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -158,6 +160,20 @@
         .prompt-row { display: flex; align-items: center; gap: 0.4rem; }
         .prompt-row .btn { flex: 1; padding: 0.45rem; }
         .char-hint { font-size: 0.68rem; color: var(--muted); margin-left: auto; }
+
+        /* ── Mode Toggle ── */
+        .mode-toggle { display: flex; gap: 0; border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; margin-bottom: 0.5rem; }
+        .mode-btn { flex: 1; padding: 0.38rem 0.5rem; font-size: 0.75rem; font-weight: 600; background: transparent; border: none; color: var(--muted); cursor: pointer; transition: background 0.15s, color 0.15s; font-family: inherit; }
+        .mode-btn.active { background: var(--accent); color: #fff; }
+        .mode-btn:not(.active):hover { background: var(--bg3); color: var(--text); }
+
+        /* ── AI Mesh image preview ── */
+        .ai-image-preview { display: none; margin: 0.5rem 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border2); position: relative; max-height: 160px; }
+        .ai-image-preview img { width: 100%; height: 160px; object-fit: cover; display: block; }
+        .ai-image-preview .ai-img-label { position: absolute; bottom: 0; left: 0; right: 0; font-size: 0.68rem; color: #fff; background: rgba(0,0,0,0.6); padding: 0.2rem 0.5rem; }
+        .meshy-progress { font-size: 0.78rem; color: var(--muted); text-align: center; padding: 0.4rem 0; }
+        .meshy-progress .progress-bar { height: 3px; background: var(--bg3); border-radius: 2px; margin-top: 0.3rem; overflow: hidden; }
+        .meshy-progress .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.5s; }
 
         /* ── History ── */
         .history-list {
@@ -345,12 +361,25 @@
                     <div class="msg">
                         <div class="msg-label">BambuForge</div>
                         <div class="msg-bubble">
-                            Describe anything you want to 3D print on your <strong>Bambu Lab X1C</strong> — I'll generate geometry and a downloadable <strong>STL</strong> file.<br><br>
-                            Try: <em>"cable clip for 6mm cable"</em> · <em>"minimalist phone stand"</em> · <em>"small vase with hex texture"</em> · <em>"custom filament guide for X1C"</em>
+                            Describe anything you want to 3D print on your <strong>Bambu Lab X1C</strong>.<br><br>
+                            <strong>⚙️ CAD mode</strong> — precise mechanical parts: gears, brackets, enclosures, threads<br>
+                            <strong>✨ AI Mesh</strong> — real 3D mesh of anything: cars, characters, organic shapes (needs <a href="https://meshy.ai" target="_blank" style="color:var(--accent)">Meshy.ai</a> key)<br>
+                            <strong>🖼️ Image→3D</strong> — generates a photo first (DALL-E), then converts to 3D (needs OpenAI + Meshy keys)
                         </div>
                     </div>
                 </div>
                 <div class="prompt-area">
+                    <!-- Mode toggle -->
+                    <div class="mode-toggle" id="modeToggle">
+                        <button class="mode-btn active" data-mode="cad" title="Generate precise mechanical parts using JSCAD CSG">⚙️ CAD</button>
+                        <button class="mode-btn" data-mode="mesh-text" title="AI generates a full 3D mesh from your text (Meshy.ai)">✨ AI Mesh</button>
+                        <button class="mode-btn" data-mode="mesh-image" title="Generate an image first, then convert to 3D (DALL-E + Meshy.ai)">🖼️ Image→3D</button>
+                    </div>
+                    <!-- AI image preview (shown in mesh-image mode after DALL-E generates) -->
+                    <div class="ai-image-preview" id="aiImagePreview">
+                        <img id="aiImageEl" src="" alt="AI generated reference image">
+                        <div class="ai-img-label">DALL-E reference image → converting to 3D…</div>
+                    </div>
                     <textarea class="prompt-input" id="promptInput"
                         placeholder="Describe what you want to print…&#10;(Shift+Enter for new line, Enter to generate)"
                         rows="3"></textarea>
@@ -458,6 +487,16 @@
         <div class="field">
             <label>Model Name</label>
             <input type="text" id="key-custom-model" placeholder="e.g. mistral-large, llama3, deepseek-r1">
+        </div>
+
+        <div class="section-label" style="margin-top:1.2rem; border-top: 1px solid var(--border); padding-top: 1rem;">✨ AI Mesh Generation (Meshy.ai)</div>
+        <div class="field">
+            <label style="font-size:0.78rem; color:var(--muted); display:block; margin-bottom:0.4rem;">
+                Meshy.ai generates <strong>real 3D mesh models</strong> from text or images — cars, characters, organic shapes, anything.<br>
+                Free tier: 200 credits/month. Get your key at <a href="https://www.meshy.ai" target="_blank" style="color:var(--accent)">meshy.ai</a>
+            </label>
+            <label><span class="dot" id="dot-meshy"></span> Meshy API Key</label>
+            <input type="password" id="key-meshy" placeholder="msy_..." autocomplete="off">
         </div>
 
         <div class="modal-footer">
@@ -712,6 +751,7 @@ const state = {
     hasModel: false,
     wireframe: false,
     gridVisible: true,
+    meshMode: false,  // true when model was generated by Meshy (not JSCAD)
     currentCode: '',
     history: []  // conversation turns
 };
@@ -951,9 +991,18 @@ function setWireframe(on) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  BINARY STL EXPORT (direct from JSCAD polygons — no Three.js)
+//  BINARY STL EXPORT (JSCAD polygons, or Three.js scene for mesh mode)
 // ══════════════════════════════════════════════════════════════
 function downloadSTL(name) {
+    if (state.meshMode) {
+        // Mesh mode: use Three.js STLExporter on the scene
+        if (!threeReady || !modelGroup.children.length) { toast('No model to export', 'error'); return; }
+        const stl = new THREE.STLExporter().parse(modelGroup, { binary: true });
+        const blob = new Blob([stl], { type: 'application/octet-stream' });
+        const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: name });
+        a.click(); URL.revokeObjectURL(a.href);
+        return;
+    }
     if (!lastJSCADSolids.length) { toast('No model to export', 'error'); return; }
     let triCount = 0;
     const allPolys = [];
@@ -993,20 +1042,52 @@ function downloadSTL(name) {
 //  3MF EXPORT (Bambu Studio compatible, via JSZip)
 // ══════════════════════════════════════════════════════════════
 async function download3MF(name) {
-    if (!lastJSCADSolids.length) { toast('No model to export', 'error'); return; }
     if (typeof JSZip === 'undefined') { toast('JSZip not loaded', 'error'); return; }
 
-    // Collect all triangles from all solids
     const vertices = [], triangles = [];
     let vIdx = 0;
-    for (const solid of lastJSCADSolids) {
-        for (const poly of jscadModeling.geometries.geom3.toPolygons(solid)) {
-            const verts = poly.vertices;
-            if (verts.length < 3) continue;
+
+    if (state.meshMode) {
+        // Mesh mode: extract geometry from Three.js scene
+        if (!threeReady || !modelGroup.children.length) { toast('No model to export', 'error'); return; }
+        modelGroup.traverse(child => {
+            if (!child.isMesh) return;
+            const geo = child.geometry.clone();
+            geo.applyMatrix4(child.matrixWorld);
+            // Also apply parent group transform
+            const pos = geo.attributes.position;
+            if (!pos) return;
             const base = vIdx;
-            for (const v of verts) { vertices.push(v); vIdx++; }
-            for (let i = 1; i < verts.length - 1; i++) {
-                triangles.push([base, base + i, base + i + 1]);
+            // Convert Y-up Three.js to Z-up 3MF (undo the -PI/2 rotation)
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+                vertices.push([x, z, -y]); // rotate back: X stays, Y and Z swap
+                vIdx++;
+            }
+            const idx = geo.index;
+            if (idx) {
+                for (let i = 0; i < idx.count; i += 3) {
+                    triangles.push([base + idx.getX(i), base + idx.getX(i+1), base + idx.getX(i+2)]);
+                }
+            } else {
+                for (let i = 0; i < pos.count; i += 3) {
+                    triangles.push([base + i, base + i + 1, base + i + 2]);
+                }
+            }
+            geo.dispose();
+        });
+    } else {
+        // CAD mode: use JSCAD polygon data
+        if (!lastJSCADSolids.length) { toast('No model to export', 'error'); return; }
+        for (const solid of lastJSCADSolids) {
+            for (const poly of jscadModeling.geometries.geom3.toPolygons(solid)) {
+                const verts = poly.vertices;
+                if (verts.length < 3) continue;
+                const base = vIdx;
+                for (const v of verts) { vertices.push(v); vIdx++; }
+                for (let i = 1; i < verts.length - 1; i++) {
+                    triangles.push([base, base + i, base + i + 1]);
+                }
             }
         }
     }
@@ -1163,6 +1244,7 @@ function openSettings() {
     document.getElementById('key-custom-url').value   = k['custom-url']   || '';
     document.getElementById('key-custom-key').value   = k['custom-key']   || '';
     document.getElementById('key-custom-model').value = k['custom-model'] || '';
+    document.getElementById('key-meshy').value        = k['meshy']        || '';
     refreshDots(k);
     document.getElementById('settingsOverlay').classList.add('open');
 }
@@ -1174,7 +1256,8 @@ function saveSettings() {
         groq:          document.getElementById('key-groq').value.trim(),
         'custom-url':  document.getElementById('key-custom-url').value.trim(),
         'custom-key':  document.getElementById('key-custom-key').value.trim(),
-        'custom-model':document.getElementById('key-custom-model').value.trim()
+        'custom-model':document.getElementById('key-custom-model').value.trim(),
+        meshy:         document.getElementById('key-meshy').value.trim()
     };
     saveKeys(k);
     refreshDots(k);
@@ -1188,10 +1271,146 @@ function refreshDots(k) {
         document.getElementById(`dot-${id}`).className = 'dot' + (k[id] ? ' set' : '');
     });
     document.getElementById('dot-custom').className = 'dot' + (k['custom-key'] ? ' set' : '');
+    document.getElementById('dot-meshy').className  = 'dot' + (k['meshy'] ? ' set' : '');
 }
 
 // ══════════════════════════════════════════════════════════════
-//  GENERATE
+//  AI MESH MODE — Meshy.ai text-to-3D and image-to-3D
+// ══════════════════════════════════════════════════════════════
+let currentMode = 'cad'; // 'cad' | 'mesh-text' | 'mesh-image'
+
+async function generateWithMeshy(prompt, mode) {
+    const keys = loadKeys();
+    const meshyKey = keys.meshy;
+    if (!meshyKey) throw new Error('No Meshy API key — click ⚙️ to add one. Get a free key at meshy.ai');
+
+    let taskId, pollAction;
+
+    if (mode === 'mesh-image') {
+        // Step 1: generate image with DALL-E
+        const openaiKey = keys.openai;
+        if (!openaiKey) throw new Error('Image→3D mode needs an OpenAI key for DALL-E. Click ⚙️ to add one.');
+        setLoading(true, 'DALL-E 3 generating reference image…');
+        const imgResp = await fetch('https://api.openai.com/v1/images/generations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${openaiKey}` },
+            body: JSON.stringify({
+                model: 'dall-e-3',
+                prompt: `Professional product photo of: ${prompt}. Clean white background, studio lighting, sharp detail, suitable as a 3D modeling reference.`,
+                size: '1024x1024', quality: 'standard', n: 1
+            })
+        });
+        if (!imgResp.ok) { const e = await imgResp.json().catch(()=>({})); throw new Error(e.error?.message || `DALL-E error ${imgResp.status}`); }
+        const imgData = await imgResp.json();
+        const imageUrl = imgData.data[0].url;
+
+        // Show the image
+        document.getElementById('aiImageEl').src = imageUrl;
+        document.getElementById('aiImagePreview').style.display = 'block';
+
+        // Step 2: send image to Meshy
+        setLoading(true, 'Converting image to 3D mesh (Meshy.ai)… this takes ~2 min');
+        const taskResp = await fetch('/api/meshy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'image-to-3d', meshyKey, image_url: imageUrl })
+        });
+        const taskData = await taskResp.json();
+        if (taskData.error) throw new Error(`Meshy: ${taskData.error}`);
+        taskId = taskData.result;
+        pollAction = 'poll-image';
+
+    } else {
+        // text-to-3D
+        setLoading(true, 'Meshy.ai generating 3D mesh from text… this takes ~2 min');
+        const taskResp = await fetch('/api/meshy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'text-to-3d', meshyKey, prompt, art_style: 'realistic' })
+        });
+        const taskData = await taskResp.json();
+        if (taskData.error) throw new Error(`Meshy: ${taskData.error}`);
+        taskId = taskData.result;
+        pollAction = 'poll-text';
+    }
+
+    // Poll until done
+    const glbUrl = await pollMeshyTask(taskId, meshyKey, pollAction);
+
+    // Load GLB into Three.js
+    setLoading(true, 'Loading 3D model…');
+    await loadGLBIntoScene(glbUrl);
+}
+
+async function pollMeshyTask(taskId, meshyKey, pollAction) {
+    const MAX_POLLS = 80; // 4 minutes max
+    for (let i = 0; i < MAX_POLLS; i++) {
+        await new Promise(r => setTimeout(r, 3000));
+        const r = await fetch(`/api/meshy?action=${pollAction}&meshyKey=${encodeURIComponent(meshyKey)}&id=${taskId}`);
+        const data = await r.json();
+        if (data.error) throw new Error(`Meshy poll error: ${data.error}`);
+
+        const pct = data.progress || 0;
+        setLoading(true, `Meshy.ai generating… ${pct}%`);
+
+        if (data.status === 'SUCCEEDED') {
+            if (!data.model_urls?.glb) throw new Error('Meshy succeeded but no GLB URL returned');
+            return data.model_urls.glb;
+        }
+        if (data.status === 'FAILED') {
+            throw new Error(`Meshy generation failed: ${data.task_error?.message || 'unknown error'}`);
+        }
+    }
+    throw new Error('Meshy timed out after 4 minutes');
+}
+
+async function loadGLBIntoScene(glbUrl) {
+    return new Promise((resolve, reject) => {
+        if (typeof THREE.GLTFLoader === 'undefined') {
+            reject(new Error('GLTFLoader not loaded'));
+            return;
+        }
+        clearModel();
+        const loader = new THREE.GLTFLoader();
+        loader.load(glbUrl, (gltf) => {
+            const obj = gltf.scene;
+            // Center and scale the model
+            const box = new THREE.Box3().setFromObject(obj);
+            const size = new THREE.Vector3(), center = new THREE.Vector3();
+            box.getSize(size); box.getCenter(center);
+            // Move to origin, base at Z=0
+            obj.position.sub(center);
+            const maxDim = Math.max(size.x, size.y, size.z);
+            if (maxDim > 0.001) obj.scale.setScalar(150 / maxDim); // normalize to ~150mm
+            obj.position.y = -(box.min.y - center.y) * (150 / maxDim);
+            // Apply nice material to all meshes
+            obj.traverse(child => {
+                if (child.isMesh) {
+                    child.castShadow = child.receiveShadow = true;
+                    if (!child.material || child.material.type === 'MeshBasicMaterial') {
+                        child.material = new THREE.MeshStandardMaterial({
+                            color: 0xaaccee, metalness: 0.1, roughness: 0.6
+                        });
+                    }
+                }
+            });
+            modelGroup.add(obj);
+            state.meshMode = true; // flag for STL export
+            lastJSCADSolids = []; // no JSCAD solids for mesh mode
+            // Fit camera
+            const newBox = new THREE.Box3().setFromObject(modelGroup);
+            const newSize = new THREE.Vector3(), newCenter = new THREE.Vector3();
+            newBox.getSize(newSize); newBox.getCenter(newCenter);
+            const dist = Math.max(newSize.x, newSize.y, newSize.z) * 2.2;
+            camera.position.set(newCenter.x + dist*0.7, newCenter.y + dist*0.5, newCenter.z + dist*0.7);
+            controls.target.copy(newCenter); controls.update();
+            resolve({ size: newSize });
+        }, undefined, reject);
+    });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  GENERATE — dispatches to CAD or AI Mesh
 // ══════════════════════════════════════════════════════════════
 async function generate() {
     const input  = document.getElementById('promptInput');
@@ -1201,10 +1420,32 @@ async function generate() {
     state.generating = true;
     input.value = '';
     document.getElementById('charHint').textContent = '';
+    addMsg('user', esc(prompt));
 
+    if (currentMode !== 'cad') {
+        // ── AI Mesh mode ──
+        try {
+            await generateWithMeshy(prompt, currentMode);
+            state.hasModel = true;
+            state.currentCode = '';
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('downloadArea').style.display = 'flex';
+            addMsg('success',
+                `<strong>3D mesh generated by Meshy.ai</strong><br>` +
+                `<small style="color:var(--muted)">Download STL or 3MF to open in Bambu Studio</small>`
+            );
+        } catch(e) {
+            addMsg('error', `AI Mesh failed: ${esc(e.message)}`);
+            toast('Meshy generation failed', 'error', 6000);
+        }
+        setLoading(false);
+        state.generating = false;
+        return;
+    }
+
+    // ── CAD mode (JSCAD) ──
     const provider = document.getElementById('providerSelect').value;
     const model    = document.getElementById('modelSelect').value;
-    addMsg('user', esc(prompt));
     setLoading(true, `Asking ${PROVIDERS[provider].label} (${model})…`);
 
     const MAX = 3;
@@ -1219,6 +1460,7 @@ async function generate() {
 
             const descs = runModelCode(result.code);
             lastJSCADSolids = descs;
+            state.meshMode = false;
             const { size } = renderDescriptors(descs);
 
             state.currentCode = result.code;
@@ -1261,6 +1503,31 @@ document.getElementById('promptInput').addEventListener('keydown', e => {
 document.getElementById('promptInput').addEventListener('input', () => {
     const l = document.getElementById('promptInput').value.length;
     document.getElementById('charHint').textContent = l > 0 ? l : '';
+});
+
+// Mode toggle
+document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        // Update placeholder text
+        const input = document.getElementById('promptInput');
+        const imgPreview = document.getElementById('aiImagePreview');
+        if (currentMode === 'cad') {
+            input.placeholder = 'Describe a mechanical part to print…\n(e.g. "gear with keyway", "cable clip", "vase")';
+            document.getElementById('generateBtn').textContent = '⚙️ Generate CAD';
+            imgPreview.style.display = 'none';
+        } else if (currentMode === 'mesh-text') {
+            input.placeholder = 'Describe anything — car, character, building, animal…\n(Meshy.ai generates a real 3D mesh)';
+            document.getElementById('generateBtn').textContent = '✨ Generate Mesh';
+            imgPreview.style.display = 'none';
+        } else {
+            input.placeholder = 'Describe anything — DALL-E generates a photo, then it\'s converted to 3D…\n(Needs OpenAI + Meshy.ai keys)';
+            document.getElementById('generateBtn').textContent = '🖼️ Image → 3D';
+            imgPreview.style.display = 'none';
+        }
+    });
 });
 
 document.getElementById('providerSelect').addEventListener('change', updateModelSelect);
