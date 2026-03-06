@@ -1,9 +1,6 @@
 /**
  * Cloudflare Pages Function — AI 3D generation proxy
  * Supports: Tripo3D (free monthly credits) and Meshy.ai (paid)
- *
- * POST /api/meshy  { provider, action, apiKey, ...params }
- * GET  /api/meshy?provider=...&action=poll&apiKey=...&id=...
  */
 
 const CORS = {
@@ -19,29 +16,43 @@ function json(data, status = 200) {
     });
 }
 
+async function safeFetch(url, opts) {
+    const r = await fetch(url, opts);
+    const text = await r.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { data = { raw: text.slice(0, 300) }; }
+    return { ok: r.ok, status: r.status, data };
+}
+
 // ── Tripo3D ──────────────────────────────────────────────────
 async function tripoCreate(apiKey, body) {
-    const r = await fetch('https://platform.tripo3d.ai/v2/openapi/task', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-        body: JSON.stringify(body),
-    });
-    const d = await r.json();
-    if (!r.ok || d.code !== 0) return { error: d.message || d.msg || `Tripo3D error ${r.status}` };
-    return { taskId: d.data.task_id };
+    const { ok, status, data } = await safeFetch(
+        'https://platform.tripo3d.ai/v2/openapi/task',
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+            body: JSON.stringify(body),
+        }
+    );
+    if (!ok || data.code !== 0) {
+        return { error: data.message || data.msg || data.raw || `Tripo3D HTTP ${status}` };
+    }
+    return { taskId: data.data.task_id };
 }
 
 async function tripoPoll(apiKey, taskId) {
-    const r = await fetch(`https://platform.tripo3d.ai/v2/openapi/task/${taskId}`, {
-        headers: { 'Authorization': `Bearer ${apiKey}` },
-    });
-    const d = await r.json();
-    if (!r.ok || d.code !== 0) return { error: d.message || `Tripo3D poll error ${r.status}` };
-    const t = d.data;
+    const { ok, status, data } = await safeFetch(
+        `https://platform.tripo3d.ai/v2/openapi/task/${taskId}`,
+        { headers: { 'Authorization': `Bearer ${apiKey}` } }
+    );
+    if (!ok || data.code !== 0) {
+        return { error: data.message || data.raw || `Tripo3D poll HTTP ${status}` };
+    }
+    const t = data.data;
     return {
-        status:   t.status,           // queued | running | success | failed
+        status:   t.status === 'success' ? 'success' : t.status === 'failed' ? 'failed' : 'running',
         progress: t.progress || 0,
-        glbUrl:   t.output?.model || null,
+        glbUrl:   t.output?.model || t.output?.rendered_image || null,
         error:    t.status === 'failed' ? (t.task_error?.message || 'Generation failed') : null,
     };
 }
@@ -56,29 +67,28 @@ async function meshyCreate(apiKey, action, params) {
         url = 'https://api.meshy.ai/openapi/v1/image-to-3d';
         body = { image_url: params.image_url, enable_pbr: true };
     }
-    const r = await fetch(url, {
+    const { ok, status, data } = await safeFetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
         body: JSON.stringify(body),
     });
-    const d = await r.json();
-    if (!r.ok) return { error: d.message || `Meshy error ${r.status}` };
-    return { taskId: d.result };
+    if (!ok) return { error: data.message || data.raw || `Meshy HTTP ${status}` };
+    return { taskId: data.result };
 }
 
 async function meshyPoll(apiKey, taskId, action) {
     const base = action === 'text-to-3d'
         ? `https://api.meshy.ai/openapi/v2/text-to-3d/${taskId}`
         : `https://api.meshy.ai/openapi/v1/image-to-3d/${taskId}`;
-    const r = await fetch(base, { headers: { 'Authorization': `Bearer ${apiKey}` } });
-    const d = await r.json();
-    if (!r.ok) return { error: d.message || `Meshy poll error ${r.status}` };
-    const succeeded = d.status === 'SUCCEEDED';
+    const { ok, status, data } = await safeFetch(base, {
+        headers: { 'Authorization': `Bearer ${apiKey}` }
+    });
+    if (!ok) return { error: data.message || data.raw || `Meshy poll HTTP ${status}` };
     return {
-        status:   succeeded ? 'success' : d.status === 'FAILED' ? 'failed' : 'running',
-        progress: d.progress || 0,
-        glbUrl:   d.model_urls?.glb || null,
-        error:    d.status === 'FAILED' ? (d.task_error?.message || 'Generation failed') : null,
+        status:   data.status === 'SUCCEEDED' ? 'success' : data.status === 'FAILED' ? 'failed' : 'running',
+        progress: data.progress || 0,
+        glbUrl:   data.model_urls?.glb || null,
+        error:    data.status === 'FAILED' ? (data.task_error?.message || 'Generation failed') : null,
     };
 }
 
@@ -89,24 +99,21 @@ export async function onRequest(context) {
 
     try {
         if (request.method === 'POST') {
-            const { provider = 'tripo3d', action, apiKey, ...params } = await request.json();
+            let body;
+            try { body = await request.json(); } catch(e) { return json({ error: 'Invalid JSON body' }, 400); }
+            const { provider = 'tripo3d', action, apiKey, ...params } = body;
             if (!apiKey) return json({ error: 'No API key provided' }, 400);
 
             if (provider === 'tripo3d') {
-                let body;
-                if (action === 'text-to-3d') {
-                    body = { type: 'text_to_model', model_version: 'v2.5-20250123', prompt: params.prompt };
-                } else {
-                    body = { type: 'image_to_model', file: { type: 'jpg', url: params.image_url } };
-                }
-                return json(await tripoCreate(apiKey, body));
+                const taskBody = action === 'text-to-3d'
+                    ? { type: 'text_to_model', model_version: 'v2.5-20250123', prompt: params.prompt }
+                    : { type: 'image_to_model', file: { type: 'jpg', url: params.image_url } };
+                return json(await tripoCreate(apiKey, taskBody));
             }
-
             if (provider === 'meshy') {
                 return json(await meshyCreate(apiKey, action, params));
             }
-
-            return json({ error: 'Unknown provider' }, 400);
+            return json({ error: `Unknown provider: ${provider}` }, 400);
         }
 
         if (request.method === 'GET') {
@@ -114,16 +121,16 @@ export async function onRequest(context) {
             const provider = u.searchParams.get('provider') || 'tripo3d';
             const apiKey   = u.searchParams.get('apiKey');
             const taskId   = u.searchParams.get('id');
-            const action   = u.searchParams.get('action') || 'text-to-3d'; // for meshy
+            const action   = u.searchParams.get('action') || 'text-to-3d';
             if (!apiKey || !taskId) return json({ error: 'Missing apiKey or id' }, 400);
 
             if (provider === 'tripo3d') return json(await tripoPoll(apiKey, taskId));
             if (provider === 'meshy')   return json(await meshyPoll(apiKey, taskId, action));
-            return json({ error: 'Unknown provider' }, 400);
+            return json({ error: `Unknown provider: ${provider}` }, 400);
         }
 
         return json({ error: 'Method not allowed' }, 405);
     } catch (e) {
-        return json({ error: e.message }, 500);
+        return json({ error: `Function error: ${e.message}` }, 500);
     }
 }

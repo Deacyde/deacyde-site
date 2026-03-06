@@ -1296,6 +1296,22 @@ function refreshDots(k) {
 // ══════════════════════════════════════════════════════════════
 let currentMode = 'cad'; // 'cad' | 'mesh-text' | 'mesh-image'
 
+// Safe fetch wrapper — always returns parsed JSON or throws with useful message
+async function apiFetch(url, options = {}) {
+    let resp;
+    try {
+        resp = await fetch(url, options);
+    } catch(e) {
+        throw new Error(`Network error calling ${url}: ${e.message}`);
+    }
+    const text = await resp.text();
+    if (!text) throw new Error(`Empty response from ${url} (HTTP ${resp.status}) — check that the Cloudflare Pages Function is deployed`);
+    let data;
+    try { data = JSON.parse(text); } catch(e) { throw new Error(`Non-JSON response (HTTP ${resp.status}): ${text.slice(0, 200)}`); }
+    if (data.error) throw new Error(data.error);
+    return data;
+}
+
 async function generateWithMeshy(prompt, mode) {
     const keys = loadKeys();
 
@@ -1334,24 +1350,20 @@ async function generateWithMeshy(prompt, mode) {
         document.getElementById('aiImagePreview').style.display = 'block';
 
         setLoading(true, `Converting image to 3D mesh (${providerLabel})… this takes ~2 min`);
-        const taskResp = await fetch('/api/meshy', {
+        const taskData = await apiFetch('/api/meshy', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ provider, action: 'image-to-3d', apiKey, image_url: imageUrl })
         });
-        const taskData = await taskResp.json();
-        if (taskData.error) throw new Error(`${providerLabel}: ${taskData.error}`);
         taskId = taskData.taskId;
 
     } else {
         setLoading(true, `${providerLabel} generating 3D mesh… this takes ~2 min`);
-        const taskResp = await fetch('/api/meshy', {
+        const taskData = await apiFetch('/api/meshy', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ provider, action: 'text-to-3d', apiKey, prompt })
         });
-        const taskData = await taskResp.json();
-        if (taskData.error) throw new Error(`${providerLabel}: ${taskData.error}`);
         taskId = taskData.taskId;
     }
 
@@ -1364,9 +1376,9 @@ async function pollMeshyTask(taskId, apiKey, provider, action) {
     const MAX_POLLS = 80;
     for (let i = 0; i < MAX_POLLS; i++) {
         await new Promise(r => setTimeout(r, 3000));
-        const r = await fetch(`/api/meshy?provider=${provider}&action=${action}&apiKey=${encodeURIComponent(apiKey)}&id=${taskId}`);
-        const data = await r.json();
-        if (data.error) throw new Error(`Poll error: ${data.error}`);
+        const data = await apiFetch(
+            `/api/meshy?provider=${provider}&action=${encodeURIComponent(action)}&apiKey=${encodeURIComponent(apiKey)}&id=${encodeURIComponent(taskId)}`
+        );
 
         setLoading(true, `${provider === 'tripo3d' ? 'Tripo3D' : 'Meshy.ai'} generating… ${data.progress || 0}%`);
 
