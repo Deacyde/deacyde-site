@@ -62,7 +62,8 @@ async function handleRequest(request) {
           const { ok, status, data } = await safeFetch(`https://api.tripo3d.ai/v2/openapi/task/${taskId}`, { headers: { 'Authorization': `Bearer ${apiKey}` } })
           if (!ok || data.code !== 0) return jsonResp({ error: data.message || data.raw || `Tripo3D HTTP ${status}` })
           const t = data.data
-          return jsonResp({ status: t.status === 'success' ? 'success' : t.status === 'failed' ? 'failed' : 'running', progress: t.progress || 0, glbUrl: t.output?.model || null, error: t.task_error?.message || null })
+          const glbUrl = t.output?.model || t.output?.pbr_model || t.output?.base_model || t.output?.rendered_image || null
+          return jsonResp({ status: t.status === 'success' ? 'success' : t.status === 'failed' ? 'failed' : 'running', progress: t.progress || 0, glbUrl, error: t.task_error?.message || null, _output: t.output })
         }
         if (provider === 'meshy') {
           const mu = action === 'text-to-3d' ? `https://api.meshy.ai/openapi/v2/text-to-3d/${taskId}` : `https://api.meshy.ai/openapi/v1/image-to-3d/${taskId}`
