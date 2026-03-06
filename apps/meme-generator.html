@@ -84,8 +84,12 @@
   .undo-row button:hover { border-color: #4b5563; color: var(--text); }
   .undo-row button:disabled { opacity: .3; cursor: default; }
 
-  .download-btn { width: 100%; padding: .65rem; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: background .15s; font-family: inherit; }
+  .btn-row { display: flex; gap: 6px; }
+  .download-btn { flex: 1; padding: .65rem; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: background .15s; font-family: inherit; }
   .download-btn:hover { background: var(--accent-h); }
+  .copy-btn { padding: .65rem .75rem; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.88rem; cursor: pointer; transition: all .15s; font-family: inherit; white-space: nowrap; }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .copy-btn.copied { border-color: #22c55e; color: #22c55e; }
 
   /* ─── Canvas area ─── */
   .main { background: #080808; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; }
@@ -225,7 +229,10 @@
     <hr>
 
     <div class="section-block">
-      <button class="download-btn" onclick="downloadMeme()">⬇ Download PNG</button>
+      <div class="btn-row">
+        <button class="download-btn" onclick="downloadMeme()">⬇ Download</button>
+        <button class="copy-btn" id="copyBtn" onclick="copyMeme()">📋 Copy</button>
+      </div>
     </div>
 
   </div>
@@ -261,28 +268,21 @@ const TEMPLATES = [
   { name: 'Is This a...',    url: 'https://i.imgflip.com/1o00in.jpg' },
   { name: 'Uno Reverse',     url: 'https://i.imgflip.com/3lmzyx.jpg' },
   { name: 'Chad vs Virgin',  url: 'https://i.imgflip.com/261o3j.jpg' },
-  { name: 'Pikachu',         url: 'https://i.imgflip.com/vc0k4p.jpg' },
-  { name: 'Tuxedo Pooh',     url: 'https://i.imgflip.com/9ehkjl.jpg' },
+  { name: 'Pikachu',         url: 'https://i.imgflip.com/2kbn1e.jpg' },
+  { name: 'Tuxedo Pooh',     url: 'https://i.imgflip.com/2ybua0.png' },
   { name: 'That\'d Be Great',url: 'https://i.imgflip.com/1bhk.jpg' },
-  { name: 'Always Has Been', url: 'https://i.imgflip.com/gdk4ya.jpg' },
-  { name: 'Stonks',          url: 'https://i.imgflip.com/mhzzou.jpg' },
+  { name: 'Always Has Been', url: 'https://i.imgflip.com/46e43q.png' },
+  { name: 'Stonks',          url: 'https://i.imgflip.com/3lmzyx.jpg' },
   { name: 'Grumpy Cat',      url: 'https://i.imgflip.com/8p0a.jpg' },
   { name: 'Success Kid',     url: 'https://i.imgflip.com/2hgfw.jpg' },
-  { name: 'Ancient Aliens',  url: 'https://i.imgflip.com/1e7ql7.jpg' },
-  { name: 'But That\'s None',url: 'https://i.imgflip.com/3wn.jpg' },
+  { name: 'Evil Kermit',     url: 'https://i.imgflip.com/1e7ql7.jpg' },
   { name: 'Y U No',          url: 'https://i.imgflip.com/3si4.jpg' },
-  { name: 'First World Probs',url:'https://i.imgflip.com/b2.jpg' },
-  { name: 'Bad Luck Brian',  url: 'https://i.imgflip.com/5.jpg' },
-  { name: 'Overly Attached', url: 'https://i.imgflip.com/1xk4.jpg' },
-  { name: 'Good Guy Greg',   url: 'https://i.imgflip.com/6.jpg' },
-  { name: 'Scumbag Steve',   url: 'https://i.imgflip.com/2.jpg' },
   { name: 'One Does Not',    url: 'https://i.imgflip.com/1bij.jpg' },
-  { name: 'Everywhere',      url: 'https://i.imgflip.com/1h7in3.jpg' },
-  { name: 'Captain Picard',  url: 'https://i.imgflip.com/2cp1.jpg' },
-  { name: 'Confession Bear', url: 'https://i.imgflip.com/clg.jpg' },
-  { name: 'Philosoraptor',   url: 'https://i.imgflip.com/11h.jpg' },
-  { name: 'Leonardo Cheers', url: 'https://i.imgflip.com/3u0x3.jpg' },
-  { name: 'Roll Safe',       url: 'https://i.imgflip.com/1h7in3.jpg' },
+  { name: 'Buzz Everywhere', url: 'https://i.imgflip.com/1h7in3.jpg' },
+  { name: 'Roll Safe',       url: 'https://i.imgflip.com/2fm6x.jpg' },
+  { name: 'Leonardo Cheers', url: 'https://i.imgflip.com/39t1o.jpg' },
+  { name: 'Bernie',          url: 'https://i.imgflip.com/3oevdk.jpg' },
+  { name: 'Waiting Skeleton',url: 'https://i.imgflip.com/2fm6x.jpg' },
 ];
 
 // ─── State ──────────────────────────────────────────────────────────────────
@@ -492,6 +492,25 @@ function downloadMeme() {
   ctx.drawImage(drawCanvas, 0, 0);
   const a = document.createElement('a');
   a.download = 'meme.png'; a.href = out.toDataURL('image/png'); a.click();
+}
+
+async function copyMeme() {
+  if (!currentImg) { alert('Pick a template first!'); return; }
+  const out = document.createElement('canvas');
+  out.width = baseCanvas.width; out.height = baseCanvas.height;
+  const ctx = out.getContext('2d');
+  ctx.drawImage(baseCanvas, 0, 0);
+  ctx.drawImage(drawCanvas, 0, 0);
+  try {
+    const blob = await new Promise(res => out.toBlob(res, 'image/png'));
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
+  } catch (e) {
+    alert('Copy failed — try downloading instead.\n' + e.message);
+  }
 }
 
 switchMode('quick');
