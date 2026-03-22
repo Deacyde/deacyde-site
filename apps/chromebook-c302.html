@@ -186,7 +186,13 @@
     <div class="panel-sub">Already set up and just need the commands? Here they are.</div>
   </div>
 
-  <div class="info-box">💡 These assume Developer Mode is already on and your Linux environment (Crouton, Crostini, or dual boot) is already installed.</div>
+  <div class="warn-box">
+    ⚠️ <strong>Getting "unknown command"?</strong> You're still inside <strong>crosh</strong> — crosh is not bash. You must type <code style="background:#2a1a1a;border:1px solid #5a2a2a;border-radius:4px;padding:0.1rem 0.4rem;">shell</code> first after opening crosh, then all commands work:<br><br>
+    <strong style="color:#fcd34d;">Step 1:</strong> <code style="background:#1a1a2a;padding:0.1rem 0.4rem;border-radius:4px;">Ctrl+Alt+T</code> → opens crosh<br>
+    <strong style="color:#fcd34d;">Step 2:</strong> type <code style="background:#1a1a2a;padding:0.1rem 0.4rem;border-radius:4px;">shell</code> and press Enter → drops into bash<br>
+    <strong style="color:#fcd34d;">Step 3:</strong> now run <code style="background:#1a1a2a;padding:0.1rem 0.4rem;border-radius:4px;">sudo startxfce4</code> (or whichever command)<br><br>
+    If <code>shell</code> itself says "unknown command" → <strong>Developer Mode is not enabled</strong>. See the Developer Mode tab.
+  </div>
 
   <div class="section-card open">
     <div class="section-header" onclick="toggleSection(this.parentElement)">
