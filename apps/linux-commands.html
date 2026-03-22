@@ -200,6 +200,66 @@
     <button class="distro-tile" data-tab="mxlinux" onclick="switchTab('mxlinux', this)">
       <span class="tile-icon">⚙️</span><span class="tile-name">MX Linux</span>
     </button>
+    <button class="distro-tile" data-tab="steamos" onclick="switchTab('steamos', this)">
+      <span class="tile-icon">🎮</span><span class="tile-name">SteamOS</span>
+    </button>
+    <button class="distro-tile" data-tab="bazzite" onclick="switchTab('bazzite', this)">
+      <span class="tile-icon">🕹️</span><span class="tile-name">Bazzite</span>
+    </button>
+    <button class="distro-tile" data-tab="raspios" onclick="switchTab('raspios', this)">
+      <span class="tile-icon">🍓</span><span class="tile-name">Raspberry Pi OS</span>
+    </button>
+    <button class="distro-tile" data-tab="zorin" onclick="switchTab('zorin', this)">
+      <span class="tile-icon">🌠</span><span class="tile-name">Zorin OS</span>
+    </button>
+    <button class="distro-tile" data-tab="elementaryos" onclick="switchTab('elementaryos', this)">
+      <span class="tile-icon">🎨</span><span class="tile-name">elementary OS</span>
+    </button>
+    <button class="distro-tile" data-tab="kdeneon" onclick="switchTab('kdeneon', this)">
+      <span class="tile-icon">💎</span><span class="tile-name">KDE Neon</span>
+    </button>
+    <button class="distro-tile" data-tab="almalinux" onclick="switchTab('almalinux', this)">
+      <span class="tile-icon">🦭</span><span class="tile-name">AlmaLinux</span>
+    </button>
+    <button class="distro-tile" data-tab="slackware" onclick="switchTab('slackware', this)">
+      <span class="tile-icon">📼</span><span class="tile-name">Slackware</span>
+    </button>
+    <button class="distro-tile" data-tab="tails" onclick="switchTab('tails', this)">
+      <span class="tile-icon">👁️</span><span class="tile-name">Tails</span>
+    </button>
+    <button class="distro-tile" data-tab="parrot" onclick="switchTab('parrot', this)">
+      <span class="tile-icon">🦜</span><span class="tile-name">Parrot OS</span>
+    </button>
+    <button class="distro-tile" data-tab="qubes" onclick="switchTab('qubes', this)">
+      <span class="tile-icon">🧊</span><span class="tile-name">Qubes OS</span>
+    </button>
+    <button class="distro-tile" data-tab="whonix" onclick="switchTab('whonix', this)">
+      <span class="tile-icon">🕵️</span><span class="tile-name">Whonix</span>
+    </button>
+    <button class="distro-tile" data-tab="silverblue" onclick="switchTab('silverblue', this)">
+      <span class="tile-icon">🔵</span><span class="tile-name">Fedora Silverblue</span>
+    </button>
+    <button class="distro-tile" data-tab="microos" onclick="switchTab('microos', this)">
+      <span class="tile-icon">🔬</span><span class="tile-name">openSUSE MicroOS</span>
+    </button>
+    <button class="distro-tile" data-tab="vanillaos" onclick="switchTab('vanillaos', this)">
+      <span class="tile-icon">🍦</span><span class="tile-name">Vanilla OS</span>
+    </button>
+    <button class="distro-tile" data-tab="deepin" onclick="switchTab('deepin', this)">
+      <span class="tile-icon">🌸</span><span class="tile-name">Deepin</span>
+    </button>
+    <button class="distro-tile" data-tab="clearlinux" onclick="switchTab('clearlinux', this)">
+      <span class="tile-icon">⚡</span><span class="tile-name">Clear Linux</span>
+    </button>
+    <button class="distro-tile" data-tab="antix" onclick="switchTab('antix', this)">
+      <span class="tile-icon">🪶</span><span class="tile-name">antiX</span>
+    </button>
+    <button class="distro-tile" data-tab="lmde" onclick="switchTab('lmde', this)">
+      <span class="tile-icon">🌱</span><span class="tile-name">LMDE</span>
+    </button>
+    <button class="distro-tile" data-tab="solus" onclick="switchTab('solus', this)">
+      <span class="tile-icon">🔷</span><span class="tile-name">Solus</span>
+    </button>
   </div>
 </div>
 
@@ -1969,10 +2029,716 @@ const DISTROS = {
     ]
   },
 
-};
+  steamos: {
+    name: 'SteamOS', icon: '🎮', color: '#1a9fff',
+    tagline: "Valve's gaming Linux — the OS powering your Steam Deck",
+    history: "SteamOS 3 (codenamed Holo) was released in 2022 as the OS for Valve's Steam Deck. It's based on Arch Linux with KDE Plasma and uses an immutable root filesystem — the OS partition is read-only and updates atomically (like a console). Games run via Proton (Wine-based compatibility layer). Desktop Mode gives you a full Linux desktop. You're running this right now on your Steam Deck.",
+    bestFor: 'Steam Deck, couch gaming, Proton/Windows game compatibility',
+    founded: '2022 (v3)', base: 'Arch Linux', packageMgr: 'pacman (read-only OS) / flatpak / nix',
+    pros: ['Optimized for gaming handheld', 'Proton built-in', 'Atomic OS updates + rollback', 'Full desktop mode', 'Huge Valve backing'],
+    cons: ['Read-only root (use --dev-if needed)', 'Updates can reset pacman installs', 'Not a general-purpose distro'],
+    downloadUrl: 'https://store.steampowered.com/steamos',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'sudo steamos-readonly disable', desc: 'Unlock read-only filesystem', tags: ['system'],
+            detail: 'Temporarily makes the root filesystem writable. Resets on update.',
+            flags: [], example: 'sudo steamos-readonly disable\nsudo pacman -S package\n# Re-lock after:\nsudo steamos-readonly enable' },
+          { cmd: 'flatpak install', desc: 'Install apps (persists across updates)', tags: ['packages'],
+            detail: 'Flatpak is the recommended way to install apps on SteamOS — survives OS updates.',
+            flags: [], example: 'flatpak install flathub com.discordapp.Discord' },
+          { cmd: 'nix-env -iA', desc: 'Install via Nix (also persists)', tags: ['packages'],
+            detail: 'Nix is another persistent package option on SteamOS.',
+            flags: [], example: 'nix-env -iA nixpkgs.git' },
+        ]
+      },
+      { id: 'steamos-sys', icon: '🔧', name: 'SteamOS-Specific',
+        commands: [
+          { cmd: 'steamos-update', desc: 'Trigger system update', tags: ['system'],
+            detail: 'Downloads and stages a SteamOS system update.',
+            flags: [], example: 'sudo steamos-update' },
+          { cmd: 'steamos-polkit-helpers', desc: 'SteamOS privilege helpers', tags: ['system'],
+            detail: 'Various scripts for Steam Deck hardware controls.',
+            flags: [], example: 'ls /usr/bin/steamos-*' },
+          { cmd: 'gamescope', desc: 'Valve compositor for games', tags: ['gaming'],
+            detail: 'The Wayland compositor used in Game Mode — handles FSR, frame limiting, etc.',
+            flags: [{ f: '-w/-h', d: 'Output width/height' }, { f: '-r', d: 'Frame rate limit' }, { f: '-F fsr', d: 'Enable FSR upscaling' }],
+            example: 'gamescope -w 1280 -h 800 -r 60 -F fsr -- %command%' },
+          { cmd: 'ryzenadj', desc: 'Adjust CPU/GPU TDP on Steam Deck', tags: ['hardware','performance'],
+            detail: 'Control power limits on the AMD APU in the Steam Deck.',
+            flags: [{ f: '--stapm-limit=N', d: 'Set sustained TDP in mW (e.g. 15000 = 15W)' }],
+            example: 'sudo ryzenadj --stapm-limit=15000 --fast-limit=15000' },
+        ]
+      }
+    ]
+  },
 
-// ═══════════════════════════════════════════════════════════════
-// RENDERING
+  bazzite: {
+    name: 'Bazzite', icon: '🔥', color: '#8b5cf6',
+    tagline: 'Immutable Fedora gaming distro — SteamOS for any PC',
+    history: "Bazzite launched in 2023 by ublue-os contributors and rapidly became one of the hottest Linux gaming distros. It's built on Fedora Silverblue (immutable) with all the gaming goodness of SteamOS baked in — Gamescope, Proton, game controllers, HDR support — but running on regular PCs and laptops, not just the Steam Deck. It has a dedicated Steam Deck image too. Uses rpm-ostree for atomic updates and Flatpak for apps.",
+    bestFor: 'PC gaming, HTPC, Steam Deck alternative OS, set-and-forget gaming rigs',
+    founded: '2023', base: 'Fedora Silverblue', packageMgr: 'rpm-ostree / flatpak / distrobox',
+    pros: ['SteamOS experience on any hardware', 'Atomic immutable = very stable', 'Latest gaming drivers', 'Distrobox for any package', 'NVIDIA and AMD support'],
+    cons: ['rpm-ostree layering is slow', 'Immutable takes adjustment', 'Newer project still maturing'],
+    downloadUrl: 'https://bazzite.gg/',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'rpm-ostree install', desc: 'Layer a package onto the immutable base', tags: ['packages'],
+            detail: 'Permanently adds a package to the base image. Requires reboot to apply.',
+            flags: [], example: 'rpm-ostree install htop\n# Then reboot to apply' },
+          { cmd: 'flatpak install', desc: 'Install apps (recommended)', tags: ['packages'],
+            detail: 'Primary way to install user-facing apps on Bazzite.',
+            flags: [], example: 'flatpak install flathub com.heroicgameslauncher.hgl' },
+          { cmd: 'distrobox enter', desc: 'Enter a full mutable Linux container', tags: ['packages'],
+            detail: 'Distrobox creates containers of any distro (Arch, Ubuntu, etc.) for unrestricted package installs.',
+            flags: [], example: 'distrobox create --name arch --image archlinux\ndistrobox enter arch' },
+          { cmd: 'rpm-ostree upgrade', desc: 'Upgrade the system image', tags: ['packages'],
+            detail: 'Downloads new base image. Atomic — applies on reboot.',
+            flags: [], example: 'rpm-ostree upgrade\nsystemctl reboot' },
+        ]
+      },
+      { id: 'bazzite-sys', icon: '🔧', name: 'Bazzite-Specific',
+        commands: [
+          { cmd: 'ujust', desc: 'Bazzite just scripts for common tasks', tags: ['system'],
+            detail: 'ujust runs pre-built convenience scripts for setup tasks.',
+            flags: [], example: 'ujust  # shows all available commands\nujust setup-gaming\nujust install-steam' },
+          { cmd: 'bazzite-rollback-helper', desc: 'Roll back to previous image', tags: ['system'],
+            detail: 'Easy rollback to last working system image.',
+            flags: [], example: 'bazzite-rollback-helper' },
+        ]
+      }
+    ]
+  },
+
+  raspios: {
+    name: 'Raspberry Pi OS', icon: '🍓', color: '#c51a4a',
+    tagline: 'Official Pi OS — Debian-based, ARM-optimized, education-focused',
+    history: "Raspberry Pi OS (formerly Raspbian) was created in 2012 alongside the first Raspberry Pi by the Raspberry Pi Foundation. It's a Debian derivative optimized for the ARM processors used in Pi boards. It comes in Desktop and Lite (headless) variants. Used heavily in education, hobbyist electronics, home servers, and IoT projects worldwide. The Pi Foundation maintains it with Pi-specific tools, GPIO libraries, and hardware integration.",
+    bestFor: 'Raspberry Pi boards, IoT, home servers, education, embedded projects',
+    founded: '2012', base: 'Debian', packageMgr: 'apt / dpkg',
+    pros: ['Official Pi support', 'GPIO/hardware libraries built-in', 'Huge community', 'Lite = very lightweight', 'Great for learning'],
+    cons: ['ARM-only (mostly)', '32-bit default on older Pi', 'Desktop edition is slow on Pi Zero/1'],
+    downloadUrl: 'https://www.raspberrypi.com/software/',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt update && apt upgrade', desc: 'Update the system', tags: ['packages'],
+            detail: 'Standard Debian apt — identical to Debian/Ubuntu.',
+            flags: [], example: 'sudo apt update && sudo apt full-upgrade -y' },
+          { cmd: 'apt install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs packages from Raspberry Pi OS repos.',
+            flags: [], example: 'sudo apt install -y python3-pip git' },
+        ]
+      },
+      { id: 'pi-sys', icon: '🔧', name: 'Raspberry Pi-Specific',
+        commands: [
+          { cmd: 'raspi-config', desc: 'Raspberry Pi configuration tool', tags: ['system'],
+            detail: 'The main Pi setup TUI — enable SSH, camera, SPI, I2C, overclock, expand filesystem.',
+            flags: [], example: 'sudo raspi-config' },
+          { cmd: 'gpio readall', desc: 'Show GPIO pin states', tags: ['hardware'],
+            detail: 'Displays all GPIO pin numbers, modes, and current values.',
+            flags: [], example: 'gpio readall' },
+          { cmd: 'vcgencmd', desc: 'VideoCore GPU/firmware commands', tags: ['hardware'],
+            detail: 'Queries Pi hardware — temperature, clock speeds, voltage, memory split.',
+            flags: [], example: 'vcgencmd measure_temp\nvcgencmd get_throttled\nvcgencmd measure_clock arm' },
+          { cmd: 'pinout', desc: 'Display GPIO pinout diagram', tags: ['hardware'],
+            detail: 'Prints an ASCII diagram of the GPIO header with pin functions.',
+            flags: [], example: 'pinout' },
+          { cmd: 'rpi-update', desc: 'Update Pi firmware/kernel', tags: ['system'],
+            detail: 'Updates to the latest bleeding-edge firmware. Use with caution.',
+            flags: [], example: 'sudo rpi-update' },
+        ]
+      }
+    ]
+  },
+
+  zorin: {
+    name: 'Zorin OS', icon: '🪟', color: '#15a6f0',
+    tagline: "The best Windows replacement — familiar, polished, beginner-proof",
+    history: "Zorin OS was founded in 2009 by brothers Artyom and Kyrill Zorin in Ireland, initially as a school project. It's Ubuntu-based and designed specifically to ease the transition from Windows (and macOS). It ships with a Windows-like taskbar layout by default, Zorin Appearance for switching layouts, and Zorin Connect (like KDE Connect) for phone integration. Zorin Pro is paid; Core and Lite editions are free. Lite edition runs well on old hardware.",
+    bestFor: 'Windows/macOS switchers, non-technical users, older hardware (Lite edition)',
+    founded: '2009', base: 'Ubuntu LTS', packageMgr: 'apt / flatpak',
+    pros: ['Most Windows-like out of box', 'Beautiful polished UI', 'Lite = great for old PCs', 'Zorin Connect for phone', 'Non-technical friendly'],
+    cons: ['Pro edition costs money', 'Lags behind Ubuntu releases', 'Less customizable than vanilla Ubuntu'],
+    downloadUrl: 'https://zorin.com/os/download/',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt update && apt upgrade', desc: 'Update system', tags: ['packages'],
+            detail: 'Standard Ubuntu apt — identical to Ubuntu.',
+            flags: [], example: 'sudo apt update && sudo apt upgrade -y' },
+          { cmd: 'apt install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs from Ubuntu/Zorin repos.',
+            flags: [], example: 'sudo apt install -y vlc' },
+          { cmd: 'flatpak install', desc: 'Install Flatpak apps', tags: ['packages'],
+            detail: 'Zorin ships with Flatpak pre-configured.',
+            flags: [], example: 'flatpak install flathub com.spotify.Client' },
+        ]
+      },
+      { id: 'zorin-sys', icon: '🔧', name: 'Zorin-Specific',
+        commands: [
+          { cmd: 'zorin-appearance', desc: 'Switch desktop layout', tags: ['system'],
+            detail: 'Switch between Windows-like, macOS-like, and other layouts.',
+            flags: [], example: 'zorin-appearance' },
+          { cmd: 'zorin-connect', desc: 'Phone/PC integration', tags: ['system'],
+            detail: 'Like KDE Connect — pair your phone for notifications, file transfer, remote control.',
+            flags: [], example: 'zorin-connect' },
+          { cmd: 'cat /etc/zorin-version', desc: 'Show Zorin OS version', tags: ['system'],
+            detail: 'Displays current Zorin OS version.',
+            flags: [], example: 'cat /etc/zorin-version' },
+        ]
+      }
+    ]
+  },
+
+  elementaryos: {
+    name: 'Elementary OS', icon: '🍎', color: '#64baff',
+    tagline: 'macOS-inspired beauty — the most polished Linux desktop',
+    history: "Elementary OS was created in 2011 by Daniel Foré and team in the US. Famous for Pantheon — a custom desktop that closely mirrors the macOS experience. Ships its own app store (AppCenter) where developers can charge for apps. Every UI decision is obsessively considered. Built on Ubuntu LTS. Has a 'pay what you want' model for the OS itself. Beloved by designers and Mac users switching to Linux.",
+    bestFor: 'macOS switchers, designers, users who prioritize aesthetics and UX consistency',
+    founded: '2011', base: 'Ubuntu LTS', packageMgr: 'apt / flatpak',
+    pros: ['Most beautiful Linux desktop', 'Consistent design language', 'AppCenter with paid apps', 'Great for Mac switchers', 'Fast and lightweight'],
+    cons: ['Very opinionated — hard to customize', 'Smaller app ecosystem', 'Slower release cycle', 'Pantheon DE only'],
+    downloadUrl: 'https://elementary.io/',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt install', desc: 'Install packages', tags: ['packages'],
+            detail: 'Standard Ubuntu apt underneath Pantheon.',
+            flags: [], example: 'sudo apt install -y package-name' },
+          { cmd: 'flatpak install', desc: 'Install Flatpak apps', tags: ['packages'],
+            detail: 'Preferred app delivery method on eOS.',
+            flags: [], example: 'flatpak install flathub app.id' },
+        ]
+      },
+      { id: 'eos-sys', icon: '🔧', name: 'Elementary-Specific',
+        commands: [
+          { cmd: 'io.elementary.appcenter', desc: 'Launch AppCenter', tags: ['packages'],
+            detail: 'Elementary\'s curated app store — supports pay-what-you-want apps.',
+            flags: [], example: 'flatpak run io.elementary.appcenter' },
+          { cmd: 'cat /etc/os-release', desc: 'Show eOS version', tags: ['system'],
+            detail: 'Displays Elementary OS version (built on Ubuntu base).',
+            flags: [], example: 'cat /etc/os-release' },
+        ]
+      }
+    ]
+  },
+
+  kdeneon: {
+    name: 'KDE Neon', icon: '💙', color: '#1d99f3',
+    tagline: 'Latest KDE Plasma on Ubuntu LTS — the cutting-edge KDE experience',
+    history: "KDE Neon was launched in 2016 by the KDE project itself. It's not really a full distro — it's Ubuntu LTS with the very latest KDE Plasma desktop on top. The goal is to let users run the newest KDE software on a stable base. If you love KDE and want the freshest Plasma, Frameworks, and Apps without waiting for distro packaging cycles, this is it. Comes in User and Developer editions.",
+    bestFor: 'KDE enthusiasts, developers working on KDE apps, bleeding-edge Plasma users',
+    founded: '2016', base: 'Ubuntu LTS', packageMgr: 'apt / dpkg',
+    pros: ['Latest KDE Plasma always', 'Stable Ubuntu base', 'Official KDE project', 'Great for KDE dev', 'Frequent updates'],
+    cons: ['KDE only — no DE choice', 'More of a showcase than a full distro', 'Less community than Kubuntu'],
+    downloadUrl: 'https://neon.kde.org/download',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt update && apt upgrade', desc: 'Update system + latest KDE', tags: ['packages'],
+            detail: 'Standard apt — KDE packages update frequently from KDE\'s own repos.',
+            flags: [], example: 'sudo apt update && sudo apt upgrade -y' },
+          { cmd: 'apt install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Standard Ubuntu apt.',
+            flags: [], example: 'sudo apt install -y package' },
+        ]
+      },
+      { id: 'neon-sys', icon: '🔧', name: 'KDE Neon-Specific',
+        commands: [
+          { cmd: 'plasma-version', desc: 'Check KDE Plasma version', tags: ['system'],
+            detail: 'Shows the currently installed KDE Plasma version.',
+            flags: [], example: 'plasmashell --version' },
+          { cmd: 'kbuildsycoca6', desc: 'Rebuild KDE service cache', tags: ['system'],
+            detail: 'Fixes missing icons, broken launchers, and KDE service issues.',
+            flags: [], example: 'kbuildsycoca6 --noincremental' },
+          { cmd: 'qdbus org.kde.KWin', desc: 'Query KWin window manager via DBus', tags: ['system'],
+            detail: 'Interact with the KWin compositor programmatically.',
+            flags: [], example: 'qdbus org.kde.KWin /KWin supportInformation' },
+        ]
+      }
+    ]
+  },
+
+  almalinux: {
+    name: 'AlmaLinux', icon: '🦋', color: '#0066cc',
+    tagline: 'Free RHEL clone — the other Rocky Linux, backed by CloudLinux',
+    history: "AlmaLinux OS was founded in 2021 by CloudLinux Inc. as a direct response to Red Hat discontinuing CentOS 8. It's a 1:1 binary-compatible RHEL rebuild, same as Rocky Linux. Backed by CloudLinux (a company with 20+ years of enterprise Linux experience), it has strong financial backing and rapid release turnaround. Both AlmaLinux and Rocky compete for the same space — enterprise RHEL-compatible Linux without the subscription fee.",
+    bestFor: 'Enterprise servers, RHEL migration, cPanel/WHM hosting, long-term stability',
+    founded: '2021', base: 'RHEL source', packageMgr: 'dnf / rpm',
+    pros: ['Free RHEL compatibility', 'Strong CloudLinux backing', 'Fast security updates', '10-year support', 'cPanel certified'],
+    cons: ['Old package versions', 'Not for desktops', 'Tied to RHEL release schedule'],
+    downloadUrl: 'https://almalinux.org/get-almalinux/',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'dnf update', desc: 'Update all packages', tags: ['packages'],
+            detail: 'Standard DNF — identical to Fedora/RHEL.',
+            flags: [], example: 'sudo dnf update -y' },
+          { cmd: 'dnf install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs from AlmaLinux repos.',
+            flags: [], example: 'sudo dnf install -y nginx' },
+          { cmd: 'dnf module', desc: 'Manage AppStream modules', tags: ['packages'],
+            detail: 'RHEL-compatible AppStream for multiple software versions.',
+            flags: [], example: 'dnf module list nodejs\nsudo dnf module enable nodejs:20' },
+        ]
+      },
+      { id: 'alma-sys', icon: '🔧', name: 'AlmaLinux-Specific',
+        commands: [
+          { cmd: 'cat /etc/almalinux-release', desc: 'Show AlmaLinux version', tags: ['system'],
+            detail: 'Displays AlmaLinux release version.',
+            flags: [], example: 'cat /etc/almalinux-release' },
+          { cmd: 'almalinux-deploy.sh', desc: 'Migrate CentOS to AlmaLinux', tags: ['system'],
+            detail: 'Official in-place migration script from CentOS/Rocky to AlmaLinux.',
+            flags: [], example: 'curl -O https://raw.githubusercontent.com/AlmaLinux/almalinux-deploy/master/almalinux-deploy.sh\nsudo bash almalinux-deploy.sh' },
+        ]
+      }
+    ]
+  },
+
+  slackware: {
+    name: 'Slackware', icon: '🧓', color: '#7c7c7c',
+    tagline: 'The oldest living distro — pure, minimal, no hand-holding since 1993',
+    history: "Slackware was created by Patrick Volkerding in 1993, making it the oldest still-actively-maintained Linux distribution. It was the most popular distro in the mid-90s. Slackware follows a KISS philosophy — no graphical package manager, no dependency resolution, no systemd. Packages are simple .txz archives installed with pkgtool. It uses BSD-style init scripts. Everything is done manually, which means you learn exactly how Linux works. Still maintained solo by Patrick.",
+    bestFor: 'Learning Linux internals, minimalists, old-school sysadmins, purists',
+    founded: '1993', base: 'Independent', packageMgr: 'pkgtool / slackpkg',
+    pros: ['Teaches Linux like nothing else', 'Extremely stable', 'No dependency hell (by design)', 'Very minimal base', 'Long history'],
+    cons: ['No automatic dependency resolution', 'Very steep learning curve', 'Small modern community', 'No systemd', 'Dated feel'],
+    downloadUrl: 'https://www.slackware.com/getslack/',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management (pkgtool)',
+        commands: [
+          { cmd: 'installpkg', desc: 'Install a .txz/.tgz package', tags: ['packages'],
+            detail: 'Installs a Slackware package file. No dependency checking.',
+            flags: [], example: 'sudo installpkg package-1.0-x86_64-1.txz' },
+          { cmd: 'removepkg', desc: 'Remove an installed package', tags: ['packages'],
+            detail: 'Removes a package by name.',
+            flags: [], example: 'sudo removepkg package' },
+          { cmd: 'upgradepkg', desc: 'Upgrade an existing package', tags: ['packages'],
+            detail: 'Installs new version of a package over the old one.',
+            flags: [], example: 'sudo upgradepkg package-2.0-x86_64-1.txz' },
+          { cmd: 'slackpkg update', desc: 'Update package list from mirrors', tags: ['packages'],
+            detail: 'Syncs package list from configured Slackware mirrors.',
+            flags: [], example: 'sudo slackpkg update\nsudo slackpkg upgrade-all' },
+          { cmd: 'pkgtool', desc: 'Interactive package management TUI', tags: ['packages'],
+            detail: 'Menu-driven package manager for installing, removing, viewing packages.',
+            flags: [], example: 'sudo pkgtool' },
+        ]
+      },
+      { id: 'slack-sys', icon: '🔧', name: 'Slackware-Specific',
+        commands: [
+          { cmd: '/etc/rc.d/rc.nginx', desc: 'Start/stop services (BSD-style init)', tags: ['services'],
+            detail: 'Slackware uses BSD-style init scripts in /etc/rc.d/.',
+            flags: [], example: 'sudo chmod +x /etc/rc.d/rc.nginx  # enable at boot\nsudo /etc/rc.d/rc.nginx start' },
+          { cmd: 'cat /etc/slackware-version', desc: 'Show Slackware version', tags: ['system'],
+            detail: 'Displays the current Slackware release.',
+            flags: [], example: 'cat /etc/slackware-version' },
+        ]
+      }
+    ]
+  },
+
+  tails: {
+    name: 'Tails', icon: '👻', color: '#56347c',
+    tagline: 'Leave no trace — amnesic live OS for privacy and anonymity',
+    history: "Tails (The Amnesic Incognito Live System) was first released in 2009 by an anonymous team. It's designed to be booted from USB and leaves zero trace on the host computer — RAM is wiped on shutdown. All internet traffic is routed through Tor. Used by journalists, activists, whistleblowers, and anyone needing strong anonymity. Edward Snowden reportedly used Tails. It's maintained by a small nonprofit team and endorsed by the EFF.",
+    bestFor: 'Journalists, whistleblowers, activists, anyone needing strong anonymity',
+    founded: '2009', base: 'Debian', packageMgr: 'apt (amnesic — changes lost on reboot)',
+    pros: ['Zero trace on host machine', 'All traffic via Tor', 'Endorsed by EFF and Snowden', 'Live USB only', 'Includes secure comms tools'],
+    cons: ['Not for daily use', 'Changes lost on reboot (by design)', 'Slow due to Tor', 'Limited persistent storage'],
+    downloadUrl: 'https://tails.boum.org/install/',
+    categories: [
+      { id: 'tails-tools', icon: '🔐', name: 'Privacy Tools',
+        commands: [
+          { cmd: 'torsocks', desc: 'Force any app through Tor', tags: ['privacy','networking'],
+            detail: 'Wraps any command to route its traffic through Tor.',
+            flags: [], example: 'torsocks curl https://check.torproject.org\ntorsocks wget https://example.com' },
+          { cmd: 'gpg --encrypt', desc: 'Encrypt a file with GPG', tags: ['privacy','encryption'],
+            detail: 'Encrypts files using GPG public key cryptography.',
+            flags: [{ f: '-r EMAIL', d: 'Recipient key' }, { f: '--armor', d: 'ASCII armored output' }],
+            example: 'gpg --encrypt --armor -r recipient@email.com file.txt' },
+          { cmd: 'gpg --decrypt', desc: 'Decrypt a GPG file', tags: ['privacy','encryption'],
+            detail: 'Decrypts a GPG-encrypted file.',
+            flags: [], example: 'gpg --decrypt file.txt.gpg > file.txt' },
+          { cmd: 'mat2', desc: 'Strip metadata from files', tags: ['privacy'],
+            detail: 'Removes EXIF, author, and other identifying metadata from files.',
+            flags: [], example: 'mat2 photo.jpg\nmat2 document.pdf' },
+        ]
+      },
+      { id: 'tails-sys', icon: '🔧', name: 'Tails-Specific',
+        commands: [
+          { cmd: 'tails-persistence-setup', desc: 'Set up persistent storage', tags: ['system'],
+            detail: 'Creates an encrypted persistent partition on the Tails USB for saving files.',
+            flags: [], example: 'tails-persistence-setup' },
+          { cmd: 'tor status', desc: 'Check Tor connection status', tags: ['networking'],
+            detail: 'Verifies Tor is connected and working.',
+            flags: [], example: 'sudo systemctl status tor' },
+        ]
+      }
+    ]
+  },
+
+  parrot: {
+    name: 'Parrot OS', icon: '🦜', color: '#31c27c',
+    tagline: "Lighter Kali alternative — security + privacy + development",
+    history: "Parrot OS was created in 2013 by Lorenzo Faletra in Italy. Like Kali, it's a Debian-based security distro with pentesting tools, but it's lighter, more privacy-focused, and better suited for daily use. It ships in three editions: Security (full pentesting tools), Home (clean daily driver with privacy focus), and Hack The Box edition. The MATE desktop keeps it lightweight. Popular as a Kali alternative for older hardware.",
+    bestFor: 'Security researchers, privacy-conscious daily use, older hardware, CTFs',
+    founded: '2013', base: 'Debian', packageMgr: 'apt / dpkg',
+    pros: ['Lighter than Kali', 'Good for daily use', 'Privacy tools built-in', 'Home edition = clean daily driver', 'ARM support'],
+    cons: ['Smaller tool selection than Kali', 'Less known/documented', 'Smaller community'],
+    downloadUrl: 'https://parrotsec.org/download/',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt update && apt upgrade', desc: 'Update Parrot system', tags: ['packages'],
+            detail: 'Standard Debian apt — same as Kali/Debian.',
+            flags: [], example: 'sudo apt update && sudo apt full-upgrade -y' },
+          { cmd: 'apt install parrot-tools-*', desc: 'Install Parrot tool metapackages', tags: ['packages'],
+            detail: 'Parrot groups tools by category like Kali.',
+            flags: [], example: 'sudo apt install parrot-tools-full\nsudo apt install parrot-tools-forensic' },
+        ]
+      },
+      { id: 'parrot-sys', icon: '🔧', name: 'Parrot-Specific',
+        commands: [
+          { cmd: 'anonsurf start', desc: 'Route all traffic through Tor', tags: ['privacy'],
+            detail: 'AnonSurf forces all system traffic through Tor — system-wide anonymization.',
+            flags: [], example: 'sudo anonsurf start\nsudo anonsurf status\nsudo anonsurf stop' },
+          { cmd: 'parrot-upgrade', desc: 'Full Parrot system upgrade', tags: ['system'],
+            detail: "Parrot's recommended upgrade command.",
+            flags: [], example: 'sudo parrot-upgrade' },
+        ]
+      }
+    ]
+  },
+
+  qubes: {
+    name: 'Qubes OS', icon: '🔒', color: '#3874d8',
+    tagline: 'Security through isolation — every app in its own VM',
+    history: "Qubes OS was created by Joanna Rutkowska in 2012, a renowned security researcher. The core concept is 'security by compartmentalization' — each app, browser tab, or task runs in its own isolated Xen virtual machine called a 'qube'. A compromised browser can't access your files because it's in a separate VM. Edward Snowden endorsed it. The Qubes desktop is Xfce running on a special 'dom0' admin VM that manages all others.",
+    bestFor: 'Extreme security requirements, journalists, security researchers, high-value targets',
+    founded: '2012', base: 'Fedora/Debian templates on Xen', packageMgr: 'dnf/apt per qube template',
+    pros: ['Best security model of any OS', 'Compartmentalization is unmatched', 'Compromise containment', 'Disposable VMs', 'Whonix integration'],
+    cons: ['Needs powerful hardware (8GB+ RAM)', 'Complex to set up', 'Performance overhead', 'Steep learning curve'],
+    downloadUrl: 'https://www.qubes-os.org/downloads/',
+    categories: [
+      { id: 'qubes-sys', icon: '🔧', name: 'Qubes-Specific',
+        commands: [
+          { cmd: 'qvm-run', desc: 'Run a command in a qube', tags: ['system'],
+            detail: 'Executes a command inside a specified qube (VM).',
+            flags: [{ f: '-p', d: 'Pass stdin/stdout' }, { f: '--pass-io', d: 'Pass I/O' }],
+            example: 'qvm-run personal firefox\nqvm-run -p vault cat /path/to/file' },
+          { cmd: 'qvm-create', desc: 'Create a new qube', tags: ['system'],
+            detail: 'Creates a new virtual machine (qube).',
+            flags: [{ f: '--template', d: 'Base template to use' }, { f: '--label', d: 'Color label' }],
+            example: 'qvm-create --template fedora-38 --label blue work-qube' },
+          { cmd: 'qvm-copy', desc: 'Copy files between qubes', tags: ['system'],
+            detail: 'Securely transfers files between isolated qubes.',
+            flags: [], example: 'qvm-copy file.txt  # prompts which qube to send to' },
+          { cmd: 'qvm-start / qvm-shutdown', desc: 'Start or stop a qube', tags: ['system'],
+            detail: 'Powers a qube VM on or off.',
+            flags: [], example: 'qvm-start personal\nqvm-shutdown personal' },
+          { cmd: 'qubes-dom0-update', desc: 'Update dom0 (admin VM)', tags: ['packages'],
+            detail: 'Updates the dom0 administrative domain. Keep this minimal and updated.',
+            flags: [], example: 'sudo qubes-dom0-update' },
+        ]
+      }
+    ]
+  },
+
+  whonix: {
+    name: 'Whonix', icon: '🕵️', color: '#4a4a8a',
+    tagline: 'Two-VM Tor anonymity system — leak-proof by architecture',
+    history: "Whonix was created in 2012 and is unique: it runs as two VMs — a Gateway (routes all traffic through Tor) and a Workstation (where you work, has no direct internet). Even if malware compromises the Workstation, it cannot bypass Tor because it has no real network access. Designed to run inside Qubes OS (best combo) or VirtualBox/KVM. Maintained by the Whonix team as an independent project.",
+    bestFor: 'Maximum anonymity, running inside Qubes, journalists needing Tor without Tails',
+    founded: '2012', base: 'Debian', packageMgr: 'apt',
+    pros: ['Architecture prevents IP leaks', 'Works inside Qubes', 'Tor by design not config', 'Workstation isolated from network', 'Strong anonymity model'],
+    cons: ['Requires running 2 VMs', 'Complex setup', 'Performance overhead', 'Needs Qubes or hypervisor'],
+    downloadUrl: 'https://www.whonix.org/wiki/Download',
+    categories: [
+      { id: 'whonix-sys', icon: '🔧', name: 'Whonix-Specific',
+        commands: [
+          { cmd: 'whonixcheck', desc: 'Check Whonix status and connectivity', tags: ['system'],
+            detail: 'Verifies Tor connection, checks for updates, and validates Whonix configuration.',
+            flags: [], example: 'whonixcheck' },
+          { cmd: 'timesync', desc: 'Sync time securely via Tor', tags: ['system'],
+            detail: 'Whonix uses sdwdate for time sync over Tor (not NTP which leaks info).',
+            flags: [], example: 'sudo systemctl restart sdwdate' },
+          { cmd: 'apt update && apt upgrade', desc: 'Update Whonix', tags: ['packages'],
+            detail: 'Standard Debian apt — all traffic routed through Tor automatically.',
+            flags: [], example: 'sudo apt update && sudo apt full-upgrade -y' },
+        ]
+      }
+    ]
+  },
+
+  silverblue: {
+    name: 'Fedora Silverblue', icon: '🧊', color: '#60a5fa',
+    tagline: 'Immutable Fedora desktop — atomic updates, rollback always available',
+    history: "Fedora Silverblue launched in 2018 as Fedora's immutable desktop variant. The root filesystem is read-only and shared — updates are applied as atomic image swaps using rpm-ostree, meaning you can always boot the previous working image. Flatpak handles user apps. Kinoite is the KDE variant. This model is considered the future of Linux desktops — it's what ChromeOS, SteamOS, and Bazzite are all based on.",
+    bestFor: 'Developers wanting stability, OS-as-appliance, Flatpak-first workflows',
+    founded: '2018', base: 'Fedora', packageMgr: 'rpm-ostree / flatpak / toolbox',
+    pros: ['Atomic updates — never broken by update', 'Easy rollback', 'Flatpak-native', 'Toolbox for dev environments', 'Cutting-edge Fedora base'],
+    cons: ['rpm-ostree layering is slow', 'Different mental model', 'Some apps not Flatpak-ready'],
+    downloadUrl: 'https://fedoraproject.org/silverblue/',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'rpm-ostree install', desc: 'Layer package on base image', tags: ['packages'],
+            detail: 'Adds a package as a layer on the immutable base. Requires reboot.',
+            flags: [], example: 'rpm-ostree install htop\nsystemctl reboot' },
+          { cmd: 'rpm-ostree upgrade', desc: 'Upgrade to new system image', tags: ['packages'],
+            detail: 'Downloads new base image — applied atomically on reboot.',
+            flags: [], example: 'rpm-ostree upgrade && systemctl reboot' },
+          { cmd: 'rpm-ostree rollback', desc: 'Roll back to previous image', tags: ['packages'],
+            detail: 'Switches to the previous known-good system image.',
+            flags: [], example: 'rpm-ostree rollback' },
+          { cmd: 'flatpak install', desc: 'Install user apps', tags: ['packages'],
+            detail: 'Primary app delivery — no reboot needed.',
+            flags: [], example: 'flatpak install flathub org.mozilla.firefox' },
+          { cmd: 'toolbox create', desc: 'Create a mutable dev container', tags: ['packages'],
+            detail: 'Creates a Fedora container where you can install anything with dnf.',
+            flags: [], example: 'toolbox create\ntoolbox enter\ndnf install gcc python3' },
+        ]
+      }
+    ]
+  },
+
+  microos: {
+    name: 'openSUSE MicroOS', icon: '🔵', color: '#73ba25',
+    tagline: "openSUSE's immutable OS — Aeon for desktop, MicroOS for containers",
+    history: "openSUSE MicroOS launched around 2019 as openSUSE's answer to immutable Linux. MicroOS targets containers/servers; Aeon (formerly MicroOS Desktop) targets desktops. Uses transactional-update for atomic updates with btrfs snapshots and Snapper for rollback. All changes are staged and applied on reboot. GNOME-based Aeon is minimalist — the OS does one thing and Flatpak handles apps.",
+    bestFor: 'Kubernetes nodes, minimal servers, set-and-forget desktops, container hosts',
+    founded: '2019', base: 'openSUSE Tumbleweed', packageMgr: 'transactional-update / flatpak',
+    pros: ['Atomic updates + Snapper rollback', 'btrfs snapshots', 'Minimal footprint', 'Rolling Tumbleweed base', 'Great for k8s nodes'],
+    cons: ['Transactional updates need reboot', 'Desktop edition still maturing', 'Less community than regular openSUSE'],
+    downloadUrl: 'https://microos.opensuse.org/',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'transactional-update pkg install', desc: 'Install package (applied on reboot)', tags: ['packages'],
+            detail: 'Installs a package into the next snapshot — applied after reboot.',
+            flags: [], example: 'sudo transactional-update pkg install htop\nsystemctl reboot' },
+          { cmd: 'transactional-update up', desc: 'System upgrade', tags: ['packages'],
+            detail: 'Applies all updates as a new snapshot.',
+            flags: [], example: 'sudo transactional-update up\nsystemctl reboot' },
+          { cmd: 'flatpak install', desc: 'Install desktop apps', tags: ['packages'],
+            detail: 'Primary method for desktop apps on Aeon.',
+            flags: [], example: 'flatpak install flathub app.id' },
+        ]
+      }
+    ]
+  },
+
+  vanillaos: {
+    name: 'Vanilla OS', icon: '🍦', color: '#f5a623',
+    tagline: 'Immutable Ubuntu — ABRoot atomic updates, Apx for any distro packages',
+    history: "Vanilla OS was created by Mirko Brombin in 2022. It's an Ubuntu-based immutable distro using ABRoot — two root partitions (A and B) that swap on update so there's always a fallback. Its killer feature is Apx, a package manager that installs software in containers of any distro (apt, dnf, pacman, etc.) without touching the immutable system. Version 2 switched to a custom OCI-based image system.",
+    bestFor: 'Users wanting Ubuntu stability + immutability + flexibility, distro agnostic package installs',
+    founded: '2022', base: 'Ubuntu', packageMgr: 'apx / flatpak / ABRoot',
+    pros: ['A/B partition rollback', 'Apx installs from any distro', 'Ubuntu base', 'Modern immutable approach', 'Great for non-technical users'],
+    cons: ['Very new project', 'Smaller community', 'Still maturing'],
+    downloadUrl: 'https://vanillaos.org/',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apx install', desc: 'Install package in a managed container', tags: ['packages'],
+            detail: 'Installs software in an isolated container (Debian by default).',
+            flags: [{ f: '--dnf', d: 'Use Fedora/DNF container' }, { f: '--aur', d: 'Use Arch AUR' }],
+            example: 'apx install htop\napx install --dnf package\napx install --aur package' },
+          { cmd: 'flatpak install', desc: 'Install desktop apps', tags: ['packages'],
+            detail: 'Primary graphical app delivery.',
+            flags: [], example: 'flatpak install flathub app.id' },
+          { cmd: 'abroot apply', desc: 'Apply system changes atomically', tags: ['system'],
+            detail: 'Stages and applies changes to the immutable root on next boot.',
+            flags: [], example: 'sudo abroot apply' },
+        ]
+      }
+    ]
+  },
+
+  deepin: {
+    name: 'Deepin', icon: '💎', color: '#0050e6',
+    tagline: 'The most beautiful Chinese Linux — stunning DDE desktop',
+    history: "Deepin is developed by Wuhan Deepin Technology Co. in China, first released in 2004. It's famous for the Deepin Desktop Environment (DDE) — one of the most visually stunning Linux desktops in existence, with macOS-level polish and animations. Based on Debian. Has faced some controversy over telemetry concerns and bundled apps (though largely addressed). Very popular in China and growing internationally for its aesthetics.",
+    bestFor: 'Users who want a gorgeous desktop, Chinese market, macOS-level visual polish',
+    founded: '2004', base: 'Debian', packageMgr: 'apt / dpkg',
+    pros: ['Most beautiful Linux desktop', 'Polished animations and UI', 'Own app ecosystem', 'Easy to use', 'Good hardware support'],
+    cons: ['Privacy concerns (telemetry history)', 'Chinese company backing', 'DDE can be buggy', 'Slower Debian base'],
+    downloadUrl: 'https://www.deepin.org/en/download/',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt update && apt upgrade', desc: 'Update system', tags: ['packages'],
+            detail: 'Standard Debian apt — Deepin uses Debian under the hood.',
+            flags: [], example: 'sudo apt update && sudo apt full-upgrade -y' },
+          { cmd: 'apt install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs from Deepin/Debian repos.',
+            flags: [], example: 'sudo apt install -y package' },
+        ]
+      },
+      { id: 'deepin-sys', icon: '🔧', name: 'Deepin-Specific',
+        commands: [
+          { cmd: 'deepin-system-upgrade', desc: 'Upgrade Deepin version', tags: ['system'],
+            detail: 'Deepin version upgrade tool.',
+            flags: [], example: 'sudo deepin-system-upgrade' },
+          { cmd: 'cat /etc/deepin-version', desc: 'Show Deepin version', tags: ['system'],
+            detail: 'Displays current Deepin OS version.',
+            flags: [], example: 'cat /etc/deepin-version' },
+        ]
+      }
+    ]
+  },
+
+  clearlinux: {
+    name: 'Clear Linux', icon: '⚡', color: '#0095ca',
+    tagline: "Intel's performance-optimized distro — fastest benchmarks on x86",
+    history: "Clear Linux was created by Intel in 2015 as a performance reference platform for Intel hardware. It uses a unique stateless design, bundles-based package management, and applies aggressive compiler optimizations (AVX2, PGO, LTO) across all packages. Benchmark numbers are consistently the best of any Linux distro on x86 hardware. Not aimed at general users — more a technical showcase and server/cloud OS.",
+    bestFor: 'Intel hardware performance, cloud/server benchmarking, technical users, containers',
+    founded: '2015', base: 'Independent', packageMgr: 'swupd',
+    pros: ['Fastest x86 benchmarks', 'Stateless design = easy reset', 'Automatic updates', 'Secure by default', 'Intel CPU optimized'],
+    cons: ['Intel hardware focused', 'Small package selection', 'Not beginner friendly', 'Unusual architecture'],
+    downloadUrl: 'https://www.clearlinux.org/downloads.html',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management (swupd)',
+        commands: [
+          { cmd: 'swupd update', desc: 'Update the system', tags: ['packages'],
+            detail: 'Updates Clear Linux OS to the latest version.',
+            flags: [], example: 'sudo swupd update' },
+          { cmd: 'swupd bundle-add', desc: 'Install a bundle', tags: ['packages'],
+            detail: 'Clear Linux uses "bundles" (package groups) instead of individual packages.',
+            flags: [], example: 'sudo swupd bundle-add nginx\nsudo swupd bundle-add python3-basic' },
+          { cmd: 'swupd bundle-remove', desc: 'Remove a bundle', tags: ['packages'],
+            detail: 'Removes an installed bundle.',
+            flags: [], example: 'sudo swupd bundle-remove nginx' },
+          { cmd: 'swupd bundle-list', desc: 'List installed bundles', tags: ['packages'],
+            detail: 'Shows all currently installed bundles.',
+            flags: [{ f: '--all', d: 'Show all available bundles' }],
+            example: 'swupd bundle-list\nswupd bundle-list --all | grep python' },
+          { cmd: 'swupd bundle-info', desc: 'Show bundle details', tags: ['packages'],
+            detail: 'Displays packages included in a bundle.',
+            flags: [], example: 'swupd bundle-info nginx' },
+          { cmd: 'swupd verify', desc: 'Verify system integrity', tags: ['system'],
+            detail: 'Checks OS files against expected state (stateless feature).',
+            flags: [{ f: '--fix', d: 'Repair any mismatches' }],
+            example: 'sudo swupd verify\nsudo swupd verify --fix' },
+        ]
+      }
+    ]
+  },
+
+  antix: {
+    name: 'antiX', icon: '🪶', color: '#cc3333',
+    tagline: 'Featherweight Debian — no systemd, runs on ancient hardware',
+    history: "antiX was first released around 2007 by anticapitalista (Stefanos Tsokaros) and is a Debian-based distro famous for extreme lightness. It uses SysVinit (no systemd), IceWM/Fluxbox as default WMs, and runs comfortably on machines with 256MB RAM. Designed for old hardware and anti-bloat philosophy. Also serves as the base for MX Linux. Very popular in retro computing communities.",
+    bestFor: 'Very old hardware (256MB RAM), minimalists, anti-systemd users, retro PCs',
+    founded: '~2007', base: 'Debian', packageMgr: 'apt / dpkg',
+    pros: ['Runs on 256MB RAM', 'No systemd (SysVinit)', 'Extremely fast on old HW', 'Live USB with persistence', 'Full Debian repos'],
+    cons: ['Dated look by default', 'Not for modern desktops', 'Small community'],
+    downloadUrl: 'https://antixlinux.com/download/',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt update && apt upgrade', desc: 'Update system', tags: ['packages'],
+            detail: 'Standard Debian apt works on antiX.',
+            flags: [], example: 'sudo apt update && sudo apt upgrade -y' },
+          { cmd: 'apt install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Full Debian repo access.',
+            flags: [], example: 'sudo apt install -y package' },
+          { cmd: 'apt remove', desc: 'Remove a package', tags: ['packages'],
+            detail: 'Removes a package but keeps config files.',
+            flags: [], example: 'sudo apt remove package' },
+        ]
+      },
+      { id: 'antix-sys', icon: '🔧', name: 'antiX-Specific',
+        commands: [
+          { cmd: 'service <name> start|stop|status', desc: 'Manage SysVinit services', tags: ['services'],
+            detail: 'antiX uses SysVinit — service command controls daemons. No systemctl.',
+            flags: [], example: 'sudo service nginx start\nsudo service nginx status' },
+          { cmd: 'update-rc.d', desc: 'Enable/disable service at boot', tags: ['services'],
+            detail: 'SysVinit boot service management.',
+            flags: [], example: 'sudo update-rc.d nginx enable\nsudo update-rc.d nginx disable' },
+          { cmd: 'cat /etc/antix-version', desc: 'Show antiX version', tags: ['system'],
+            detail: 'Displays current antiX release.',
+            flags: [], example: 'cat /etc/antix-version' },
+        ]
+      }
+    ]
+  },
+
+  lmde: {
+    name: 'LMDE', icon: '🌱', color: '#87cf3e',
+    tagline: "Linux Mint Debian Edition — Mint's Debian base without Ubuntu",
+    history: "LMDE (Linux Mint Debian Edition) was created by the Linux Mint team as a safety net — if Ubuntu ever stopped, Mint would have a Debian-based fallback. It uses Debian Stable instead of Ubuntu as the base while keeping all the Mint tools (Update Manager, Mint Menu, Software Manager, Cinnamon desktop). Currently on LMDE 6 based on Debian 12 Bookworm.",
+    bestFor: 'Mint fans who prefer Debian over Ubuntu base, servers, Ubuntu-free setups',
+    founded: '2012', base: 'Debian Stable', packageMgr: 'apt / dpkg',
+    pros: ['Mint tools on Debian base', 'No Ubuntu dependency', 'Very stable', 'Cinnamon desktop', 'Lighter than regular Mint'],
+    cons: ['Older packages than regular Mint', 'Less hardware support', 'Smaller community'],
+    downloadUrl: 'https://linuxmint.com/download_lmde.php',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt update && apt upgrade', desc: 'Update system', tags: ['packages'],
+            detail: 'Debian apt — LMDE uses Debian repos directly, no Ubuntu PPAs.',
+            flags: [], example: 'sudo apt update && sudo apt upgrade -y' },
+          { cmd: 'apt install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Full Debian repo access plus Mint repo.',
+            flags: [], example: 'sudo apt install -y package' },
+        ]
+      },
+      { id: 'lmde-sys', icon: '🔧', name: 'LMDE-Specific',
+        commands: [
+          { cmd: 'mintupdate', desc: 'Mint Update Manager', tags: ['system'],
+            detail: 'Same Mint update tool with safety-level categorization.',
+            flags: [], example: 'mintupdate' },
+          { cmd: 'mintsources', desc: 'Software Sources manager', tags: ['packages'],
+            detail: 'Manage Debian and Mint repos through GUI.',
+            flags: [], example: 'mintsources' },
+          { cmd: 'cat /etc/linuxmint/info', desc: 'Show LMDE version', tags: ['system'],
+            detail: 'Displays LMDE release version.',
+            flags: [], example: 'cat /etc/linuxmint/info' },
+        ]
+      }
+    ]
+  },
+
+  solus: {
+    name: 'Solus', icon: '🔷', color: '#5294e2',
+    tagline: 'Independent rolling distro — built from scratch for the desktop',
+    history: "Solus was created in 2015 by Ikey Doherty in Ireland. Completely independent — not based on Debian, Arch, or any other distro. Built from scratch with a focus on the desktop experience. Created the Budgie desktop environment (now used by Ubuntu Budgie too). Uses eopkg as package manager (forked from PiSi). After Ikey left in 2018, a community team took over. Solus is rolling release and known for clean, thoughtful package curation.",
+    bestFor: 'Desktop Linux enthusiasts, Budgie DE fans, independent distro supporters',
+    founded: '2015', base: 'Independent', packageMgr: 'eopkg',
+    pros: ['Independent from Debian/Arch', 'Created Budgie DE', 'Rolling release', 'Thoughtful curation', 'Fast and clean'],
+    cons: ['Smaller team = slower updates', 'Smaller package repo', 'Less community than big distros', 'Past leadership turbulence'],
+    downloadUrl: 'https://getsol.us/download/',
+    categories: [
+      { id: 'pkg', icon: '📦', name: 'Package Management (eopkg)',
+        commands: [
+          { cmd: 'eopkg update-repo', desc: 'Refresh package repos', tags: ['packages'],
+            detail: 'Updates local package index from Solus repos.',
+            flags: [], example: 'sudo eopkg update-repo' },
+          { cmd: 'eopkg upgrade', desc: 'Upgrade all packages', tags: ['packages'],
+            detail: 'Upgrades all installed packages.',
+            flags: [], example: 'sudo eopkg upgrade' },
+          { cmd: 'eopkg install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs one or more packages.',
+            flags: [], example: 'sudo eopkg install nginx git' },
+          { cmd: 'eopkg remove', desc: 'Remove a package', tags: ['packages'],
+            detail: 'Uninstalls a package.',
+            flags: [], example: 'sudo eopkg remove nginx' },
+          { cmd: 'eopkg search', desc: 'Search packages', tags: ['packages'],
+            detail: 'Searches available packages.',
+            flags: [], example: 'eopkg search nodejs' },
+          { cmd: 'eopkg info', desc: 'Show package details', tags: ['packages'],
+            detail: 'Displays information about a package.',
+            flags: [], example: 'eopkg info nginx' },
+        ]
+      }
+    ]
+  },
+
+};
 // ═══════════════════════════════════════════════════════════════
 
 function buildCommandHTML(cmd, id) {
