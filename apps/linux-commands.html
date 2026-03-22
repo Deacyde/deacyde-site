@@ -194,6 +194,12 @@
     <button class="distro-tile" data-tab="endeavouros" onclick="switchTab('endeavouros', this)">
       <span class="tile-icon">🪐</span><span class="tile-name">EndeavourOS</span>
     </button>
+    <button class="distro-tile" data-tab="linuxmint" onclick="switchTab('linuxmint', this)">
+      <span class="tile-icon">🌿</span><span class="tile-name">Linux Mint</span>
+    </button>
+    <button class="distro-tile" data-tab="mxlinux" onclick="switchTab('mxlinux', this)">
+      <span class="tile-icon">⚙️</span><span class="tile-name">MX Linux</span>
+    </button>
   </div>
 </div>
 
@@ -1867,6 +1873,102 @@ const DISTROS = {
       }
     ]
   },
+
+  linuxmint: {
+    name: 'Linux Mint', icon: '🌿', color: '#87cf3e',
+    tagline: "The most downloaded distro — beginner-friendly, Windows-familiar",
+    history: "Linux Mint was created in 2006 by Clement Lefebvre in Ireland. Built on Ubuntu (and a Debian edition too), it was designed to be more polished and user-friendly than Ubuntu — shipping with media codecs, a familiar Windows-like desktop (Cinnamon), and sane defaults out of the box. It consistently topped DistroWatch for years and remains one of the most recommended distros for Windows migrants. Its Cinnamon desktop is developed in-house and is one of the best traditional desktop experiences on Linux.",
+    bestFor: 'Windows switchers, beginners, anyone wanting a "just works" desktop',
+    founded: '2006', base: 'Ubuntu / Debian', packageMgr: 'apt / dpkg',
+    pros: ['Best Windows-to-Linux transition', 'Ships with codecs pre-installed', 'Cinnamon DE is polished', 'Very stable', 'Update Manager with safety levels'],
+    cons: ['Lags behind Ubuntu on release timing', 'Less cutting-edge', 'Snap disabled by default'],
+    downloadUrl: 'https://linuxmint.com/download.php',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt update && apt upgrade', desc: 'Update system packages', tags: ['packages'],
+            detail: 'Standard Ubuntu/Debian apt — identical commands. Mint uses apt under the hood.',
+            flags: [], example: 'sudo apt update && sudo apt upgrade -y' },
+          { cmd: 'apt install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs packages from Ubuntu/Mint repos.',
+            flags: [{ f: '-y', d: 'Auto-confirm' }], example: 'sudo apt install -y vlc gimp' },
+          { cmd: 'flatpak install', desc: 'Install a Flatpak', tags: ['packages'],
+            detail: 'Mint 21+ ships with Flatpak pre-configured (unlike Ubuntu which prefers Snap).',
+            flags: [], example: 'flatpak install flathub com.spotify.Client' },
+        ]
+      },
+      {
+        id: 'mint-sys', icon: '🔧', name: 'Mint-Specific',
+        commands: [
+          { cmd: 'mintupdate', desc: 'Launch Mint Update Manager GUI', tags: ['system'],
+            detail: "Mint's update manager categorizes updates by safety level (1-5).",
+            flags: [], example: 'mintupdate' },
+          { cmd: 'mintsources', desc: 'Software Sources GUI', tags: ['packages'],
+            detail: 'Manage repos, PPAs, and mirrors through GUI.',
+            flags: [], example: 'mintsources' },
+          { cmd: 'mint-release-upgrade', desc: 'Upgrade to next Mint release', tags: ['system'],
+            detail: "Mint's tool for major version upgrades.",
+            flags: [], example: 'sudo mint-release-upgrade' },
+          { cmd: 'inxi -Fxz', desc: 'System info summary', tags: ['system'],
+            detail: 'inxi is pre-installed on Mint — great for hardware/system overview.',
+            flags: [], example: 'inxi -Fxz' },
+          { cmd: 'cat /etc/linuxmint/info', desc: 'Show Mint version', tags: ['system'],
+            detail: 'Displays the Linux Mint release and codename.',
+            flags: [], example: 'cat /etc/linuxmint/info' },
+        ]
+      }
+    ]
+  },
+
+  mxlinux: {
+    name: 'MX Linux', icon: '⚙️', color: '#4a90d9',
+    tagline: 'DistroWatch #1 for years — midweight, systemd-optional, rock solid',
+    history: "MX Linux is a collaboration between the antiX and former MEPIS communities, first released in 2014. It's built on Debian Stable and is famous for its exceptional set of custom MX Tools — GUI utilities for nearly every admin task. It uses SysVinit/runit by default (systemd-optional) making it very fast and lightweight. Despite being lightweight, it ships with a full KDE or Xfce desktop. It dominated DistroWatch page hits for several consecutive years and has a passionate, helpful community.",
+    bestFor: 'Older hardware, users who want Debian stability + great tools, non-systemd fans',
+    founded: '2014', base: 'Debian Stable', packageMgr: 'apt / dpkg',
+    pros: ['Excellent MX Tools suite', 'Runs great on old hardware', 'Systemd-optional', 'Very stable Debian base', 'Live USB with persistence'],
+    cons: ['Less cutting-edge packages', 'KDE edition can feel heavy', 'Smaller developer team'],
+    downloadUrl: 'https://mxlinux.org/download/',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt update && apt upgrade', desc: 'Update all packages', tags: ['packages'],
+            detail: 'Standard Debian apt. MX repos add extra packages on top of Debian Stable.',
+            flags: [], example: 'sudo apt update && sudo apt full-upgrade -y' },
+          { cmd: 'apt install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs from Debian or MX repos.',
+            flags: [{ f: '-y', d: 'Auto-confirm' }], example: 'sudo apt install -y htop curl' },
+        ]
+      },
+      {
+        id: 'mx-sys', icon: '🔧', name: 'MX-Specific Tools',
+        commands: [
+          { cmd: 'mx-packageinstaller', desc: 'MX Package Installer GUI', tags: ['packages'],
+            detail: "MX's graphical package manager with search, one-click installs, and Flatpak support.",
+            flags: [], example: 'mx-packageinstaller' },
+          { cmd: 'mx-snapshot', desc: 'Create a live snapshot/backup of your system', tags: ['system','backup'],
+            detail: "One of MX's killer features — creates a bootable ISO snapshot of your running system.",
+            flags: [], example: 'sudo mx-snapshot' },
+          { cmd: 'mx-tweak', desc: 'MX Tweak desktop customization tool', tags: ['system'],
+            detail: 'Fine-tune desktop settings, compositing, and panel options.',
+            flags: [], example: 'mx-tweak' },
+          { cmd: 'mx-boot-repair', desc: 'Fix broken bootloader', tags: ['system'],
+            detail: 'GUI tool to repair GRUB and boot issues.',
+            flags: [], example: 'sudo mx-boot-repair' },
+          { cmd: 'cat /etc/mx-version', desc: 'Show MX Linux version', tags: ['system'],
+            detail: 'Displays the MX Linux release version.',
+            flags: [], example: 'cat /etc/mx-version' },
+          { cmd: 'service / update-rc.d', desc: 'Manage SysVinit services', tags: ['services'],
+            detail: 'MX uses SysVinit by default. service controls running services.',
+            flags: [],
+            example: 'sudo service nginx start\nsudo update-rc.d nginx enable' },
+        ]
+      }
+    ]
+  },
+
 };
 
 // ═══════════════════════════════════════════════════════════════
