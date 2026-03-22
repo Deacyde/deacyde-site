@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asus C302CA — ChromeOS & Linux Reference</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  /* ── Header ── */
+  .header { background: linear-gradient(135deg, #0a0a0a 0%, #111 100%); border-bottom: 1px solid #222; padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .header-left { display: flex; align-items: center; gap: 0.75rem; }
+  .header-icon { font-size: 2rem; }
+  .header-title { font-size: 1.3rem; font-weight: 700; color: #fff; }
+  .header-sub { font-size: 0.8rem; color: #666; margin-top: 0.15rem; }
+  .back-link { color: #555; text-decoration: none; font-size: 0.85rem; border: 1px solid #333; border-radius: 6px; padding: 0.4rem 0.75rem; transition: all .15s; white-space: nowrap; }
+  .back-link:hover { color: #aaa; border-color: #555; }
+
+  /* ── Device badge ── */
+  .device-badge { background: #111; border: 1px solid #2a2a2a; border-radius: 10px; padding: 0.75rem 1.25rem; margin: 1.25rem 1.5rem 0; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .device-badge .badge-icon { font-size: 1.8rem; }
+  .device-badge .badge-info { flex: 1; }
+  .device-badge .badge-name { font-size: 1rem; font-weight: 700; color: #fff; }
+  .device-badge .badge-specs { font-size: 0.78rem; color: #666; margin-top: 0.2rem; }
+  .spec-pill { display: inline-block; background: #1a1a1a; border: 1px solid #333; border-radius: 20px; padding: 0.2rem 0.6rem; font-size: 0.72rem; color: #aaa; margin: 0.15rem 0.15rem 0 0; }
+
+  /* ── Tab Nav ── */
+  .tab-nav { display: flex; gap: 0.35rem; padding: 1rem 1.5rem 0; flex-wrap: wrap; }
+  .tab-btn { background: #111; border: 1px solid #2a2a2a; border-bottom: none; border-radius: 8px 8px 0 0; padding: 0.6rem 1.1rem; font-size: 0.82rem; color: #888; cursor: pointer; transition: all .15s; white-space: nowrap; }
+  .tab-btn:hover { background: #1a1a1a; color: #ccc; }
+  .tab-btn.active { background: #141414; border-color: #3b82f6; color: #fff; border-bottom: 1px solid #141414; }
+  .tab-btn .tab-icon { margin-right: 0.35rem; }
+
+  /* ── Main content ── */
+  .main { padding: 0 1.5rem 2rem; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── Section cards ── */
+  .section-card { background: #111; border: 1px solid #222; border-radius: 10px; margin-bottom: 1.25rem; overflow: hidden; }
+  .section-header { background: #141414; border-bottom: 1px solid #222; padding: 0.9rem 1.25rem; display: flex; align-items: center; gap: 0.6rem; cursor: pointer; user-select: none; }
+  .section-header:hover { background: #1a1a1a; }
+  .section-icon { font-size: 1.1rem; }
+  .section-title { font-size: 0.95rem; font-weight: 600; color: #fff; flex: 1; }
+  .section-count { font-size: 0.75rem; color: #555; }
+  .section-chevron { color: #555; transition: transform .2s; font-size: 0.8rem; }
+  .section-card.open .section-chevron { transform: rotate(180deg); }
+  .section-body { padding: 1rem 1.25rem; display: none; }
+  .section-card.open .section-body { display: block; }
+
+  /* ── Command rows ── */
+  .cmd-row { border: 1px solid #1e1e1e; border-radius: 8px; margin-bottom: 0.5rem; overflow: hidden; }
+  .cmd-row:last-child { margin-bottom: 0; }
+  .cmd-summary { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.9rem; cursor: pointer; transition: background .12s; }
+  .cmd-summary:hover { background: #161616; }
+  .cmd-code { font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 0.82rem; color: #7dd3fc; background: #0f1a2e; border: 1px solid #1e3a5f; border-radius: 5px; padding: 0.2rem 0.5rem; white-space: nowrap; flex-shrink: 0; }
+  .cmd-desc { font-size: 0.82rem; color: #aaa; flex: 1; }
+  .cmd-expand-icon { color: #444; font-size: 0.7rem; flex-shrink: 0; transition: transform .2s; }
+  .cmd-row.open .cmd-expand-icon { transform: rotate(180deg); }
+  .cmd-detail { display: none; padding: 0.75rem 0.9rem 0.9rem; border-top: 1px solid #1e1e1e; background: #0d0d0d; }
+  .cmd-row.open .cmd-detail { display: block; }
+  .cmd-detail p { font-size: 0.82rem; color: #888; margin-bottom: 0.65rem; line-height: 1.55; }
+  .cmd-example { background: #0a1520; border: 1px solid #1a3050; border-radius: 6px; padding: 0.6rem 0.9rem; font-family: monospace; font-size: 0.8rem; color: #93c5fd; white-space: pre-wrap; word-break: break-word; }
+  .cmd-example-label { font-size: 0.72rem; color: #555; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .cmd-note { background: #1a1500; border: 1px solid #3a3000; border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.78rem; color: #d4a800; margin-top: 0.6rem; }
+  .cmd-warning { background: #1a0a0a; border: 1px solid #4a1515; border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.78rem; color: #f87171; margin-top: 0.6rem; }
+  .cmd-tip { background: #0a1a0a; border: 1px solid #1a4a1a; border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.78rem; color: #86efac; margin-top: 0.6rem; }
+
+  /* ── Hotkey grid ── */
+  .hotkey-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.6rem; }
+  .hotkey-row { background: #141414; border: 1px solid #222; border-radius: 8px; padding: 0.6rem 0.9rem; display: flex; align-items: center; gap: 0.75rem; }
+  .hotkey-keys { font-family: monospace; font-size: 0.78rem; color: #7dd3fc; background: #0f1a2e; border: 1px solid #1e3a5f; border-radius: 5px; padding: 0.2rem 0.5rem; white-space: nowrap; flex-shrink: 0; }
+  .hotkey-desc { font-size: 0.8rem; color: #aaa; }
+
+  /* ── Step list ── */
+  .step-list { counter-reset: steps; }
+  .step { display: flex; gap: 1rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid #1a1a1a; }
+  .step:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  .step-num { counter-increment: steps; content: counter(steps); background: #1e3a5f; color: #7dd3fc; border-radius: 50%; width: 28px; height: 28px; min-width: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; margin-top: 0.1rem; }
+  .step-num::before { content: counter(steps); }
+  .step-body { flex: 1; }
+  .step-title { font-size: 0.9rem; font-weight: 600; color: #fff; margin-bottom: 0.35rem; }
+  .step-desc { font-size: 0.82rem; color: #888; line-height: 1.6; }
+  .step-code { background: #0a1520; border: 1px solid #1a3050; border-radius: 6px; padding: 0.5rem 0.8rem; font-family: monospace; font-size: 0.8rem; color: #93c5fd; white-space: pre-wrap; margin-top: 0.5rem; }
+
+  /* ── Method cards ── */
+  .method-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .method-card { background: #111; border: 1px solid #222; border-radius: 10px; padding: 1.1rem; }
+  .method-card.recommended { border-color: #1e5f2e; }
+  .method-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
+  .method-icon { font-size: 1.5rem; }
+  .method-name { font-size: 0.95rem; font-weight: 700; color: #fff; }
+  .method-badge { font-size: 0.68rem; background: #1e5f2e; color: #86efac; border-radius: 4px; padding: 0.15rem 0.4rem; margin-left: 0.4rem; }
+  .method-desc { font-size: 0.8rem; color: #888; line-height: 1.55; margin-bottom: 0.75rem; }
+  .method-pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.75rem; }
+  .pros { color: #86efac; }
+  .cons { color: #f87171; }
+  .pros li, .cons li { margin-left: 1.2rem; margin-bottom: 0.2rem; }
+
+  /* ── Distro picker ── */
+  .distro-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.65rem; margin-bottom: 1.25rem; }
+  .distro-opt { background: #111; border: 2px solid #222; border-radius: 8px; padding: 0.7rem 0.5rem; text-align: center; cursor: pointer; transition: all .15s; }
+  .distro-opt:hover { border-color: #444; background: #1a1a1a; }
+  .distro-opt.selected { border-color: #3b82f6; background: #0f1f3d; }
+  .distro-opt .d-icon { font-size: 1.3rem; margin-bottom: 0.2rem; }
+  .distro-opt .d-name { font-size: 0.73rem; color: #aaa; font-weight: 500; }
+  .distro-opt.selected .d-name { color: #fff; }
+
+  /* ── Info boxes ── */
+  .info-box { background: #0a1520; border: 1px solid #1e3a5f; border-radius: 8px; padding: 0.9rem 1.1rem; margin-bottom: 1rem; font-size: 0.82rem; color: #93c5fd; line-height: 1.6; }
+  .warn-box { background: #1a0a0a; border: 1px solid #4a1515; border-radius: 8px; padding: 0.9rem 1.1rem; margin-bottom: 1rem; font-size: 0.82rem; color: #fca5a5; line-height: 1.6; }
+  .success-box { background: #0a1a0a; border: 1px solid #1e4a1e; border-radius: 8px; padding: 0.9rem 1.1rem; margin-bottom: 1rem; font-size: 0.82rem; color: #86efac; line-height: 1.6; }
+
+  /* ── Tags ── */
+  .tag { display: inline-block; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; padding: 0.15rem 0.4rem; font-size: 0.68rem; color: #666; margin-left: 0.3rem; }
+
+  /* ── Panel headers ── */
+  .panel-header { padding: 1.25rem 0 1rem; border-bottom: 1px solid #1a1a1a; margin-bottom: 1.25rem; }
+  .panel-title { font-size: 1.1rem; font-weight: 700; color: #fff; }
+  .panel-sub { font-size: 0.82rem; color: #555; margin-top: 0.25rem; }
+
+  /* ── Copy button ── */
+  .copy-btn { background: #1a1a1a; border: 1px solid #333; border-radius: 4px; color: #666; font-size: 0.7rem; padding: 0.15rem 0.45rem; cursor: pointer; float: right; margin-left: 0.5rem; transition: all .12s; }
+  .copy-btn:hover { background: #2a2a2a; color: #aaa; }
+  .copy-btn.copied { border-color: #1e4a1e; color: #86efac; }
+
+  @media (max-width: 600px) {
+    .header { padding: 1rem; }
+    .main { padding: 0 1rem 2rem; }
+    .tab-nav { padding: 1rem 1rem 0; gap: 0.25rem; }
+    .tab-btn { padding: 0.5rem 0.75rem; font-size: 0.78rem; }
+    .device-badge { margin: 1rem 1rem 0; }
+    .method-grid { grid-template-columns: 1fr; }
+    .hotkey-grid { grid-template-columns: 1fr; }
+    .method-pros-cons { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-icon">💻</div>
+    <div>
+      <div class="header-title">Asus C302CA — ChromeOS &amp; Linux Reference</div>
+      <div class="header-sub">Dual Boot · Full Linux Install · Keyboard Shortcuts · Crouton · MrChromebox</div>
+    </div>
+  </div>
+  <a href="../index.html#other-apps" class="back-link">← Back</a>
+</div>
+
+<div class="device-badge">
+  <div class="badge-icon">🖥️</div>
+  <div class="badge-info">
+    <div class="badge-name">Asus Chromebook Flip C302CA-DH54</div>
+    <div class="badge-specs">
+      <span class="spec-pill">Intel Core m5-6Y54 (Skylake)</span>
+      <span class="spec-pill">8GB RAM</span>
+      <span class="spec-pill">64GB eMMC</span>
+      <span class="spec-pill">12.5" FHD Touch</span>
+      <span class="spec-pill">360° Hinge</span>
+      <span class="spec-pill">2× USB-C</span>
+      <span class="spec-pill">Codename: Cave</span>
+      <span class="spec-pill">MrChromebox: Full UEFI ✅</span>
+    </div>
+  </div>
+</div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="quickref" onclick="switchTab('quickref',this)"><span class="tab-icon">⚡</span>Quick Reference</button>
+  <button class="tab-btn" data-tab="devmode" onclick="switchTab('devmode',this)"><span class="tab-icon">🔧</span>Developer Mode</button>
+  <button class="tab-btn" data-tab="dualboot" onclick="switchTab('dualboot',this)"><span class="tab-icon">🔀</span>Dual Boot</button>
+  <button class="tab-btn" data-tab="fullinstall" onclick="switchTab('fullinstall',this)"><span class="tab-icon">🐧</span>Full Linux Install</button>
+  <button class="tab-btn" data-tab="shortcuts" onclick="switchTab('shortcuts',this)"><span class="tab-icon">⌨️</span>Shortcuts</button>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- QUICK REFERENCE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="panel active" id="panel-quickref">
+  <div class="panel-header">
+    <div class="panel-title">⚡ Quick Reference</div>
+    <div class="panel-sub">Already set up and just need the commands? Here they are.</div>
+  </div>
+
+  <div class="info-box">💡 These assume Developer Mode is already on and your Linux environment (Crouton, Crostini, or dual boot) is already installed.</div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🖥️</span>
+      <span class="section-title">Open Linux Terminal (Crouton)</span>
+      <span class="section-count">Most common</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">Ctrl + Alt + T</span>
+          <span class="cmd-desc">Open crosh (ChromeOS shell)</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>Opens the crosh terminal inside ChromeOS. This is the gateway to everything Linux-related.</p>
+          <div class="cmd-example-label">Then type:</div>
+          <div class="cmd-example">shell</div>
+          <div class="cmd-tip">💚 This drops you into a full bash shell inside ChromeOS. From here you can run sudo commands and launch your Linux chroot.</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">sudo enter-chroot</span>
+          <span class="cmd-desc">Enter Crouton Linux chroot</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>Drops into your Crouton chroot as a terminal (no GUI). Run from crosh → shell.</p>
+          <div class="cmd-example-label">Full sequence:</div>
+          <div class="cmd-example">Ctrl+Alt+T  →  shell  →  sudo enter-chroot</div>
+          <div class="cmd-note">⚠️ If you have multiple chroots, specify: sudo enter-chroot -n xenial</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">sudo startxfce4</span>
+          <span class="cmd-desc">Launch Crouton XFCE desktop</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>Launches the XFCE graphical desktop environment in your Crouton chroot. Run from crosh → shell.</p>
+          <div class="cmd-example-label">Common DE launchers:</div>
+          <div class="cmd-example">sudo startxfce4      # XFCE
+sudo startunity      # Unity
+sudo startkde        # KDE
+sudo startlxde       # LXDE (lightweight)</div>
+          <div class="cmd-tip">💚 After launch, switch between ChromeOS and Linux with Ctrl+Alt+Shift+Back / Ctrl+Alt+Shift+Forward</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🔄</span>
+      <span class="section-title">Switching Between ChromeOS &amp; Linux (Crouton)</span>
+      <span class="section-count">Keyboard shortcuts</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="hotkey-grid">
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl+Alt+Shift+←</span><span class="hotkey-desc">Switch to ChromeOS (Back key)</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl+Alt+Shift+→</span><span class="hotkey-desc">Switch to Linux desktop (Forward key)</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl+Alt+T</span><span class="hotkey-desc">Open crosh (from ChromeOS)</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl+Alt+Shift+F2</span><span class="hotkey-desc">Switch to second virtual terminal</span></div>
+      </div>
+      <div class="info-box" style="margin-top:0.75rem">💡 On the C302CA the Back/Forward keys are the arrow-like icons in the top row (F1/F2 equivalent).</div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🐧</span>
+      <span class="section-title">Crostini (Linux Beta — Built-in)</span>
+      <span class="section-count">No crouton needed</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">Settings → Developers → Linux</span>
+          <span class="cmd-desc">Enable Crostini from ChromeOS Settings</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>ChromeOS has a built-in Linux (Crostini) that runs in a container — no Developer Mode needed on modern builds. On the C302CA you may need dev mode depending on your ChromeOS version.</p>
+          <div class="cmd-example-label">Path:</div>
+          <div class="cmd-example">Settings → Advanced → Developers → Linux development environment → Turn On</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">penguin</span>
+          <span class="cmd-desc">Crostini container name</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>The default Crostini VM is named "termina" and the container is named "penguin". Useful if connecting via vsh.</p>
+          <div class="cmd-example-label">Connect from crosh:</div>
+          <div class="cmd-example">vsh termina
+lxc exec penguin -- bash</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">📦</span>
+      <span class="section-title">Crouton Management Commands</span>
+      <span class="section-count">Maintenance</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">sudo crouton -u -n &lt;name&gt;</span>
+          <span class="cmd-desc">Update an existing chroot</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>Updates a Crouton chroot to the latest version. Run from crosh → shell.</p>
+          <div class="cmd-example">sudo crouton -u -n xenial</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">sudo edit-chroot -a</span>
+          <span class="cmd-desc">List all installed chroots</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>Shows all Crouton chroots on the system with their names and installed targets.</p>
+          <div class="cmd-example">sudo edit-chroot -a</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">sudo delete-chroot &lt;name&gt;</span>
+          <span class="cmd-desc">Delete a chroot</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>Permanently deletes a Crouton chroot and all its data.</p>
+          <div class="cmd-example">sudo delete-chroot xenial</div>
+          <div class="cmd-warning">⚠️ This is irreversible. Back up anything you need first.</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">sudo sh ~/Downloads/crouton -t list</span>
+          <span class="cmd-desc">List available Crouton targets</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>Shows all available Crouton targets (desktop environments, utilities) you can install.</p>
+          <div class="cmd-example">sudo sh ~/Downloads/crouton -t list</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- DEVELOPER MODE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-devmode">
+  <div class="panel-header">
+    <div class="panel-title">🔧 Developer Mode</div>
+    <div class="panel-sub">Required for Crouton, chrx, and MrChromebox — step-by-step setup</div>
+  </div>
+
+  <div class="warn-box">⚠️ <strong>Enabling Developer Mode wipes your Chromebook.</strong> All local data, apps, and settings are erased. Sign back into your Google account after to restore settings. Keep Google Sync on before starting.</div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">1️⃣</span>
+      <span class="section-title">Enter Developer Mode — Step by Step</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Hard reset into Recovery Mode</div>
+            <div class="step-desc">Hold <strong>Esc + Refresh (F3)</strong>, then press <strong>Power</strong>. The screen shows "ChromeOS is missing or damaged." — this is normal, you're in recovery mode.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Enable Developer Mode</div>
+            <div class="step-desc">At the recovery screen, press <strong>Ctrl + D</strong>. A new screen asks to confirm — press <strong>Enter</strong> or the highlighted button to confirm. The device will beep and begin transitioning.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Wait for the transition (~10 minutes)</div>
+            <div class="step-desc">The Chromebook reboots and shows a screen saying "Transitioning to Developer Mode." Do not interrupt this. It takes 5–10 minutes to wipe and re-initialize the device.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Boot past the OS verification warning</div>
+            <div class="step-desc">Every boot now shows a screen saying "OS verification is OFF." You must press <strong>Ctrl + D</strong> within 30 seconds, or it will beep and boot automatically. This is normal.</div>
+            <div class="step-code">Ctrl + D  →  Boot ChromeOS in Developer Mode
+(just wait 30s if you want it to boot automatically)</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Sign back into ChromeOS</div>
+            <div class="step-desc">Go through the setup wizard, sign into your Google account, and let it sync. You're now in Developer Mode.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🔑</span>
+      <span class="section-title">Verify Developer Mode Is Active</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">Ctrl+Alt+T → shell</span>
+          <span class="cmd-desc">Verify shell access works</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>If Developer Mode is on, typing <code>shell</code> in crosh opens a full bash shell. In regular mode, <code>shell</code> returns an error.</p>
+          <div class="cmd-example">crosh> shell
+chronos@localhost / $</div>
+          <div class="cmd-tip">💚 If you see the <code>chronos@localhost</code> prompt, you're in Developer Mode.</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">crossystem devswitch_boot</span>
+          <span class="cmd-desc">Check dev mode status via crossystem</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>Returns 1 if in Developer Mode, 0 if not. Run from crosh → shell.</p>
+          <div class="cmd-example">crossystem devswitch_boot
+# Returns: 1  (Developer Mode ON)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🔒</span>
+      <span class="section-title">Turn Off Developer Mode (return to normal)</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="warn-box">⚠️ Turning off Developer Mode also wipes the device again. Same as turning it on.</div>
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">At the OS verification warning screen</div>
+            <div class="step-desc">Press <strong>Space</strong> instead of Ctrl+D. This re-enables OS verification and wipes the device, returning to normal ChromeOS.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Or from ChromeOS Settings</div>
+            <div class="step-desc">Settings → About ChromeOS → Additional details → Return to normal mode. Click "Restart" and confirm.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- DUAL BOOT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-dualboot">
+  <div class="panel-header">
+    <div class="panel-title">🔀 Dual Boot Options</div>
+    <div class="panel-sub">Run Linux alongside ChromeOS — three different approaches</div>
+  </div>
+
+  <div class="info-box">💡 All dual boot methods require Developer Mode to be enabled first. See the <strong>Developer Mode</strong> tab for setup steps.</div>
+
+  <div class="method-grid">
+    <div class="method-card recommended">
+      <div class="method-header">
+        <span class="method-icon">📦</span>
+        <span class="method-name">Crouton<span class="method-badge">Most Popular</span></span>
+      </div>
+      <div class="method-desc">Runs a full Linux distro in a chroot alongside ChromeOS. Share files, switch with a keyboard shortcut. No partitioning needed.</div>
+      <div class="method-pros-cons">
+        <ul class="pros"><li>Easy to set up</li><li>Fast switching</li><li>Share clipboard</li><li>No partitioning</li></ul>
+        <ul class="cons"><li>Not true dual boot</li><li>Shares kernel</li><li>Dev mode required</li></ul>
+      </div>
+    </div>
+    <div class="method-card">
+      <div class="method-header">
+        <span class="method-icon">🐳</span>
+        <span class="method-name">Crostini (Linux Beta)</span>
+      </div>
+      <div class="method-desc">Built-in ChromeOS Linux container. No dev mode needed on modern builds. Runs Debian in a VM. Most secure option.</div>
+      <div class="method-pros-cons">
+        <ul class="pros"><li>Official Google support</li><li>No dev mode needed</li><li>Sandboxed/secure</li><li>apt / Debian</li></ul>
+        <ul class="cons"><li>Limited hardware access</li><li>Slower than Crouton</li><li>No GUI by default</li></ul>
+      </div>
+    </div>
+    <div class="method-card">
+      <div class="method-header">
+        <span class="method-icon">⚙️</span>
+        <span class="method-name">chrx (True Dual Boot)</span>
+      </div>
+      <div class="method-desc">Installs Linux on a separate partition. Real GRUB bootloader. Choose OS at each boot. Uses SeaBIOS/UEFI legacy boot slot.</div>
+      <div class="method-pros-cons">
+        <ul class="pros"><li>True separate install</li><li>Full hardware access</li><li>Real bootloader</li></ul>
+        <ul class="cons"><li>Complex setup</li><li>Less maintained</li><li>C302CA support varies</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">📦</span>
+      <span class="section-title">Method A: Crouton Setup</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Download Crouton</div>
+            <div class="step-desc">In ChromeOS browser, download crouton to your Downloads folder.</div>
+            <div class="step-code">https://goo.gl/fd3zc
+# Or direct: https://github.com/dnschneid/crouton/raw/master/installer/crouton</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Open crosh and enter shell</div>
+            <div class="step-code">Ctrl+Alt+T
+shell</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Install with a desktop environment</div>
+            <div class="step-desc">Choose your DE — XFCE is lightweight and recommended for the C302CA.</div>
+            <div class="step-code"># XFCE (recommended, lightweight)
+sudo sh ~/Downloads/crouton -t xfce
+
+# Unity
+sudo sh ~/Downloads/crouton -t unity
+
+# KDE
+sudo sh ~/Downloads/crouton -t kde
+
+# No GUI (terminal only)
+sudo sh ~/Downloads/crouton -t cli-extra</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Launch Linux (after install)</div>
+            <div class="step-code">sudo startxfce4   # or startunity / startkde</div>
+            <div class="step-desc">Switch back to ChromeOS: <strong>Ctrl+Alt+Shift+← (Back key)</strong><br>Switch to Linux: <strong>Ctrl+Alt+Shift+→ (Forward key)</strong></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Enable touchscreen in Crouton (C302CA specific)</div>
+            <div class="step-desc">Add the touch target for touchscreen support on the C302CA's touchscreen.</div>
+            <div class="step-code">sudo sh ~/Downloads/crouton -t xfce,touch,keyboard,extension</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🐳</span>
+      <span class="section-title">Method B: Crostini (Linux Beta) Setup</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Enable from Settings</div>
+            <div class="step-code">Settings → Advanced → Developers → Linux development environment → Turn On</div>
+            <div class="step-desc">ChromeOS downloads and installs a Debian container. Takes a few minutes.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Open the Terminal app</div>
+            <div class="step-desc">A "Terminal" app appears in your launcher. Click it to open the Debian Linux shell.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Use apt like normal Debian</div>
+            <div class="step-code">sudo apt update && sudo apt upgrade
+sudo apt install python3 nodejs git vim</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Install GUI apps (optional)</div>
+            <div class="step-desc">Linux GUI apps appear in your ChromeOS launcher automatically.</div>
+            <div class="step-code">sudo apt install gedit firefox-esr gimp</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">⚙️</span>
+      <span class="section-title">Method C: chrx (True Dual Boot)</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="info-box">💡 chrx installs Linux on a real partition. C302CA uses eMMC storage — you'll be sharing the 64GB between ChromeOS and Linux. Recommend allocating 20–30GB to Linux.</div>
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Enable Legacy Boot (RW_LEGACY firmware)</div>
+            <div class="step-desc">From crosh → shell, run the MrChromebox script to flash the RW_LEGACY slot (not full ROM). This enables SeaBIOS/UEFI without fully replacing firmware.</div>
+            <div class="step-code">cd; curl -LO mrchromebox.tech/firmware-util.sh
+sudo install -Dt /usr/local/bin -m 755 firmware-util.sh
+sudo firmware-util.sh
+# Select: Install/Update RW_LEGACY Firmware</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Run chrx installer</div>
+            <div class="step-code">cd; curl -Os https://chrx.org/go && sh go</div>
+            <div class="step-desc">Follow prompts. Choose GalliumOS or Ubuntu. Specify partition size. chrx resizes ChromeOS and creates a Linux partition.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Boot selection</div>
+            <div class="step-desc">At the OS verification screen:<br><strong>Ctrl+D</strong> = boot ChromeOS<br><strong>Ctrl+L</strong> = boot Linux (SeaBIOS)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- FULL LINUX INSTALL -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-fullinstall">
+  <div class="panel-header">
+    <div class="panel-title">🐧 Full Linux Install (Wipe ChromeOS)</div>
+    <div class="panel-sub">Replace ChromeOS entirely with Linux as the sole OS — using MrChromebox UEFI firmware</div>
+  </div>
+
+  <div class="warn-box">⚠️ <strong>This permanently replaces the ChromeOS firmware.</strong> You will not be able to boot ChromeOS after this without re-flashing. The C302CA is fully supported by MrChromebox (codename: Cave) and Linux runs excellently on it. Make sure to save the stock firmware backup to USB.</div>
+
+  <div class="success-box">✅ The C302CA-DH54 has excellent Linux support: Wi-Fi, touchscreen, stylus, audio, webcam, USB-C charging, and the 360° hinge all work well on major distros.</div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🏆</span>
+      <span class="section-title">Recommended Linux Distros for C302CA</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="distro-grid">
+        <div class="distro-opt selected" onclick="selectDistro(this)"><div class="d-icon">🌊</div><div class="d-name">Fedora 40+</div></div>
+        <div class="distro-opt" onclick="selectDistro(this)"><div class="d-icon">🌀</div><div class="d-name">Ubuntu 24.04</div></div>
+        <div class="distro-opt" onclick="selectDistro(this)"><div class="d-icon">🎋</div><div class="d-name">Arch Linux</div></div>
+        <div class="distro-opt" onclick="selectDistro(this)"><div class="d-icon">🏔️</div><div class="d-name">Manjaro</div></div>
+        <div class="distro-opt" onclick="selectDistro(this)"><div class="d-icon">💨</div><div class="d-name">Pop!_OS</div></div>
+        <div class="distro-opt" onclick="selectDistro(this)"><div class="d-icon">🌱</div><div class="d-name">Linux Mint</div></div>
+      </div>
+      <div class="info-box">💡 <strong>Fedora</strong> is generally best for the C302CA — excellent touchscreen support out of the box, modern kernel, and Wayland works great with the 360° hinge. <strong>Ubuntu</strong> and <strong>Pop!_OS</strong> are good beginner-friendly choices. <strong>Arch/Manjaro</strong> for full control.</div>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🔥</span>
+      <span class="section-title">Full Linux Install — Step by Step</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Enable Developer Mode</div>
+            <div class="step-desc">Required first. See the <strong>Developer Mode</strong> tab for the full walkthrough (Esc+Refresh+Power → Ctrl+D).</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Get into crosh shell</div>
+            <div class="step-code">Ctrl+Alt+T
+shell</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Disable write-protect (if needed)</div>
+            <div class="step-desc">The C302CA-DH54 has a firmware write protect that is controlled via software (no screw to remove). The MrChromebox script handles this automatically on Skylake Chromebooks.</div>
+            <div class="step-code"># Check WP status first:
+crossystem wpsw_cur
+# 0 = unlocked, 1 = locked
+# The firmware-util.sh script unlocks it automatically</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Run the MrChromebox Firmware Utility</div>
+            <div class="step-desc">This is the key step — it replaces ChromeOS's coreboot firmware with a full UEFI ROM, enabling normal Linux booting.</div>
+            <div class="step-code">cd; curl -LO mrchromebox.tech/firmware-util.sh
+sudo install -Dt /usr/local/bin -m 755 firmware-util.sh
+sudo firmware-util.sh</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Select "Install/Update UEFI (Full ROM) Firmware"</div>
+            <div class="step-desc">In the firmware utility menu, select option for <strong>Install/Update UEFI (Full ROM) Firmware</strong>. When prompted, insert a USB drive to save your stock firmware backup — <strong>do not skip this</strong>.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Power off and boot from Linux USB</div>
+            <div class="step-desc">After firmware flash completes, power off. Plug in your bootable Linux USB. Power on — the device now boots like a standard PC with UEFI. Press <strong>Esc</strong> or <strong>F2</strong> at the MrChromebox splash to enter boot menu.</div>
+            <div class="step-code"># To create Linux USB from another machine:
+# Windows: Rufus → ISO → GPT → UEFI
+# Linux: dd if=linux.iso of=/dev/sdX bs=4M status=progress
+# Mac: Etcher or dd</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Install Linux normally</div>
+            <div class="step-desc">The Linux installer works like on any other laptop. For the C302CA with 64GB eMMC, recommended partition layout:</div>
+            <div class="step-code"># Suggested partitioning (64GB eMMC):
+/boot/efi   →  512MB   (FAT32, EFI System Partition)
+/           →  55GB    (ext4 or btrfs, root)
+swap        →  8GB     (or use swapfile instead)
+
+# The eMMC shows as /dev/mmcblk0 in installer
+# Not /dev/sda — don't panic if you don't see sda</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Post-install: Verify hardware</div>
+            <div class="step-desc">After first boot, check that key hardware works:</div>
+            <div class="step-code"># Check Wi-Fi
+ip link show
+nmcli device status
+
+# Check touchscreen
+xinput list  # or libinput list-devices (Wayland)
+
+# Check audio
+pactl info
+aplay -l
+
+# Check battery / power
+upower -i /org/freedesktop/UPower/devices/battery_BAT0
+
+# Check CPU
+lscpu | grep "Model name"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🔁</span>
+      <span class="section-title">Restore ChromeOS (if you want it back)</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Method 1: Restore stock firmware from USB backup</div>
+            <div class="step-desc">If you saved the stock firmware to USB during MrChromebox setup, you can re-flash it.</div>
+            <div class="step-code"># Boot any Linux USB, then:
+sudo flashrom -p internal -w stock_firmware_backup.rom</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Method 2: ChromeOS Recovery USB</div>
+            <div class="step-desc">Use Chromebook Recovery Utility on another computer to create a C302CA recovery USB. The recovery process re-flashes both firmware and ChromeOS.</div>
+            <div class="step-code"># Install from Chrome Web Store:
+"Chromebook Recovery Utility"
+# Select: Asus Chromebook C302CA
+# Flash to USB, boot from it with Esc at power-on</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🛠️</span>
+      <span class="section-title">C302CA Post-Install Tweaks</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">auto-rotate on tablet mode</span>
+          <span class="cmd-desc">Enable 360° hinge auto-rotate</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>The C302CA's 360° hinge can auto-rotate the screen. On GNOME this works out of the box. On KDE/XFCE:</p>
+          <div class="cmd-example">sudo apt install iio-sensor-proxy   # Debian/Ubuntu
+# GNOME: works automatically
+# KDE: Settings → Display → Auto-rotate</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">libinput touchscreen tuning</span>
+          <span class="cmd-desc">Fix touchscreen calibration</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>If touchscreen is miscalibrated or palm rejection needs tuning:</p>
+          <div class="cmd-example">sudo apt install libinput-tools
+libinput list-devices
+libinput debug-events</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">TLP for battery optimization</span>
+          <span class="cmd-desc">Improve battery life on Linux</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>ChromeOS has aggressive power management that Linux doesn't have by default. TLP helps.</p>
+          <div class="cmd-example">sudo apt install tlp tlp-rdw   # Debian/Ubuntu
+sudo dnf install tlp            # Fedora
+sudo systemctl enable --now tlp
+tlp-stat -s</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">eMMC storage performance</span>
+          <span class="cmd-desc">Optimize for eMMC (not SSD)</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>The C302CA uses eMMC storage — it shows as mmcblk0, not sda. Enable discard (TRIM) for longevity:</p>
+          <div class="cmd-example"># Add discard to /etc/fstab mount options:
+/dev/mmcblk0p2  /  ext4  defaults,noatime,discard  0 1
+
+# Or run fstrim weekly:
+sudo systemctl enable fstrim.timer</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SHORTCUTS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-shortcuts">
+  <div class="panel-header">
+    <div class="panel-title">⌨️ Keyboard Shortcuts</div>
+    <div class="panel-sub">ChromeOS, Developer Mode, and Crouton switching shortcuts</div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🔧</span>
+      <span class="section-title">Developer Mode Boot Shortcuts</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="hotkey-grid">
+        <div class="hotkey-row"><span class="hotkey-keys">Esc + Refresh + Power</span><span class="hotkey-desc">Enter Recovery Mode (hard reset)</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl + D (at recovery)</span><span class="hotkey-desc">Enable Developer Mode</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl + D (at OS warning)</span><span class="hotkey-desc">Boot ChromeOS in dev mode</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl + L (at OS warning)</span><span class="hotkey-desc">Boot Linux (Legacy/UEFI) if chrx installed</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Space (at OS warning)</span><span class="hotkey-desc">Re-enable OS verification (exits dev mode)</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Wait 30s (at OS warning)</span><span class="hotkey-desc">Auto-boot into ChromeOS</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🔄</span>
+      <span class="section-title">Crouton Switching Shortcuts</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="hotkey-grid">
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl + Alt + T</span><span class="hotkey-desc">Open crosh terminal</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl + Alt + Shift + ←</span><span class="hotkey-desc">Switch to ChromeOS (Back key)</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl + Alt + Shift + →</span><span class="hotkey-desc">Switch to Linux Crouton (Forward key)</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl + Alt + F2</span><span class="hotkey-desc">Virtual terminal 2 (text console)</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl + Alt + Shift + Reload</span><span class="hotkey-desc">Rotate screen (tablet mode)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">💻</span>
+      <span class="section-title">ChromeOS Keyboard Reference (C302CA)</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="info-box">💡 The C302CA uses a Chromebook keyboard — no F-keys by default. The top row is: Back, Forward, Refresh, Fullscreen, Overview, Brightness−, Brightness+, Mute, Vol−, Vol+, Power.</div>
+      <div class="hotkey-grid">
+        <div class="hotkey-row"><span class="hotkey-keys">Search (🔍)</span><span class="hotkey-desc">Caps Lock replacement / launcher</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Search + Esc</span><span class="hotkey-desc">Open Task Manager</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl + Shift + I</span><span class="hotkey-desc">Open DevTools</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl + Shift + L</span><span class="hotkey-desc">Lock screen</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Alt + [</span><span class="hotkey-desc">Snap window left</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Alt + ]</span><span class="hotkey-desc">Snap window right</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Ctrl + Alt + /</span><span class="hotkey-desc">Show all keyboard shortcuts</span></div>
+        <div class="hotkey-row"><span class="hotkey-keys">Search + 1–9</span><span class="hotkey-desc">F1–F9 equivalent</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🖥️</span>
+      <span class="section-title">Crosh Commands</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">help</span>
+          <span class="cmd-desc">List all crosh commands</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <div class="cmd-example">crosh> help</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">ping &lt;host&gt;</span>
+          <span class="cmd-desc">Ping a host from crosh</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <div class="cmd-example">crosh> ping 8.8.8.8
+crosh> ping google.com</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">battery_test</span>
+          <span class="cmd-desc">Run a battery health test</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>Discharges the battery for 1 minute and reports wear level and health.</p>
+          <div class="cmd-example">crosh> battery_test 60</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">storage_test_1</span>
+          <span class="cmd-desc">Test eMMC storage health</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>Runs diagnostic tests on the internal eMMC storage.</p>
+          <div class="cmd-example">crosh> storage_test_1</div>
+        </div>
+      </div>
+      <div class="cmd-row">
+        <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+          <span class="cmd-code">top</span>
+          <span class="cmd-desc">System resource monitor</span>
+          <span class="cmd-expand-icon">▼</span>
+        </div>
+        <div class="cmd-detail">
+          <p>Shows CPU and memory usage directly in crosh.</p>
+          <div class="cmd-example">crosh> top</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end .main -->
+
+<script>
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + tabId).classList.add('active');
+}
+
+function toggleSection(card) {
+  card.classList.toggle('open');
+}
+
+function toggleCmd(row) {
+  row.classList.toggle('open');
+}
+
+function selectDistro(el) {
+  document.querySelectorAll('.distro-opt').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// Open all section-cards by default on first load
+document.addEventListener('DOMContentLoaded', () => {
+  // Only auto-open the first two per panel to keep it clean
+  document.querySelectorAll('.section-card.open').forEach(c => {
+    // Already marked open in HTML — nothing to do
+  });
+});
+
+// Copy-to-clipboard on code blocks
+document.querySelectorAll('.step-code, .cmd-example').forEach(block => {
+  const btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = 'copy';
+  btn.onclick = e => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(block.textContent.trim()).then(() => {
+      btn.textContent = '✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
+    });
+  };
+  block.style.position = 'relative';
+  block.prepend(btn);
+});
+</script>
+</body>
+</html>
