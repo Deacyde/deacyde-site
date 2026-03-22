@@ -1209,12 +1209,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Copy-to-clipboard on code blocks
 document.querySelectorAll('.step-code, .cmd-example').forEach(block => {
+  const text = block.textContent.trim();
   const btn = document.createElement('button');
   btn.className = 'copy-btn';
   btn.textContent = 'copy';
   btn.onclick = e => {
     e.stopPropagation();
-    navigator.clipboard.writeText(block.textContent.trim()).then(() => {
+    navigator.clipboard.writeText(text).then(() => {
       btn.textContent = '✓';
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
