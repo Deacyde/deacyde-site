@@ -174,6 +174,7 @@
   <button class="tab-btn" data-tab="fullinstall" onclick="switchTab('fullinstall',this)"><span class="tab-icon">🐧</span>Full Linux Install</button>
   <button class="tab-btn" data-tab="shortcuts" onclick="switchTab('shortcuts',this)"><span class="tab-icon">⌨️</span>Shortcuts</button>
   <button class="tab-btn" data-tab="copilot" onclick="switchTab('copilot',this)"><span class="tab-icon">🤖</span>Copilot CLI</button>
+  <button class="tab-btn" data-tab="bootable" onclick="switchTab('bootable',this)"><span class="tab-icon">💾</span>Bootable SD Card</button>
 </div>
 
 <div class="main">
@@ -1172,6 +1173,219 @@ gh copilot suggest -t git "undo last commit without losing changes"</div>
     <div class="section-body">
       <div class="step-desc" style="font-size:0.82rem;color:#888;margin-bottom:0.5rem;">gh and Copilot CLI persist in the chroot — you don't reinstall. Just:</div>
       <div class="step-code">Ctrl+Alt+T  →  shell  →  sudo enter-chroot -n newkali  →  gh copilot suggest "..."</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- BOOTABLE SD CARD -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-bootable">
+  <div class="panel-header">
+    <div class="panel-title">💾 Create a Bootable SD Card</div>
+    <div class="panel-sub">Download Fedora + flash it to an SD card — step by step for Windows, Mac, or Linux</div>
+  </div>
+
+  <div class="info-box">💡 You need another computer (Windows, Mac, or Linux) to do this. The C302CA has a full-size SD card slot — no USB drive needed.</div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🌊</span>
+      <span class="section-title">Step 1 — Download Fedora Workstation</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Go to the Fedora download page</div>
+            <div class="step-code">https://fedoraproject.org/workstation/download</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Download the correct version</div>
+            <div class="step-desc">
+              Click <strong>"Download Fedora Workstation"</strong><br><br>
+              Make sure it says <strong>x86_64</strong> — that's the right one for the C302CA's Intel Core m5.<br>
+              Do <strong>NOT</strong> download the ARM version — that's for Raspberry Pi and phones.
+            </div>
+            <div class="step-code"># What you want:
+Fedora-Workstation-Live-x86_64-[version].iso
+# Example filename:
+Fedora-Workstation-Live-x86_64-40-1.14.iso</div>
+            <div class="cmd-tip" style="margin-top:0.6rem;">💚 The file is about 2GB. Download it to your other computer, not the Chromebook.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Why Fedora for the C302CA?</div>
+            <div class="step-desc">Fedora includes a very recent kernel which has the best support for the C302CA's hardware out of the box — touchscreen, 360° hinge auto-rotate, stylus, Wi-Fi, audio, and USB-C charging all work without extra setup.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🔧</span>
+      <span class="section-title">Step 2 — Download Balena Etcher (the flashing tool)</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Download Etcher on your other computer</div>
+            <div class="step-code">https://etcher.balena.io</div>
+            <div class="step-desc" style="margin-top:0.5rem;">Click <strong>Download Etcher</strong> — it auto-detects your OS (Windows/Mac/Linux). Install it normally.</div>
+          </div>
+        </div>
+      </div>
+      <div class="cmd-tip">💚 Etcher is free, safe, and the easiest way to flash an ISO to an SD card. It won't let you accidentally overwrite your main hard drive.</div>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">💾</span>
+      <span class="section-title">Step 3 — Flash Fedora to the SD Card</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="warn-box">⚠️ Flashing will <strong>erase everything on the SD card</strong>. Make sure the SD card is blank or has nothing you need on it. You need at least a <strong>4GB SD card</strong> (8GB+ recommended).</div>
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Insert the SD card into your other computer</div>
+            <div class="step-desc">Use an SD card adapter if your computer only has a card reader slot, or a USB SD card reader if needed.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Open Balena Etcher</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Click "Flash from file"</div>
+            <div class="step-desc">Select the Fedora <code>.iso</code> file you downloaded.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Click "Select target"</div>
+            <div class="step-desc">Choose your SD card from the list. <strong>Double-check it's the SD card and not your hard drive.</strong> Etcher shows the size — your SD card size should match.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Click "Flash!"</div>
+            <div class="step-desc">Takes about 5–10 minutes. Etcher verifies after writing. When it says <strong>"Flash Complete"</strong> you're done.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Eject the SD card safely</div>
+            <div class="step-desc">Windows: right-click SD card in Explorer → Eject<br>Mac: drag to Trash or click eject icon<br>Linux: right-click → Unmount</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">💻</span>
+      <span class="section-title">Step 4 — Boot the C302CA from SD Card</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="info-box">💡 You need to flash MrChromebox UEFI firmware first before the Chromebook can boot from SD card. See the <strong>Full Linux Install</strong> tab for that step — do it before inserting the SD card.</div>
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Insert the SD card into the C302CA</div>
+            <div class="step-desc">The SD card slot is on the right side of the laptop.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Power on and enter boot menu</div>
+            <div class="step-desc">At the MrChromebox UEFI splash screen, press <strong>Esc</strong> or <strong>F2</strong> to open the boot menu. Select the SD card.</div>
+            <div class="step-code"># At boot, press:
+Esc  →  opens boot device menu
+# Select: SD card / MMC device
+# Or it may auto-detect and boot from SD</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Fedora Live boots — try it before installing</div>
+            <div class="step-desc">Fedora runs as a "Live" session from the SD card first. Try Wi-Fi, touch the screen, flip the hinge — verify everything works before committing to install.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Click "Install to Hard Drive"</div>
+            <div class="step-desc">When ready, click the Install icon on the desktop. The installer will ask about partitioning — for full Linux only, choose <strong>"Erase disk and install Fedora"</strong> (the simplest option). The eMMC shows as <code>mmcblk0</code> — that's your internal storage, which is correct.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🪟</span>
+      <span class="section-title">Windows alternative — use Rufus instead of Etcher</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="step-desc" style="font-size:0.82rem;color:#888;margin-bottom:0.75rem;">If you prefer Rufus on Windows (also free, no install needed):</div>
+      <div class="step-code">https://rufus.ie</div>
+      <div class="step-list" style="margin-top:0.75rem;">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Open Rufus, select your SD card at the top</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Click SELECT and choose the Fedora ISO</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Partition scheme: GPT — Target: UEFI (non-CSM)</div>
+            <div class="step-desc">This is important for MrChromebox UEFI compatibility.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Click START → Write in ISO Image mode</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
