@@ -29,17 +29,20 @@
 
     /* Distro selector grid */
     .distro-selector { max-width: 1400px; margin: 0 auto; padding: 1rem 1.5rem 0; }
-    .distro-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 0.6rem; margin-bottom: 1rem; }
+    .distro-grid { display: grid; grid-template-columns: repeat(9, minmax(0, 140px)); justify-content: center; gap: 0.6rem; margin-bottom: 1rem; }
     .distro-tile { background: #111; border: 1px solid #222; border-radius: 10px; padding: 0.65rem 0.4rem; cursor: pointer; text-align: center; transition: border-color .15s, background .15s; display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
     .distro-tile:hover { background: #1a1a1a; border-color: #444; }
     .distro-tile.active { border-color: #3b82f6; background: #0f1f3d; }
     .distro-tile .tile-icon { font-size: 1.4rem; line-height: 1; }
     .distro-tile .tile-name { font-size: 0.7rem; color: #aaa; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: center; }
     .distro-tile.active .tile-name { color: #fff; }
-    .universal-tile { border-color: #1e3a5f !important; }
+    .universal-tile { grid-column: 1 / -1; flex-direction: row; justify-content: center; gap: 0.6rem; padding: 0.7rem 1rem; border-color: #1e3a5f !important; border-radius: 10px; }
+    .universal-tile .tile-icon { font-size: 1.3rem; }
+    .universal-tile .tile-name { font-size: 0.85rem; width: auto; font-weight: 600; letter-spacing: 0.03em; }
     .universal-tile.active { background: #0a1f35 !important; border-color: #3b82f6 !important; }
-    @media (max-width: 900px) { .distro-grid { grid-template-columns: repeat(6, 1fr); } }
-    @media (max-width: 600px) { .distro-grid { grid-template-columns: repeat(4, 1fr); } }
+    .universal-tile.active .tile-name { color: #fff; }
+    @media (max-width: 900px) { .distro-grid { grid-template-columns: repeat(6, minmax(0, 140px)); } }
+    @media (max-width: 600px) { .distro-grid { grid-template-columns: repeat(4, minmax(0, 140px)); } }
 
     /* Main layout */
     .main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
