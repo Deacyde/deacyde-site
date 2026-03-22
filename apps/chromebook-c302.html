@@ -175,6 +175,7 @@
   <button class="tab-btn" data-tab="shortcuts" onclick="switchTab('shortcuts',this)"><span class="tab-icon">⌨️</span>Shortcuts</button>
   <button class="tab-btn" data-tab="copilot" onclick="switchTab('copilot',this)"><span class="tab-icon">🤖</span>Copilot CLI</button>
   <button class="tab-btn" data-tab="bootable" onclick="switchTab('bootable',this)"><span class="tab-icon">💾</span>Bootable SD Card</button>
+  <button class="tab-btn" data-tab="rufus" onclick="switchTab('rufus',this)"><span class="tab-icon">🚀</span>Rufus + UEFI Boot</button>
 </div>
 
 <div class="main">
@@ -1386,6 +1387,157 @@ Esc  →  opens boot device menu
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- RUFUS + UEFI BOOT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-rufus">
+  <div class="panel-header">
+    <div class="panel-title">🚀 Reflash with Rufus + Boot from UEFI</div>
+    <div class="panel-sub">Etcher didn't work — use Rufus on Windows instead, then navigate the UEFI boot menu</div>
+  </div>
+
+  <div class="warn-box">⚠️ If the EFI System option in the UEFI boot menu was blank, your SD card didn't flash correctly. Reflash it with Rufus using the steps below.</div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🪟</span>
+      <span class="section-title">Step 1 — Reflash SD Card with Rufus (Windows)</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Download Rufus</div>
+            <div class="step-code">https://rufus.ie</div>
+            <div class="step-desc" style="margin-top:0.4rem;">Click the download link — no install needed, it's a single .exe file. Just run it.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Insert the SD card into your Windows PC</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Open Rufus — select your SD card at the top</div>
+            <div class="step-desc">Make sure the correct drive is selected — check the size matches your SD card.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Click SELECT and choose the Fedora ISO file</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Set these two options — IMPORTANT</div>
+            <div class="step-desc">These settings are critical for UEFI booting to work:</div>
+            <div class="step-code">Partition scheme:  GPT
+Target system:     UEFI (non CSM)</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Click START</div>
+            <div class="step-desc">If a popup asks which mode to write — choose <strong>"Write in ISO Image mode (Recommended)"</strong>. Click OK.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Wait for it to finish — then eject safely</div>
+            <div class="step-desc">Takes 5–10 minutes. When done, right-click the SD card in Explorer → Eject before removing.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">💻</span>
+      <span class="section-title">Step 2 — Boot the Chromebook from SD Card</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Insert SD card into the Chromebook (right side slot)</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Power on and get to the UEFI menu</div>
+            <div class="step-desc">At the MrChromebox screen, press <strong>Esc</strong> to open the boot menu. If that doesn't work, try <strong>F2</strong> or just wait — it may drop into the UEFI shell automatically.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">If you land in the UEFI shell (black screen with text)</div>
+            <div class="step-desc">Type <code>exit</code> and press Enter to get to the graphical UEFI menu.</div>
+            <div class="step-code">exit</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">In the UEFI menu → select "Boot Manager"</div>
+            <div class="step-desc">Or select <strong>"Boot from file"</strong> if Boot Manager isn't listed.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Select the option that says "EFI System" — that's your SD card</div>
+            <div class="step-desc">It should now show files inside it. Navigate to:</div>
+            <div class="step-code">EFI → fedora → grubx64.efi</div>
+            <div class="step-desc" style="margin-top:0.4rem;">Select <strong>grubx64.efi</strong> and press Enter to boot.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">Fedora Live boots 🎉</div>
+            <div class="step-desc">Try Wi-Fi, touch the screen, flip the hinge. When ready, click <strong>"Install to Hard Drive"</strong> on the desktop. Choose <strong>"Erase disk and install Fedora"</strong> — the eMMC shows as <code>mmcblk0</code>, that's correct.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this.parentElement)">
+      <span class="section-icon">🔁</span>
+      <span class="section-title">Make SD Card boot automatically next time</span>
+      <span class="section-chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="step-desc" style="font-size:0.82rem;color:#888;margin-bottom:0.75rem;">So you don't have to navigate the UEFI menu every time, set boot order in the UEFI menu:</div>
+      <div class="step-list">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <div class="step-title">In the UEFI menu → select "Change Boot Order"</div>
+            <div class="step-desc">Move SD card / EFI System to the top of the list. Save and exit. It will now auto-boot from SD card when inserted.</div>
+          </div>
+        </div>
+      </div>
+      <div class="cmd-tip" style="margin-top:0.75rem;">💚 Once Fedora is installed to the eMMC, it registers itself in the UEFI boot order automatically — you won't need the SD card again after install.</div>
     </div>
   </div>
 </div>
