@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linux Commands Reference | Deacyde</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d0d0d; color: #fff; min-height: 100vh; }
+
+    /* Header */
+    .page-header { padding: 2rem 1.5rem 1rem; max-width: 1400px; margin: 0 auto; }
+    .back { color: #888; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 1.25rem; }
+    .back:hover { color: #fff; }
+    .page-header h1 { font-size: 1.9rem; margin-bottom: 0.35rem; }
+    .page-header p { color: #888; font-size: 0.95rem; }
+
+    /* Search */
+    .search-wrap { max-width: 1400px; margin: 0 auto; padding: 1rem 1.5rem; position: relative; }
+    .search-input { width: 100%; padding: 0.75rem 1rem 0.75rem 2.75rem; background: #1a1a1a; border: 1px solid #333; border-radius: 10px; color: #fff; font-size: 0.95rem; outline: none; }
+    .search-input:focus { border-color: #3b82f6; }
+    .search-icon { position: absolute; left: 2.5rem; top: 50%; transform: translateY(-50%); color: #555; font-size: 1rem; pointer-events: none; }
+    .autocomplete-list { position: absolute; top: calc(100% - 0.5rem); left: 1.5rem; right: 1.5rem; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; z-index: 100; max-height: 280px; overflow-y: auto; display: none; }
+    .autocomplete-item { padding: 0.6rem 1rem; cursor: pointer; font-size: 0.88rem; display: flex; align-items: center; gap: 0.75rem; }
+    .autocomplete-item:hover, .autocomplete-item.active { background: #252525; }
+    .autocomplete-cmd { font-family: monospace; color: #60a5fa; font-weight: 600; }
+    .autocomplete-desc { color: #666; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .autocomplete-tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: #252525; color: #888; white-space: nowrap; }
+
+    /* Tab bar */
+    .tab-bar-wrap { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem; border-bottom: 1px solid #1e1e1e; overflow-x: auto; scrollbar-width: thin; }
+    .tab-bar { display: flex; gap: 0; white-space: nowrap; }
+    .tab-btn { padding: 0.7rem 1.1rem; background: none; border: none; border-bottom: 2px solid transparent; color: #666; font-size: 0.85rem; cursor: pointer; transition: color .15s, border-color .15s; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; }
+    .tab-btn:hover { color: #ccc; }
+    .tab-btn.active { color: #fff; border-bottom-color: #3b82f6; }
+    .tab-btn .distro-icon { font-size: 1rem; }
+
+    /* Main layout */
+    .main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+    /* Distro bio card */
+    .distro-bio { background: #111; border: 1px solid #222; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; display: grid; grid-template-columns: auto 1fr auto; gap: 1.25rem; align-items: start; }
+    .distro-logo { font-size: 3rem; line-height: 1; }
+    .distro-info h2 { font-size: 1.3rem; margin-bottom: 0.3rem; }
+    .distro-info .tagline { color: #888; font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .distro-info .history { color: #aaa; font-size: 0.85rem; line-height: 1.6; margin-bottom: 0.75rem; max-width: 700px; }
+    .distro-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .meta-badge { font-size: 0.75rem; padding: 3px 9px; border-radius: 5px; border: 1px solid #333; color: #aaa; }
+    .meta-badge.good { border-color: #166534; color: #4ade80; background: #052e16; }
+    .meta-badge.warn { border-color: #854d0e; color: #fbbf24; background: #1c1007; }
+    .pros-cons { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .pros, .cons { flex: 1; min-width: 160px; }
+    .pros h4, .cons h4 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; }
+    .pros h4 { color: #4ade80; }
+    .cons h4 { color: #f87171; }
+    .pros ul, .cons ul { list-style: none; }
+    .pros li::before { content: '✓ '; color: #4ade80; font-size: 0.8rem; }
+    .cons li::before { content: '✗ '; color: #f87171; font-size: 0.8rem; }
+    .pros li, .cons li { font-size: 0.82rem; color: #aaa; margin-bottom: 0.2rem; }
+    .distro-actions { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end; }
+    .dl-btn { padding: 0.5rem 1rem; background: #1a1a1a; border: 1px solid #333; border-radius: 7px; color: #aaa; text-decoration: none; font-size: 0.82rem; white-space: nowrap; }
+    .dl-btn:hover { border-color: #3b82f6; color: #60a5fa; }
+    .best-for { font-size: 0.75rem; color: #666; text-align: right; max-width: 150px; }
+
+    /* Section headers */
+    .section-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; color: #555; margin-bottom: 1rem; margin-top: 0.5rem; }
+
+    /* Category groups */
+    .category { margin-bottom: 2rem; }
+    .cat-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.75rem; cursor: pointer; user-select: none; }
+    .cat-header h3 { font-size: 0.95rem; color: #ccc; }
+    .cat-header .cat-icon { font-size: 1.1rem; }
+    .cat-header .cat-count { font-size: 0.72rem; color: #555; }
+    .cat-header .cat-toggle { margin-left: auto; color: #555; font-size: 0.8rem; transition: transform .2s; }
+    .cat-header.collapsed .cat-toggle { transform: rotate(-90deg); }
+
+    /* Command rows */
+    .cmd-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .cmd-row { background: #111; border: 1px solid #1e1e1e; border-radius: 8px; overflow: hidden; }
+    .cmd-row.highlight { border-color: #1d4ed8; }
+    .cmd-summary { display: flex; align-items: center; gap: 0.85rem; padding: 0.65rem 1rem; cursor: pointer; }
+    .cmd-summary:hover { background: #161616; }
+    .cmd-name { font-family: monospace; font-size: 0.92rem; color: #60a5fa; font-weight: 600; min-width: 160px; }
+    .cmd-desc { color: #aaa; font-size: 0.85rem; flex: 1; }
+    .cmd-tags { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .cmd-tag { font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; background: #1a1a1a; color: #666; border: 1px solid #2a2a2a; }
+    .cmd-expand-icon { color: #444; font-size: 0.8rem; transition: transform .2s; flex-shrink: 0; }
+    .cmd-row.open .cmd-expand-icon { transform: rotate(180deg); }
+    .cmd-detail { display: none; border-top: 1px solid #1e1e1e; padding: 1rem 1rem 1rem 1.25rem; }
+    .cmd-row.open .cmd-detail { display: block; }
+    .cmd-detail p { color: #999; font-size: 0.85rem; line-height: 1.6; margin-bottom: 0.75rem; }
+    .cmd-detail h5 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: #555; margin-bottom: 0.4rem; }
+    .flag-list { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.75rem; }
+    .flag-row { display: flex; gap: 0.75rem; align-items: baseline; }
+    .flag-name { font-family: monospace; font-size: 0.82rem; color: #a78bfa; min-width: 140px; }
+    .flag-desc { font-size: 0.82rem; color: #888; }
+    .example-block { background: #0a0a0a; border: 1px solid #1e1e1e; border-radius: 6px; padding: 0.6rem 0.85rem; font-family: monospace; font-size: 0.82rem; color: #86efac; overflow-x: auto; }
+
+    /* Universal tab divider in distro tabs */
+    .universal-divider { display: flex; align-items: center; gap: 1rem; margin: 2rem 0 1.5rem; }
+    .universal-divider span { color: #555; font-size: 0.8rem; white-space: nowrap; }
+    .universal-divider::before, .universal-divider::after { content: ''; flex: 1; height: 1px; background: #1e1e1e; }
+
+    /* Tab panels */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* No results */
+    .no-results { text-align: center; padding: 3rem; color: #555; }
+    .no-results .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .distro-bio { grid-template-columns: 1fr; }
+      .distro-actions { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+      .best-for { text-align: left; }
+      .cmd-name { min-width: 110px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <a href="../index.html#other-apps" class="back">← Back to Deacyde.com</a>
+  <h1>🐧 Linux Commands Reference</h1>
+  <p>Universal commands + per-distro differences. Search across everything, expand any command for full docs.</p>
+</div>
+
+<div class="search-wrap">
+  <span class="search-icon">🔍</span>
+  <input class="search-input" type="text" id="searchInput" placeholder="Search commands, flags, descriptions... (e.g. 'install package', 'list files')" autocomplete="off" />
+  <div class="autocomplete-list" id="autocompleteList"></div>
+</div>
+
+<div class="tab-bar-wrap">
+  <div class="tab-bar" id="tabBar">
+    <button class="tab-btn active" data-tab="universal" onclick="switchTab('universal', this)">
+      <span class="distro-icon">🌐</span> Universal
+    </button>
+    <button class="tab-btn" data-tab="ubuntu" onclick="switchTab('ubuntu', this)">
+      <span class="distro-icon">🟠</span> Ubuntu
+    </button>
+    <button class="tab-btn" data-tab="debian" onclick="switchTab('debian', this)">
+      <span class="distro-icon">🔴</span> Debian
+    </button>
+    <button class="tab-btn" data-tab="fedora" onclick="switchTab('fedora', this)">
+      <span class="distro-icon">🔵</span> Fedora
+    </button>
+    <button class="tab-btn" data-tab="rhel" onclick="switchTab('rhel', this)">
+      <span class="distro-icon">🎩</span> RHEL/Rocky
+    </button>
+    <button class="tab-btn" data-tab="arch" onclick="switchTab('arch', this)">
+      <span class="distro-icon">🏹</span> Arch
+    </button>
+    <button class="tab-btn" data-tab="opensuse" onclick="switchTab('opensuse', this)">
+      <span class="distro-icon">🦎</span> openSUSE
+    </button>
+    <button class="tab-btn" data-tab="alpine" onclick="switchTab('alpine', this)">
+      <span class="distro-icon">🏔️</span> Alpine
+    </button>
+    <button class="tab-btn" data-tab="kali" onclick="switchTab('kali', this)">
+      <span class="distro-icon">🐉</span> Kali
+    </button>
+    <button class="tab-btn" data-tab="manjaro" onclick="switchTab('manjaro', this)">
+      <span class="distro-icon">🟢</span> Manjaro
+    </button>
+    <button class="tab-btn" data-tab="popos" onclick="switchTab('popos', this)">
+      <span class="distro-icon">🚀</span> Pop!_OS
+    </button>
+    <button class="tab-btn" data-tab="gentoo" onclick="switchTab('gentoo', this)">
+      <span class="distro-icon">🐉</span> Gentoo
+    </button>
+    <button class="tab-btn" data-tab="nixos" onclick="switchTab('nixos', this)">
+      <span class="distro-icon">❄️</span> NixOS
+    </button>
+    <button class="tab-btn" data-tab="void" onclick="switchTab('void', this)">
+      <span class="distro-icon">🌀</span> Void
+    </button>
+    <button class="tab-btn" data-tab="garuda" onclick="switchTab('garuda', this)">
+      <span class="distro-icon">🦅</span> Garuda
+    </button>
+    <button class="tab-btn" data-tab="cachyos" onclick="switchTab('cachyos', this)">
+      <span class="distro-icon">⚡</span> CachyOS
+    </button>
+    <button class="tab-btn" data-tab="endeavouros" onclick="switchTab('endeavouros', this)">
+      <span class="distro-icon">🪐</span> EndeavourOS
+    </button>
+  </div>
+</div>
+
+<div class="main" id="mainContent">
+  <!-- Panels injected by JS from DATA below -->
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════
+
+const UNIVERSAL = {
+  categories: [
+    {
+      id: 'files', icon: '📁', name: 'File Operations',
+      commands: [
+        { cmd: 'ls', desc: 'List directory contents', tags: ['files','list'],
+          detail: 'Lists files and directories in the current or specified directory.',
+          flags: [
+            { f: '-l', d: 'Long format — permissions, owner, size, date' },
+            { f: '-a', d: 'Show hidden files (starting with .)' },
+            { f: '-h', d: 'Human-readable file sizes (use with -l)' },
+            { f: '-R', d: 'Recursive — list all subdirectories' },
+            { f: '-t', d: 'Sort by modification time, newest first' },
+            { f: '--color', d: 'Colorize output by file type' },
+          ],
+          example: 'ls -lah /home/user/' },
+        { cmd: 'cd', desc: 'Change directory', tags: ['navigate'],
+          detail: 'Changes the current working directory.',
+          flags: [
+            { f: '-', d: 'Go back to previous directory' },
+            { f: '~', d: 'Go to home directory' },
+            { f: '..', d: 'Go up one level' },
+          ],
+          example: 'cd /var/log\ncd -\ncd ~/projects' },
+        { cmd: 'pwd', desc: 'Print working directory', tags: ['navigate'],
+          detail: 'Outputs the full path of the current directory.',
+          flags: [],
+          example: 'pwd' },
+        { cmd: 'cp', desc: 'Copy files or directories', tags: ['files','copy'],
+          detail: 'Copies files or directories from source to destination.',
+          flags: [
+            { f: '-r', d: 'Recursive copy (required for directories)' },
+            { f: '-p', d: 'Preserve timestamps, permissions, ownership' },
+            { f: '-i', d: 'Prompt before overwriting' },
+            { f: '-v', d: 'Verbose — show each file as copied' },
+          ],
+          example: 'cp -rp /source/dir /dest/dir' },
+        { cmd: 'mv', desc: 'Move or rename files', tags: ['files','move'],
+          detail: 'Moves files/directories or renames them.',
+          flags: [
+            { f: '-i', d: 'Prompt before overwriting' },
+            { f: '-v', d: 'Verbose output' },
+            { f: '-n', d: 'No overwrite — skip if destination exists' },
+          ],
+          example: 'mv oldname.txt newname.txt\nmv file.txt /new/location/' },
+        { cmd: 'rm', desc: 'Remove files or directories', tags: ['files','delete'],
+          detail: 'Permanently deletes files. Use with caution — no trash bin.',
+          flags: [
+            { f: '-r', d: 'Recursive — delete directories and contents' },
+            { f: '-f', d: 'Force — no prompts, ignore missing files' },
+            { f: '-i', d: 'Interactive — prompt before each deletion' },
+            { f: '-v', d: 'Verbose output' },
+          ],
+          example: 'rm -rf /path/to/directory  # BE CAREFUL' },
+        { cmd: 'mkdir', desc: 'Create directories', tags: ['files','create'],
+          detail: 'Creates one or more new directories.',
+          flags: [
+            { f: '-p', d: 'Create parent directories as needed' },
+            { f: '-v', d: 'Print each created directory' },
+            { f: '-m MODE', d: 'Set permissions at creation (e.g. 755)' },
+          ],
+          example: 'mkdir -p ~/projects/myapp/src' },
+        { cmd: 'find', desc: 'Search for files in a directory tree', tags: ['files','search'],
+          detail: 'Recursively searches for files/directories matching criteria.',
+          flags: [
+            { f: '-name "pattern"', d: 'Match by filename (supports wildcards)' },
+            { f: '-type f/d', d: 'Filter by type: f=file, d=directory' },
+            { f: '-mtime N', d: 'Modified N days ago (-N = within N days)' },
+            { f: '-size +Nc', d: 'Files larger than N bytes (k=KB, M=MB)' },
+            { f: '-exec CMD {} \\;', d: 'Run a command on each result' },
+          ],
+          example: 'find /var/log -name "*.log" -mtime -7\nfind . -type f -exec chmod 644 {} \\;' },
+        { cmd: 'chmod', desc: 'Change file permissions', tags: ['permissions'],
+          detail: 'Modifies read/write/execute permissions for files or directories.',
+          flags: [
+            { f: '-R', d: 'Recursive — apply to all files in directory' },
+            { f: '+x', d: 'Add execute permission' },
+            { f: '755', d: 'rwxr-xr-x — owner full, others read/execute' },
+            { f: '644', d: 'rw-r--r-- — owner rw, others read only' },
+            { f: '600', d: 'rw------- — owner only' },
+          ],
+          example: 'chmod +x script.sh\nchmod -R 755 /var/www/html' },
+        { cmd: 'chown', desc: 'Change file owner/group', tags: ['permissions'],
+          detail: 'Changes the ownership of files or directories.',
+          flags: [
+            { f: '-R', d: 'Recursive' },
+            { f: 'user:group', d: 'Set both owner and group' },
+          ],
+          example: 'chown -R www-data:www-data /var/www/html' },
+        { cmd: 'ln', desc: 'Create links between files', tags: ['files'],
+          detail: 'Creates hard or symbolic links.',
+          flags: [
+            { f: '-s', d: 'Create symbolic (soft) link' },
+            { f: '-f', d: 'Force overwrite of existing link' },
+          ],
+          example: 'ln -s /etc/nginx/sites-available/site /etc/nginx/sites-enabled/site' },
+        { cmd: 'tar', desc: 'Archive/compress files', tags: ['files','archive'],
+          detail: 'Creates or extracts .tar, .tar.gz, .tar.bz2 archives.',
+          flags: [
+            { f: '-c', d: 'Create archive' },
+            { f: '-x', d: 'Extract archive' },
+            { f: '-v', d: 'Verbose — show files as processed' },
+            { f: '-f FILE', d: 'Specify archive filename' },
+            { f: '-z', d: 'Use gzip compression (.tar.gz)' },
+            { f: '-j', d: 'Use bzip2 compression (.tar.bz2)' },
+            { f: '-J', d: 'Use xz compression (.tar.xz)' },
+          ],
+          example: 'tar -czvf archive.tar.gz /path/to/dir\ntar -xzvf archive.tar.gz' },
+      ]
+    },
+    {
+      id: 'text', icon: '📝', name: 'Text & Search',
+      commands: [
+        { cmd: 'cat', desc: 'Display file contents', tags: ['text','view'],
+          detail: 'Concatenates and prints file contents to stdout.',
+          flags: [
+            { f: '-n', d: 'Number all output lines' },
+            { f: '-A', d: 'Show all special characters' },
+          ],
+          example: 'cat /etc/hosts\ncat file1.txt file2.txt > combined.txt' },
+        { cmd: 'less', desc: 'Page through file contents', tags: ['text','view'],
+          detail: 'View large files with scroll/search. Press q to quit, / to search.',
+          flags: [
+            { f: '-N', d: 'Show line numbers' },
+            { f: '-S', d: 'Chop long lines (no wrap)' },
+            { f: '+F', d: 'Follow mode — like tail -f' },
+          ],
+          example: 'less /var/log/syslog\nless +F /var/log/nginx/access.log' },
+        { cmd: 'grep', desc: 'Search text using patterns', tags: ['text','search'],
+          detail: 'Searches for lines matching a pattern in files or stdin.',
+          flags: [
+            { f: '-r', d: 'Recursive search through directories' },
+            { f: '-i', d: 'Case-insensitive match' },
+            { f: '-n', d: 'Show line numbers' },
+            { f: '-v', d: 'Invert match — show non-matching lines' },
+            { f: '-l', d: 'Only print filenames with matches' },
+            { f: '-E', d: 'Extended regex (same as egrep)' },
+            { f: '-A N', d: 'Show N lines after match' },
+            { f: '-B N', d: 'Show N lines before match' },
+          ],
+          example: 'grep -rn "error" /var/log/\ngrep -i "failed" auth.log' },
+        { cmd: 'sed', desc: 'Stream editor for text transformation', tags: ['text','edit'],
+          detail: 'Non-interactive text substitution and editing.',
+          flags: [
+            { f: '-i', d: 'Edit file in-place' },
+            { f: "-i.bak", d: 'Edit in-place, keep backup with .bak extension' },
+            { f: '-e', d: 'Multiple expressions' },
+          ],
+          example: "sed -i 's/old_text/new_text/g' file.txt\nsed -n '5,10p' file.txt  # print lines 5-10" },
+        { cmd: 'awk', desc: 'Pattern scanning and text processing', tags: ['text','process'],
+          detail: 'Powerful field-based text processing language.',
+          flags: [
+            { f: '-F DELIM', d: 'Set field separator (default: whitespace)' },
+            { f: '-v VAR=VAL', d: 'Set a variable' },
+          ],
+          example: "awk '{print $1}' file.txt\nawk -F: '{print $1}' /etc/passwd" },
+        { cmd: 'sort', desc: 'Sort lines of text', tags: ['text'],
+          detail: 'Sorts lines from files or stdin.',
+          flags: [
+            { f: '-r', d: 'Reverse order' },
+            { f: '-n', d: 'Numeric sort' },
+            { f: '-u', d: 'Unique — remove duplicates' },
+            { f: '-k N', d: 'Sort by field N' },
+          ],
+          example: 'sort -rn sizes.txt\ncat file.txt | sort -u' },
+        { cmd: 'wc', desc: 'Count lines, words, bytes', tags: ['text'],
+          detail: 'Counts lines, words, characters in a file.',
+          flags: [
+            { f: '-l', d: 'Count lines only' },
+            { f: '-w', d: 'Count words only' },
+            { f: '-c', d: 'Count bytes' },
+          ],
+          example: 'wc -l /etc/passwd\ncat file.txt | wc -w' },
+        { cmd: 'head', desc: 'Output first lines of file', tags: ['text','view'],
+          detail: 'Prints the first N lines of a file (default 10).',
+          flags: [{ f: '-n N', d: 'Print first N lines' }],
+          example: 'head -n 20 /var/log/syslog' },
+        { cmd: 'tail', desc: 'Output last lines of file', tags: ['text','view'],
+          detail: 'Prints the last N lines of a file. -f follows live output.',
+          flags: [
+            { f: '-n N', d: 'Print last N lines' },
+            { f: '-f', d: 'Follow — stream new lines as appended (great for logs)' },
+          ],
+          example: 'tail -f /var/log/nginx/error.log\ntail -n 50 syslog' },
+        { cmd: 'diff', desc: 'Compare two files', tags: ['text','compare'],
+          detail: 'Shows line-by-line differences between two files.',
+          flags: [
+            { f: '-u', d: 'Unified format (used by git diff)' },
+            { f: '-r', d: 'Recursive directory diff' },
+            { f: '-i', d: 'Ignore case' },
+          ],
+          example: 'diff -u file1.txt file2.txt' },
+      ]
+    },
+    {
+      id: 'processes', icon: '⚙️', name: 'Processes',
+      commands: [
+        { cmd: 'ps', desc: 'Snapshot of current processes', tags: ['processes'],
+          detail: 'Shows a list of running processes.',
+          flags: [
+            { f: 'aux', d: 'Show all processes with full detail (most common)' },
+            { f: '-e', d: 'Show every process' },
+            { f: '-f', d: 'Full format listing' },
+          ],
+          example: 'ps aux | grep nginx\nps aux --sort=-%mem | head' },
+        { cmd: 'top', desc: 'Interactive real-time process viewer', tags: ['processes','monitor'],
+          detail: 'Live process monitor. Press q to quit, k to kill, M to sort by memory.',
+          flags: [
+            { f: '-u USER', d: 'Show only processes for a user' },
+            { f: '-p PID', d: 'Monitor specific PID' },
+          ],
+          example: 'top\ntop -u www-data' },
+        { cmd: 'htop', desc: 'Enhanced interactive process viewer', tags: ['processes','monitor'],
+          detail: 'Better top — color display, mouse support, easier kill. May need to install.',
+          flags: [],
+          example: 'htop' },
+        { cmd: 'kill', desc: 'Send signal to a process by PID', tags: ['processes'],
+          detail: 'Sends signals to processes. Default signal is SIGTERM (15).',
+          flags: [
+            { f: '-9', d: 'SIGKILL — force kill, cannot be ignored' },
+            { f: '-15', d: 'SIGTERM — graceful termination (default)' },
+            { f: '-1', d: 'SIGHUP — reload config for many daemons' },
+            { f: '-l', d: 'List all signal names' },
+          ],
+          example: 'kill 1234\nkill -9 1234' },
+        { cmd: 'killall', desc: 'Kill processes by name', tags: ['processes'],
+          detail: 'Sends a signal to all processes matching the name.',
+          flags: [
+            { f: '-9', d: 'Force kill' },
+            { f: '-u USER', d: 'Only kill processes owned by USER' },
+          ],
+          example: 'killall nginx\nkillall -9 firefox' },
+        { cmd: 'nohup', desc: 'Run a command immune to hangups', tags: ['processes'],
+          detail: 'Runs a command so it keeps running after you log out.',
+          flags: [],
+          example: 'nohup python3 server.py > output.log 2>&1 &' },
+        { cmd: 'bg / fg', desc: 'Background / foreground job control', tags: ['processes'],
+          detail: 'bg resumes a stopped job in background. fg brings it to foreground.',
+          flags: [],
+          example: '# Suspend current job: Ctrl+Z\nbg %1   # resume job 1 in background\nfg %1   # bring job 1 to foreground' },
+        { cmd: 'jobs', desc: 'List active background jobs', tags: ['processes'],
+          detail: 'Shows jobs running in the current shell session.',
+          flags: [{ f: '-l', d: 'Include PIDs' }],
+          example: 'jobs -l' },
+      ]
+    },
+    {
+      id: 'networking', icon: '🌐', name: 'Networking',
+      commands: [
+        { cmd: 'ip', desc: 'Modern network interface tool', tags: ['networking'],
+          detail: 'Replaces ifconfig. Manages network interfaces, routes, addresses.',
+          flags: [
+            { f: 'addr show', d: 'Show all IP addresses' },
+            { f: 'link show', d: 'Show all network interfaces' },
+            { f: 'route show', d: 'Show routing table' },
+            { f: 'addr add IP/MASK dev IF', d: 'Add IP to interface' },
+          ],
+          example: 'ip addr show\nip route show\nip link set eth0 up' },
+        { cmd: 'ss', desc: 'Socket statistics (replaces netstat)', tags: ['networking'],
+          detail: 'Shows socket/connection information. Faster than netstat.',
+          flags: [
+            { f: '-t', d: 'TCP sockets' },
+            { f: '-u', d: 'UDP sockets' },
+            { f: '-l', d: 'Listening sockets only' },
+            { f: '-p', d: 'Show process using the socket' },
+            { f: '-n', d: 'No hostname resolution (faster)' },
+          ],
+          example: 'ss -tlnp\nss -tulpn | grep :80' },
+        { cmd: 'curl', desc: 'Transfer data via URLs', tags: ['networking','http'],
+          detail: 'Powerful HTTP/FTP/etc client. Essential for APIs and web testing.',
+          flags: [
+            { f: '-X METHOD', d: 'HTTP method (GET, POST, PUT, DELETE)' },
+            { f: '-H "header"', d: 'Add HTTP header' },
+            { f: '-d "data"', d: 'Request body data' },
+            { f: '-o FILE', d: 'Write output to file' },
+            { f: '-L', d: 'Follow redirects' },
+            { f: '-s', d: 'Silent mode' },
+            { f: '-v', d: 'Verbose — show headers and connection info' },
+            { f: '-k', d: 'Skip SSL verification' },
+          ],
+          example: "curl -X POST -H 'Content-Type: application/json' -d '{\"key\":\"val\"}' https://api.example.com" },
+        { cmd: 'ping', desc: 'Test network connectivity', tags: ['networking'],
+          detail: 'Sends ICMP echo requests to check if a host is reachable.',
+          flags: [
+            { f: '-c N', d: 'Send N packets then stop' },
+            { f: '-i N', d: 'Interval between packets (seconds)' },
+            { f: '-s SIZE', d: 'Packet size in bytes' },
+          ],
+          example: 'ping -c 4 google.com' },
+        { cmd: 'ssh', desc: 'Secure Shell remote login', tags: ['networking','remote'],
+          detail: 'Connect to remote machines securely over the network.',
+          flags: [
+            { f: '-p PORT', d: 'Connect on a specific port' },
+            { f: '-i KEY', d: 'Use a specific private key file' },
+            { f: '-L local:host:remote', d: 'Local port forwarding tunnel' },
+            { f: '-N', d: 'No remote command — just tunnel' },
+            { f: '-v', d: 'Verbose — good for debugging connection issues' },
+          ],
+          example: 'ssh user@192.168.1.100\nssh -i ~/.ssh/id_rsa -p 2222 user@server.com' },
+        { cmd: 'scp', desc: 'Secure copy over SSH', tags: ['networking','remote'],
+          detail: 'Copies files to/from remote machines over SSH.',
+          flags: [
+            { f: '-r', d: 'Recursive — copy directories' },
+            { f: '-P PORT', d: 'Specify SSH port (capital P)' },
+            { f: '-i KEY', d: 'Identity file' },
+          ],
+          example: 'scp file.txt user@server:/remote/path/\nscp -r user@server:/remote/dir ./local/' },
+        { cmd: 'wget', desc: 'Non-interactive file downloader', tags: ['networking','download'],
+          detail: 'Downloads files from the web. Can resume, spider, mirror sites.',
+          flags: [
+            { f: '-O FILE', d: 'Output to specific filename' },
+            { f: '-c', d: 'Continue incomplete download' },
+            { f: '-q', d: 'Quiet mode' },
+            { f: '-r', d: 'Recursive download' },
+            { f: '--no-check-certificate', d: 'Skip SSL check' },
+          ],
+          example: 'wget -O file.zip https://example.com/file.zip' },
+        { cmd: 'dig', desc: 'DNS lookup tool', tags: ['networking','dns'],
+          detail: 'Queries DNS servers for domain information.',
+          flags: [
+            { f: 'A', d: 'IPv4 address record' },
+            { f: 'AAAA', d: 'IPv6 address record' },
+            { f: 'MX', d: 'Mail exchange records' },
+            { f: 'TXT', d: 'Text records' },
+            { f: '+short', d: 'Short output' },
+          ],
+          example: 'dig google.com A +short\ndig @8.8.8.8 example.com MX' },
+        { cmd: 'nmap', desc: 'Network scanner / port scanner', tags: ['networking','security'],
+          detail: 'Scans hosts for open ports and services. Often pre-installed on Kali.',
+          flags: [
+            { f: '-sV', d: 'Detect service versions' },
+            { f: '-sS', d: 'SYN scan (stealth)' },
+            { f: '-p PORT', d: 'Scan specific port(s)' },
+            { f: '-A', d: 'Aggressive: OS detect + traceroute + scripts' },
+            { f: '-oN FILE', d: 'Save output to file' },
+          ],
+          example: 'nmap -sV 192.168.1.0/24\nnmap -p 80,443 example.com' },
+      ]
+    },
+    {
+      id: 'sysinfo', icon: '💻', name: 'System Info',
+      commands: [
+        { cmd: 'uname', desc: 'System/kernel information', tags: ['system'],
+          detail: 'Prints kernel name, version, hardware info.',
+          flags: [
+            { f: '-a', d: 'All info (most common)' },
+            { f: '-r', d: 'Kernel release version only' },
+            { f: '-m', d: 'Machine hardware (e.g. x86_64)' },
+          ],
+          example: 'uname -a' },
+        { cmd: 'df', desc: 'Disk space usage of filesystems', tags: ['system','disk'],
+          detail: 'Shows disk space available and used on mounted filesystems.',
+          flags: [
+            { f: '-h', d: 'Human-readable sizes' },
+            { f: '-T', d: 'Show filesystem type' },
+            { f: '-i', d: 'Show inode usage instead of blocks' },
+          ],
+          example: 'df -hT\ndf -h /home' },
+        { cmd: 'du', desc: 'Disk usage of files/directories', tags: ['system','disk'],
+          detail: 'Shows how much space files and directories use.',
+          flags: [
+            { f: '-h', d: 'Human-readable' },
+            { f: '-s', d: 'Summary — total only' },
+            { f: '-d N', d: 'Depth of directories to show' },
+            { f: '--max-depth=N', d: 'Same as -d' },
+          ],
+          example: 'du -sh /var/log/\ndu -h --max-depth=1 /home' },
+        { cmd: 'free', desc: 'Memory usage', tags: ['system','memory'],
+          detail: 'Shows free and used RAM and swap.',
+          flags: [
+            { f: '-h', d: 'Human-readable' },
+            { f: '-m', d: 'Show in megabytes' },
+            { f: '-s N', d: 'Update every N seconds' },
+          ],
+          example: 'free -h\nwatch -n 2 free -h' },
+        { cmd: 'lscpu', desc: 'CPU architecture info', tags: ['system','hardware'],
+          detail: 'Displays detailed CPU information.',
+          flags: [],
+          example: 'lscpu' },
+        { cmd: 'lsblk', desc: 'List block devices', tags: ['system','disk'],
+          detail: 'Shows disks, partitions, and their mount points in a tree.',
+          flags: [
+            { f: '-f', d: 'Show filesystem type and UUID' },
+            { f: '-o NAME,SIZE,FSTYPE,MOUNTPOINT', d: 'Custom columns' },
+          ],
+          example: 'lsblk -f' },
+        { cmd: 'lspci', desc: 'List PCI devices', tags: ['system','hardware'],
+          detail: 'Shows all PCI hardware devices.',
+          flags: [
+            { f: '-v', d: 'Verbose detail' },
+            { f: '-k', d: 'Show kernel driver in use' },
+          ],
+          example: 'lspci -k | grep -A3 VGA' },
+        { cmd: 'uptime', desc: 'System uptime and load average', tags: ['system'],
+          detail: 'Shows how long the system has been running and current load.',
+          flags: [],
+          example: 'uptime' },
+        { cmd: 'hostnamectl', desc: 'Query/set hostname and related settings', tags: ['system'],
+          detail: 'Used on systemd systems to view/set hostname.',
+          flags: [
+            { f: 'set-hostname NAME', d: 'Change the hostname' },
+          ],
+          example: 'hostnamectl\nhostnamectl set-hostname myserver' },
+        { cmd: 'env', desc: 'Show/set environment variables', tags: ['system','env'],
+          detail: 'Prints all environment variables or runs a command with modified env.',
+          flags: [],
+          example: 'env\nenv NODE_ENV=production node app.js' },
+      ]
+    },
+    {
+      id: 'services', icon: '🔧', name: 'Services (systemd)',
+      commands: [
+        { cmd: 'systemctl start', desc: 'Start a service', tags: ['services','systemd'],
+          detail: 'Starts a systemd service immediately.',
+          flags: [],
+          example: 'systemctl start nginx\nsystemctl start docker' },
+        { cmd: 'systemctl stop', desc: 'Stop a service', tags: ['services','systemd'],
+          detail: 'Stops a running systemd service.',
+          flags: [],
+          example: 'systemctl stop nginx' },
+        { cmd: 'systemctl restart', desc: 'Restart a service', tags: ['services','systemd'],
+          detail: 'Stops then starts a service. Use reload to apply config without full restart.',
+          flags: [],
+          example: 'systemctl restart nginx' },
+        { cmd: 'systemctl enable', desc: 'Enable service at boot', tags: ['services','systemd'],
+          detail: 'Configures service to start automatically on system boot.',
+          flags: [{ f: '--now', d: 'Enable AND start immediately' }],
+          example: 'systemctl enable --now nginx' },
+        { cmd: 'systemctl disable', desc: 'Disable service at boot', tags: ['services','systemd'],
+          detail: 'Prevents service from starting automatically at boot.',
+          flags: [{ f: '--now', d: 'Disable AND stop immediately' }],
+          example: 'systemctl disable --now nginx' },
+        { cmd: 'systemctl status', desc: 'Check service status', tags: ['services','systemd'],
+          detail: 'Shows current status, recent logs, and PID of a service.',
+          flags: [],
+          example: 'systemctl status nginx\nsystemctl status sshd' },
+        { cmd: 'journalctl', desc: 'Query the systemd journal log', tags: ['services','logs'],
+          detail: 'Views logs collected by systemd. Powerful filtering options.',
+          flags: [
+            { f: '-u SERVICE', d: 'Logs for a specific service' },
+            { f: '-f', d: 'Follow — live streaming logs' },
+            { f: '-n N', d: 'Last N log lines' },
+            { f: '--since "time"', d: 'Logs since a time (e.g. "1 hour ago")' },
+            { f: '-b', d: 'Logs from current boot' },
+            { f: '-p err', d: 'Filter by priority (err, warning, info)' },
+          ],
+          example: 'journalctl -u nginx -f\njournalctl -p err -b' },
+      ]
+    },
+    {
+      id: 'users', icon: '👤', name: 'Users & Groups',
+      commands: [
+        { cmd: 'sudo', desc: 'Execute command as superuser', tags: ['users','permissions'],
+          detail: 'Runs a command with root (or another user\'s) privileges.',
+          flags: [
+            { f: '-u USER', d: 'Run as a different user' },
+            { f: '-i', d: 'Login shell as root' },
+            { f: '-l', d: 'List allowed sudo commands' },
+          ],
+          example: 'sudo apt update\nsudo -u postgres psql' },
+        { cmd: 'su', desc: 'Switch user', tags: ['users'],
+          detail: 'Switches to another user account.',
+          flags: [
+            { f: '-', d: 'Full login shell (loads user environment)' },
+            { f: '-c CMD', d: 'Run a command as the user' },
+          ],
+          example: 'su - postgres\nsu -c "whoami" john' },
+        { cmd: 'useradd', desc: 'Create a new user', tags: ['users'],
+          detail: 'Low-level user creation. Prefer adduser on Debian-based systems.',
+          flags: [
+            { f: '-m', d: 'Create home directory' },
+            { f: '-s SHELL', d: 'Set login shell' },
+            { f: '-G GROUPS', d: 'Add to supplementary groups' },
+          ],
+          example: 'useradd -m -s /bin/bash -G sudo newuser' },
+        { cmd: 'passwd', desc: 'Change user password', tags: ['users'],
+          detail: 'Sets or changes a user\'s password.',
+          flags: [
+            { f: '-l', d: 'Lock account' },
+            { f: '-u', d: 'Unlock account' },
+          ],
+          example: 'passwd\npasswd username' },
+        { cmd: 'whoami', desc: 'Print current username', tags: ['users'],
+          detail: 'Outputs the username of the currently logged-in user.',
+          flags: [],
+          example: 'whoami' },
+        { cmd: 'id', desc: 'Show user and group IDs', tags: ['users'],
+          detail: 'Displays UID, GID, and group memberships.',
+          flags: [],
+          example: 'id\nid username' },
+        { cmd: 'groups', desc: 'Show group membership', tags: ['users'],
+          detail: 'Lists groups the current (or specified) user belongs to.',
+          flags: [],
+          example: 'groups\ngroups username' },
+        { cmd: 'usermod', desc: 'Modify a user account', tags: ['users'],
+          detail: 'Changes user account properties.',
+          flags: [
+            { f: '-aG GROUP', d: 'Append user to group (must use -a to not remove existing groups)' },
+            { f: '-s SHELL', d: 'Change login shell' },
+          ],
+          example: 'usermod -aG docker username\nusermod -aG sudo username' },
+      ]
+    },
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════════
+// DISTRO DATA
+// ═══════════════════════════════════════════════════════════════
+
+const DISTROS = {
+  ubuntu: {
+    name: 'Ubuntu', icon: '🟠', color: '#e95420',
+    tagline: 'The most popular Linux distro for desktops and servers',
+    history: 'Founded by Canonical in 2004, Ubuntu is based on Debian and named after a South African philosophy meaning "humanity to others." It pioneered user-friendly Linux with polished installers, regular 6-month releases, and long-term support (LTS) versions every 2 years. It\'s the de-facto standard for cloud servers (AWS, GCP, Azure all offer it first-class) and the most Googled distro by far.',
+    bestFor: 'General purpose, beginners, servers, cloud, corporate desktops',
+    founded: '2004', base: 'Debian', packageMgr: 'apt / dpkg',
+    pros: ['Massive community & docs', 'Best hardware support', 'LTS = 5yr security updates', 'Snap packages built-in', 'Best cloud integration'],
+    cons: ['Snap store controversies', 'Can be bloated', 'Ubuntu-specific patches can differ from upstream'],
+    downloadUrl: 'https://ubuntu.com/download',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt update', desc: 'Refresh package index from repositories', tags: ['packages'],
+            detail: 'Downloads the latest package lists from all configured repos. Run before installing anything.',
+            flags: [],
+            example: 'sudo apt update' },
+          { cmd: 'apt upgrade', desc: 'Upgrade all installed packages', tags: ['packages'],
+            detail: 'Upgrades packages without removing any.',
+            flags: [
+              { f: '-y', d: 'Auto-yes to prompts' },
+              { f: '--no-install-recommends', d: 'Skip recommended packages' },
+            ],
+            example: 'sudo apt update && sudo apt upgrade -y' },
+          { cmd: 'apt install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs one or more packages and their dependencies.',
+            flags: [
+              { f: '-y', d: 'Auto-confirm' },
+              { f: '--reinstall', d: 'Reinstall already installed package' },
+            ],
+            example: 'sudo apt install -y nginx curl git' },
+          { cmd: 'apt remove', desc: 'Remove a package', tags: ['packages'],
+            detail: 'Removes package but keeps config files.',
+            flags: [],
+            example: 'sudo apt remove nginx' },
+          { cmd: 'apt purge', desc: 'Remove package and config files', tags: ['packages'],
+            detail: 'Complete removal including configuration files.',
+            flags: [],
+            example: 'sudo apt purge nginx' },
+          { cmd: 'apt search', desc: 'Search for packages', tags: ['packages'],
+            detail: 'Searches available packages by name or description.',
+            flags: [],
+            example: 'apt search nodejs' },
+          { cmd: 'apt show', desc: 'Show package details', tags: ['packages'],
+            detail: 'Displays detailed info about a package.',
+            flags: [],
+            example: 'apt show nginx' },
+          { cmd: 'apt autoremove', desc: 'Remove unused dependencies', tags: ['packages'],
+            detail: 'Cleans up packages installed as deps that are no longer needed.',
+            flags: [],
+            example: 'sudo apt autoremove -y' },
+          { cmd: 'dpkg -i', desc: 'Install a .deb file directly', tags: ['packages'],
+            detail: 'Installs a downloaded .deb package file.',
+            flags: [],
+            example: 'sudo dpkg -i package.deb' },
+          { cmd: 'snap install', desc: 'Install a snap package', tags: ['packages','snap'],
+            detail: 'Installs sandboxed snap packages (Ubuntu-native format).',
+            flags: [
+              { f: '--classic', d: 'Classic mode — less sandboxing (needed for some apps)' },
+              { f: '--channel=edge', d: 'Install from edge channel (latest/unstable)' },
+            ],
+            example: 'sudo snap install code --classic\nsudo snap install discord' },
+        ]
+      },
+      {
+        id: 'ubuntu-sys', icon: '🔧', name: 'Ubuntu-Specific',
+        commands: [
+          { cmd: 'do-release-upgrade', desc: 'Upgrade Ubuntu to next release', tags: ['system','upgrade'],
+            detail: 'The official tool to upgrade Ubuntu to the next major version.',
+            flags: [
+              { f: '-d', d: 'Upgrade to development release' },
+            ],
+            example: 'sudo do-release-upgrade' },
+          { cmd: 'ubuntu-drivers', desc: 'Manage proprietary drivers', tags: ['hardware','drivers'],
+            detail: 'Detects and installs recommended proprietary drivers (NVIDIA, etc).',
+            flags: [
+              { f: 'list', d: 'List available drivers' },
+              { f: 'autoinstall', d: 'Install recommended drivers' },
+            ],
+            example: 'ubuntu-drivers list\nsudo ubuntu-drivers autoinstall' },
+          { cmd: 'lsb_release -a', desc: 'Show Ubuntu version info', tags: ['system'],
+            detail: 'Displays the Ubuntu/Debian release version.',
+            flags: [],
+            example: 'lsb_release -a' },
+          { cmd: 'add-apt-repository', desc: 'Add a PPA or external repo', tags: ['packages'],
+            detail: 'Adds a Personal Package Archive or third-party repo.',
+            flags: [
+              { f: '--remove', d: 'Remove a repo' },
+              { f: '-y', d: 'Auto-confirm' },
+            ],
+            example: 'sudo add-apt-repository ppa:deadsnakes/python3\nsudo apt update' },
+          { cmd: 'ufw', desc: 'Uncomplicated Firewall', tags: ['networking','security'],
+            detail: 'Ubuntu\'s simplified firewall management tool.',
+            flags: [
+              { f: 'enable', d: 'Enable the firewall' },
+              { f: 'allow PORT', d: 'Allow a port' },
+              { f: 'deny PORT', d: 'Block a port' },
+              { f: 'status verbose', d: 'Show rules' },
+            ],
+            example: 'sudo ufw enable\nsudo ufw allow 22/tcp\nsudo ufw status verbose' },
+        ]
+      }
+    ]
+  },
+
+  debian: {
+    name: 'Debian', icon: '🔴', color: '#d70751',
+    tagline: 'The universal operating system — rock solid, community driven',
+    history: 'The oldest major Linux distro still in active development, Debian was founded in 1993 by Ian Murdock (the "ian" in Debian, combined with his girlfriend "Deb"). It\'s the upstream source for Ubuntu, Mint, Kali, and hundreds of other distros. Debian prioritizes stability above all — stable releases are well-tested for months/years before release. Free Software ideals are baked in: the main repo contains only FOSS software.',
+    bestFor: 'Servers, stable production systems, purists, Raspberry Pi',
+    founded: '1993', base: 'Independent', packageMgr: 'apt / dpkg',
+    pros: ['Ultra stable', 'Massive package archive (50k+ packages)', 'Rock-solid server OS', 'Long history = great docs', 'Basis for many other distros'],
+    cons: ['Older package versions in stable', 'No PPAs (use backports or testing)', 'Less beginner polish than Ubuntu'],
+    downloadUrl: 'https://www.debian.org/distrib/',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt update && apt upgrade', desc: 'Refresh repos and upgrade all packages', tags: ['packages'],
+            detail: 'Same as Ubuntu — apt is shared. Debian stable repos lag intentionally.',
+            flags: [],
+            example: 'sudo apt update && sudo apt full-upgrade -y' },
+          { cmd: 'apt full-upgrade', desc: 'Upgrade including dependency changes', tags: ['packages'],
+            detail: 'Like apt upgrade but can also remove packages to resolve dependencies. Preferred for Debian.',
+            flags: [],
+            example: 'sudo apt full-upgrade' },
+          { cmd: 'apt-cache policy', desc: 'Show package versions across repos', tags: ['packages'],
+            detail: 'Shows which version of a package is installed vs available in each configured repo.',
+            flags: [],
+            example: 'apt-cache policy nginx' },
+          { cmd: 'dpkg --get-selections', desc: 'List all installed packages', tags: ['packages'],
+            detail: 'Dumps a list of all installed packages.',
+            flags: [],
+            example: 'dpkg --get-selections | grep -v deinstall' },
+          { cmd: 'dpkg-reconfigure', desc: 'Reconfigure an installed package', tags: ['packages'],
+            detail: 'Re-runs the post-install configuration wizard for a package.',
+            flags: [],
+            example: 'sudo dpkg-reconfigure tzdata\nsudo dpkg-reconfigure locales' },
+        ]
+      },
+      {
+        id: 'debian-sys', icon: '🔧', name: 'Debian-Specific',
+        commands: [
+          { cmd: 'cat /etc/debian_version', desc: 'Show Debian version', tags: ['system'],
+            detail: 'Simple way to check the Debian release number.',
+            flags: [],
+            example: 'cat /etc/debian_version' },
+          { cmd: 'update-alternatives', desc: 'Manage default program versions', tags: ['system'],
+            detail: 'Switches the default version of commands like python3, java, editor.',
+            flags: [
+              { f: '--config NAME', d: 'Interactively select version' },
+              { f: '--list NAME', d: 'Show alternatives' },
+            ],
+            example: 'sudo update-alternatives --config python3\nsudo update-alternatives --config editor' },
+          { cmd: 'sources.list', desc: 'Repo configuration file', tags: ['packages'],
+            detail: 'Edit /etc/apt/sources.list to add contrib, non-free repos for proprietary drivers/firmware.',
+            flags: [],
+            example: '# /etc/apt/sources.list\ndeb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware' },
+        ]
+      }
+    ]
+  },
+
+  fedora: {
+    name: 'Fedora', icon: '🔵', color: '#3c6eb4',
+    tagline: "Red Hat's cutting-edge community distro — bleeding edge, upstream first",
+    history: "Fedora was created in 2003 as a community replacement for Red Hat Linux (which became RHEL). Sponsored by Red Hat/IBM, it serves as the upstream testing ground for RHEL. Fedora ships the absolute latest kernel, GNOME, and software — often before anyone else. It uses rpm packages and DNF (formerly YUM) as the package manager. Fedora Workstation is a popular developer choice; Fedora Server and Fedora CoreOS serve containers/cloud.",
+    bestFor: 'Developers, cutting-edge desktops, RHEL learning path',
+    founded: '2003', base: 'Independent (Red Hat sponsored)', packageMgr: 'dnf / rpm',
+    pros: ['Latest software versions', 'Strong SELinux security', 'Great GNOME integration', 'Wayland-first', 'Path to RHEL'],
+    cons: ['Shorter support cycle (~13 months)', 'Cutting edge = occasional breakage', 'Smaller package count than Debian'],
+    downloadUrl: 'https://fedoraproject.org/workstation/download',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management (DNF)',
+        commands: [
+          { cmd: 'dnf update', desc: 'Update all packages', tags: ['packages'],
+            detail: 'Fetches and installs all available package updates.',
+            flags: [
+              { f: '-y', d: 'Auto-yes' },
+            ],
+            example: 'sudo dnf update -y' },
+          { cmd: 'dnf install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs a package and its dependencies.',
+            flags: [
+              { f: '-y', d: 'Auto-confirm' },
+            ],
+            example: 'sudo dnf install -y nginx git curl' },
+          { cmd: 'dnf remove', desc: 'Remove a package', tags: ['packages'],
+            detail: 'Uninstalls a package and optionally its orphaned deps.',
+            flags: [],
+            example: 'sudo dnf remove nginx' },
+          { cmd: 'dnf search', desc: 'Search packages', tags: ['packages'],
+            detail: 'Searches name and description of available packages.',
+            flags: [],
+            example: 'dnf search nodejs' },
+          { cmd: 'dnf info', desc: 'Show package details', tags: ['packages'],
+            detail: 'Displays version, size, license, description for a package.',
+            flags: [],
+            example: 'dnf info nginx' },
+          { cmd: 'dnf autoremove', desc: 'Remove unused dependencies', tags: ['packages'],
+            detail: 'Cleans up packages no longer needed as dependencies.',
+            flags: [],
+            example: 'sudo dnf autoremove' },
+          { cmd: 'dnf copr enable', desc: 'Enable a COPR third-party repo', tags: ['packages'],
+            detail: "COPR is Fedora's equivalent to Ubuntu PPAs — community build repos.",
+            flags: [],
+            example: 'sudo dnf copr enable user/repo-name' },
+          { cmd: 'rpm -ivh', desc: 'Install an .rpm file', tags: ['packages'],
+            detail: 'Installs a local .rpm package file.',
+            flags: [],
+            example: 'sudo rpm -ivh package.rpm\n# Or use dnf: sudo dnf install ./package.rpm' },
+          { cmd: 'rpm -qa', desc: 'List all installed RPM packages', tags: ['packages'],
+            detail: 'Queries all installed packages.',
+            flags: [],
+            example: "rpm -qa | grep nginx\nrpm -qa --last | head -20  # recently installed" },
+        ]
+      },
+      {
+        id: 'fedora-sys', icon: '🔧', name: 'Fedora-Specific',
+        commands: [
+          { cmd: 'cat /etc/fedora-release', desc: 'Show Fedora version', tags: ['system'],
+            detail: 'Quick check of current Fedora release number.',
+            flags: [],
+            example: 'cat /etc/fedora-release' },
+          { cmd: 'dnf system-upgrade', desc: 'Upgrade to next Fedora release', tags: ['system'],
+            detail: 'The official multi-step process to upgrade Fedora major versions.',
+            flags: [],
+            example: 'sudo dnf install dnf-plugin-system-upgrade\nsudo dnf system-upgrade download --releasever=41\nsudo dnf system-upgrade reboot' },
+          { cmd: 'getenforce / setenforce', desc: 'SELinux enforcement status', tags: ['security'],
+            detail: 'Fedora uses SELinux by default. getenforce checks mode; setenforce changes it.',
+            flags: [
+              { f: 'setenforce 0', d: 'Set to Permissive (logs but does not block)' },
+              { f: 'setenforce 1', d: 'Set to Enforcing' },
+            ],
+            example: 'getenforce\nsudo setenforce 0  # temporary, resets on reboot' },
+          { cmd: 'firewall-cmd', desc: 'Manage firewalld firewall', tags: ['networking','security'],
+            detail: 'Fedora uses firewalld instead of ufw.',
+            flags: [
+              { f: '--list-all', d: 'Show current rules' },
+              { f: '--add-service=http', d: 'Allow http service' },
+              { f: '--add-port=8080/tcp', d: 'Allow a port' },
+              { f: '--permanent', d: 'Make rule persist across reboots' },
+              { f: '--reload', d: 'Apply permanent rules' },
+            ],
+            example: 'sudo firewall-cmd --add-service=http --permanent\nsudo firewall-cmd --reload' },
+        ]
+      }
+    ]
+  },
+
+  rhel: {
+    name: 'RHEL / Rocky Linux', icon: '🎩', color: '#cc0000',
+    tagline: 'Enterprise-grade stability — the backbone of corporate Linux',
+    history: "Red Hat Enterprise Linux (RHEL) is the gold standard for enterprise Linux, first released in 2000. IBM acquired Red Hat in 2019 for $34B. RHEL requires a subscription for updates. Rocky Linux (2021) and AlmaLinux (2021) emerged as free, binary-compatible RHEL rebuilds after CentOS 8 was discontinued. Rocky was founded by Gregory Kurtzer, one of CentOS's original founders. These are now the dominant free RHEL alternatives in enterprise environments.",
+    bestFor: 'Enterprise servers, compliance environments, long-term stability',
+    founded: '2000 (RHEL), 2021 (Rocky)', base: 'Independent (Fedora downstream)', packageMgr: 'dnf / yum / rpm',
+    pros: ['10-year support lifecycle', 'SELinux hardened', 'Certified for enterprise software', 'Huge corporate adoption'],
+    cons: ['Old package versions', 'RHEL needs subscription', 'Not for desktop use'],
+    downloadUrl: 'https://rockylinux.org/download',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'dnf / yum', desc: 'Package manager (dnf preferred, yum legacy)', tags: ['packages'],
+            detail: 'RHEL 8+ uses DNF. Older systems use YUM. DNF commands are mostly identical to Fedora.',
+            flags: [],
+            example: 'sudo dnf install nginx\nsudo yum install nginx  # older systems' },
+          { cmd: 'dnf module', desc: 'Manage module streams (AppStreams)', tags: ['packages'],
+            detail: 'RHEL/Rocky uses AppStreams to provide multiple versions of software.',
+            flags: [
+              { f: 'list', d: 'List available modules' },
+              { f: 'enable NAME:STREAM', d: 'Enable a module stream' },
+              { f: 'install NAME', d: 'Install a module' },
+            ],
+            example: 'dnf module list nodejs\nsudo dnf module enable nodejs:20\nsudo dnf module install nodejs' },
+          { cmd: 'subscription-manager', desc: 'Manage RHEL subscriptions', tags: ['packages'],
+            detail: 'RHEL-specific tool to register and manage Red Hat subscriptions.',
+            flags: [
+              { f: 'register', d: 'Register with Red Hat' },
+              { f: 'repos --list', d: 'List available repos' },
+            ],
+            example: 'sudo subscription-manager register --username=user --password=pass' },
+        ]
+      },
+      {
+        id: 'rhel-sys', icon: '🔧', name: 'RHEL/Rocky-Specific',
+        commands: [
+          { cmd: 'cat /etc/redhat-release', desc: 'Show RHEL/Rocky version', tags: ['system'],
+            detail: 'Displays the exact release name and version.',
+            flags: [],
+            example: 'cat /etc/redhat-release' },
+          { cmd: 'alternatives', desc: 'Manage default command alternatives', tags: ['system'],
+            detail: "RHEL's version of update-alternatives.",
+            flags: [{ f: '--config NAME', d: 'Interactively choose version' }],
+            example: 'sudo alternatives --config python3' },
+          { cmd: 'sestatus', desc: 'Full SELinux status report', tags: ['security'],
+            detail: 'Shows SELinux status, mode, policy, and loaded modules.',
+            flags: [],
+            example: 'sestatus' },
+          { cmd: 'ausearch / audit2allow', desc: 'Analyze SELinux denials', tags: ['security'],
+            detail: 'ausearch searches the audit log; audit2allow generates SELinux policy rules from denials.',
+            flags: [],
+            example: 'sudo ausearch -m avc -ts recent\nsudo audit2allow -a -M mypolicy' },
+        ]
+      }
+    ]
+  },
+
+  arch: {
+    name: 'Arch Linux', icon: '🏹', color: '#1793d1',
+    tagline: "Do it yourself — simple, minimalist, rolling release",
+    history: "Arch Linux was created in 2002 by Judd Vinet, inspired by CRUX. It's famous for its rolling release model (no major version upgrades — packages update continuously), the 'Arch Way' philosophy (simplicity, user-centrism, minimal defaults), and the legendary Arch Wiki — arguably the best Linux documentation in existence, useful even on other distros. Pacman is its native package manager; the AUR (Arch User Repository) gives access to nearly every piece of software in existence.",
+    bestFor: 'Power users, learning Linux deeply, desktop customization, bleeding edge',
+    founded: '2002', base: 'Independent', packageMgr: 'pacman / yay (AUR)',
+    pros: ['Rolling release = always latest', 'AUR has everything', 'Arch Wiki is unmatched', 'Minimal — install only what you want', 'Fast'],
+    cons: ['Manual install process', 'Occasional breakage from rolling updates', 'Steep learning curve', 'Not for beginners'],
+    downloadUrl: 'https://archlinux.org/download/',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management (Pacman + AUR)',
+        commands: [
+          { cmd: 'pacman -Syu', desc: 'Full system upgrade', tags: ['packages'],
+            detail: 'The main Arch update command. -S sync, -y refresh, -u upgrade.',
+            flags: [],
+            example: 'sudo pacman -Syu' },
+          { cmd: 'pacman -S', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs one or more packages from the repos.',
+            flags: [
+              { f: '--noconfirm', d: 'Skip confirmation prompts' },
+              { f: '--needed', d: 'Skip packages already up-to-date' },
+            ],
+            example: 'sudo pacman -S --noconfirm nginx git curl' },
+          { cmd: 'pacman -R', desc: 'Remove a package', tags: ['packages'],
+            detail: 'Removes a package.',
+            flags: [
+              { f: '-s', d: 'Remove package and unneeded dependencies' },
+              { f: '-n', d: 'Also remove config files' },
+            ],
+            example: 'sudo pacman -Rns nginx' },
+          { cmd: 'pacman -Ss', desc: 'Search for packages', tags: ['packages'],
+            detail: 'Searches repos by package name and description.',
+            flags: [],
+            example: 'pacman -Ss nodejs' },
+          { cmd: 'pacman -Si', desc: 'Show package info', tags: ['packages'],
+            detail: 'Displays detailed info about a repo package.',
+            flags: [],
+            example: 'pacman -Si nginx' },
+          { cmd: 'pacman -Qi', desc: 'Show installed package info', tags: ['packages'],
+            detail: 'Shows info about an already-installed package.',
+            flags: [],
+            example: 'pacman -Qi nginx' },
+          { cmd: 'pacman -Qs', desc: 'Search installed packages', tags: ['packages'],
+            detail: 'Searches only locally installed packages.',
+            flags: [],
+            example: 'pacman -Qs nginx' },
+          { cmd: 'pacman -Qe', desc: 'List explicitly installed packages', tags: ['packages'],
+            detail: 'Shows packages you explicitly installed (not auto-deps).',
+            flags: [],
+            example: 'pacman -Qe' },
+          { cmd: 'yay -S', desc: 'Install from AUR', tags: ['packages','aur'],
+            detail: 'yay (Yet Another Yaourt) is the most popular AUR helper. Access 80k+ community packages.',
+            flags: [
+              { f: '--noconfirm', d: 'Skip all prompts' },
+              { f: '-a', d: 'Only search AUR' },
+            ],
+            example: 'yay -S visual-studio-code-bin\nyay -Syu  # upgrade all including AUR' },
+          { cmd: 'paru -S', desc: 'Install from AUR (paru alternative)', tags: ['packages','aur'],
+            detail: 'paru is a newer, Rust-based AUR helper. More secure review process.',
+            flags: [],
+            example: 'paru -S discord\nparu -Syu' },
+        ]
+      },
+      {
+        id: 'arch-sys', icon: '🔧', name: 'Arch-Specific',
+        commands: [
+          { cmd: 'pacman -Qdtq', desc: 'List orphaned packages', tags: ['packages'],
+            detail: 'Finds packages installed as deps that are no longer needed by anything.',
+            flags: [],
+            example: "sudo pacman -Rns $(pacman -Qdtq)  # remove all orphans" },
+          { cmd: 'reflector', desc: 'Update pacman mirror list', tags: ['packages'],
+            detail: 'Fetches and ranks the fastest pacman mirrors for your location.',
+            flags: [
+              { f: '--country "US"', d: 'Filter by country' },
+              { f: '--latest 10', d: 'Use 10 most recent mirrors' },
+              { f: '--save /etc/pacman.d/mirrorlist', d: 'Save to mirror file' },
+            ],
+            example: 'sudo reflector --country "US" --latest 10 --save /etc/pacman.d/mirrorlist' },
+          { cmd: 'makepkg -si', desc: 'Build and install from source (AUR)', tags: ['packages'],
+            detail: 'Manually builds a package from a PKGBUILD file (how AUR actually works).',
+            flags: [
+              { f: '-s', d: 'Install missing dependencies' },
+              { f: '-i', d: 'Install after building' },
+              { f: '-c', d: 'Clean up build files' },
+            ],
+            example: 'git clone https://aur.archlinux.org/yay.git\ncd yay && makepkg -si' },
+          { cmd: 'systemd-boot / grub', desc: 'Bootloader management', tags: ['system'],
+            detail: 'Arch commonly uses systemd-boot or GRUB. bootctl manages systemd-boot.',
+            flags: [],
+            example: 'bootctl status\nsudo bootctl update' },
+          { cmd: 'mkinitcpio -P', desc: 'Regenerate initramfs', tags: ['system'],
+            detail: 'Rebuilds the initial RAM disk — needed after kernel/config changes.',
+            flags: [],
+            example: 'sudo mkinitcpio -P' },
+        ]
+      }
+    ]
+  },
+
+  opensuse: {
+    name: 'openSUSE', icon: '🦎', color: '#73ba25',
+    tagline: 'Stable or rolling — enterprise polish with community freedom',
+    history: "openSUSE started as SuSE Linux in 1994 in Germany, one of the oldest commercial Linux distros. Novell acquired it in 2003 and open-sourced it as openSUSE in 2005. It comes in two flavors: Leap (stable, enterprise-grade, synced with SUSE Linux Enterprise) and Tumbleweed (rolling release). openSUSE is famous for YaST — a powerful GUI/TUI admin tool — and zypper, its package manager. Strong in Europe and enterprise environments.",
+    bestFor: 'Enterprise desktops, sysadmins, KDE users, stability + rolling choice',
+    founded: '1994', base: 'Independent (SUSE)', packageMgr: 'zypper / rpm',
+    pros: ['YaST GUI admin tool is excellent', 'Leap = very stable', 'Tumbleweed = great rolling', 'Strong KDE support', 'Snapper for btrfs snapshots'],
+    cons: ['Smaller community than Ubuntu/Fedora', 'zypper can be slow', 'Less cloud presence'],
+    downloadUrl: 'https://get.opensuse.org/',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management (Zypper)',
+        commands: [
+          { cmd: 'zypper refresh', desc: 'Refresh repository metadata', tags: ['packages'],
+            detail: 'Updates the local cache of available packages from all repos.',
+            flags: [],
+            example: 'sudo zypper refresh' },
+          { cmd: 'zypper update', desc: 'Update all packages', tags: ['packages'],
+            detail: 'Installs all available updates.',
+            flags: [{ f: '-y', d: 'Auto-yes' }],
+            example: 'sudo zypper update -y' },
+          { cmd: 'zypper install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs one or more packages.',
+            flags: [{ f: '-y', d: 'Auto-confirm' }],
+            example: 'sudo zypper install -y nginx git' },
+          { cmd: 'zypper remove', desc: 'Remove a package', tags: ['packages'],
+            detail: 'Removes a package and optionally unused deps.',
+            flags: [{ f: '-u', d: 'Also remove unused dependencies' }],
+            example: 'sudo zypper remove nginx' },
+          { cmd: 'zypper search', desc: 'Search for packages', tags: ['packages'],
+            detail: 'Searches available packages.',
+            flags: [{ f: '-i', d: 'Search only installed packages' }],
+            example: 'zypper search nodejs' },
+          { cmd: 'zypper info', desc: 'Show package details', tags: ['packages'],
+            detail: 'Displays detailed package information.',
+            flags: [],
+            example: 'zypper info nginx' },
+          { cmd: 'zypper dup', desc: 'Distribution upgrade', tags: ['packages'],
+            detail: 'Full distribution upgrade — preferred on Tumbleweed.',
+            flags: [],
+            example: 'sudo zypper dup' },
+          { cmd: 'zypper addrepo', desc: 'Add a repository', tags: ['packages'],
+            detail: 'Adds a new software repository.',
+            flags: [],
+            example: 'sudo zypper addrepo https://download.opensuse.org/repo.repo myrepo' },
+        ]
+      },
+      {
+        id: 'opensuse-sys', icon: '🔧', name: 'openSUSE-Specific',
+        commands: [
+          { cmd: 'yast2', desc: 'Launch YaST admin GUI/TUI', tags: ['system'],
+            detail: 'Yet Another Setup Tool — openSUSE\'s powerful all-in-one admin interface.',
+            flags: [],
+            example: 'sudo yast2\nsudo yast2 firewall\nsudo yast2 network' },
+          { cmd: 'snapper', desc: 'Manage btrfs filesystem snapshots', tags: ['system','backup'],
+            detail: 'openSUSE uses btrfs by default with automatic snapshots before/after updates.',
+            flags: [
+              { f: 'list', d: 'List all snapshots' },
+              { f: 'create -d "desc"', d: 'Create a manual snapshot' },
+              { f: 'rollback N', d: 'Roll back to snapshot N' },
+            ],
+            example: 'snapper list\nsnapper create -d "before my change"\nsudo snapper rollback 5' },
+          { cmd: 'cat /etc/os-release', desc: 'Show openSUSE version', tags: ['system'],
+            detail: 'Displays OS version and codename.',
+            flags: [],
+            example: 'cat /etc/os-release' },
+          { cmd: 'SUSEfirewall2 / firewalld', desc: 'Firewall management', tags: ['networking','security'],
+            detail: 'openSUSE Leap uses firewalld; older versions used SUSEfirewall2. YaST can manage both.',
+            flags: [],
+            example: 'sudo firewall-cmd --list-all\nsudo yast2 firewall' },
+        ]
+      }
+    ]
+  },
+
+  alpine: {
+    name: 'Alpine Linux', icon: '🏔️', color: '#0d597f',
+    tagline: 'Security-oriented, lightweight — the king of Docker containers',
+    history: "Alpine Linux was created in 2005 by Natanael Copa and is designed for security, simplicity, and resource efficiency. It uses musl libc instead of glibc and BusyBox instead of GNU coreutils, making it tiny (base image ~5MB). It's the most popular base image for Docker containers worldwide. Uses OpenRC instead of systemd and apk as its package manager. Favored for embedded systems, routers, and anywhere footprint matters.",
+    bestFor: 'Docker containers, embedded systems, minimal servers, security-conscious deployments',
+    founded: '2005', base: 'Independent', packageMgr: 'apk',
+    pros: ['Tiny footprint (~5MB base)', 'Very secure by default', 'Fast container start times', 'Simple apk package manager', 'musl = no glibc bloat'],
+    cons: ['musl libc compatibility issues with some software', 'No systemd (uses OpenRC)', 'BusyBox tools lack some GNU flags', 'Less beginner-friendly'],
+    downloadUrl: 'https://alpinelinux.org/downloads/',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management (apk)',
+        commands: [
+          { cmd: 'apk update', desc: 'Refresh package index', tags: ['packages'],
+            detail: 'Updates the local package index from configured repos.',
+            flags: [],
+            example: 'apk update' },
+          { cmd: 'apk upgrade', desc: 'Upgrade installed packages', tags: ['packages'],
+            detail: 'Upgrades all installed packages to latest versions.',
+            flags: [],
+            example: 'apk upgrade' },
+          { cmd: 'apk add', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs one or more packages.',
+            flags: [
+              { f: '--no-cache', d: 'Skip cache (good for Docker layers)' },
+              { f: '-v', d: 'Verbose output' },
+            ],
+            example: 'apk add --no-cache nginx curl bash\napk update && apk add git' },
+          { cmd: 'apk del', desc: 'Remove a package', tags: ['packages'],
+            detail: 'Removes a package and optionally its dependencies.',
+            flags: [],
+            example: 'apk del nginx' },
+          { cmd: 'apk search', desc: 'Search for packages', tags: ['packages'],
+            detail: 'Searches available packages by name.',
+            flags: [{ f: '-v', d: 'Verbose — show descriptions' }],
+            example: 'apk search -v nodejs' },
+          { cmd: 'apk info', desc: 'Show installed package info', tags: ['packages'],
+            detail: 'Shows details about an installed package.',
+            flags: [{ f: '-L', d: 'List package contents' }],
+            example: 'apk info nginx\napk info -L busybox' },
+          { cmd: 'apk cache clean', desc: 'Clean package cache', tags: ['packages'],
+            detail: 'Removes cached package files to free space.',
+            flags: [],
+            example: 'apk cache clean' },
+        ]
+      },
+      {
+        id: 'alpine-sys', icon: '🔧', name: 'Alpine-Specific',
+        commands: [
+          { cmd: 'rc-service', desc: 'Start/stop OpenRC services', tags: ['services'],
+            detail: 'Alpine uses OpenRC, not systemd. rc-service manages services.',
+            flags: [],
+            example: 'rc-service nginx start\nrc-service nginx stop\nrc-service nginx status' },
+          { cmd: 'rc-update', desc: 'Enable/disable services at boot', tags: ['services'],
+            detail: 'Adds or removes services from runlevels.',
+            flags: [],
+            example: 'rc-update add nginx default\nrc-update del nginx default' },
+          { cmd: 'rc-status', desc: 'Show service status overview', tags: ['services'],
+            detail: 'Lists all services and their current state.',
+            flags: [],
+            example: 'rc-status' },
+          { cmd: 'setup-alpine', desc: 'Initial Alpine setup wizard', tags: ['system'],
+            detail: 'Interactive setup script for fresh Alpine installs.',
+            flags: [],
+            example: 'setup-alpine' },
+          { cmd: 'cat /etc/alpine-release', desc: 'Show Alpine version', tags: ['system'],
+            detail: 'Prints the current Alpine Linux version.',
+            flags: [],
+            example: 'cat /etc/alpine-release' },
+        ]
+      }
+    ]
+  },
+
+  kali: {
+    name: 'Kali Linux', icon: '🐉', color: '#557c94',
+    tagline: 'The penetration tester\'s OS — built for offensive security',
+    history: "Kali Linux was released in 2013 by Offensive Security as the successor to BackTrack. It's a Debian-based distro purpose-built for penetration testing, digital forensics, and security research. It ships with 600+ pre-installed security tools (nmap, Metasploit, Burp Suite, Wireshark, aircrack-ng, etc). It's not meant as a daily driver — it runs as root by default in some modes, which is intentional for pen testing workflows. Widely used in cybersecurity certifications (OSCP, CEH).",
+    bestFor: 'Penetration testing, security audits, CTFs, digital forensics',
+    founded: '2013', base: 'Debian', packageMgr: 'apt / dpkg',
+    pros: ['600+ security tools pre-installed', 'Live boot modes', 'ARM/Raspberry Pi support', 'Regular tool updates', 'OSCP/cert standard'],
+    cons: ['Not for general use', 'Running as root is risky if not intentional', 'Some tools are old/unmaintained', 'Heavy default install'],
+    downloadUrl: 'https://www.kali.org/get-kali/',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt update && apt upgrade', desc: 'Update Kali system and tools', tags: ['packages'],
+            detail: 'Standard Debian apt — same as Ubuntu/Debian. Run frequently as tools update often.',
+            flags: [],
+            example: 'sudo apt update && sudo apt full-upgrade -y' },
+          { cmd: 'apt install kali-tools-*', desc: 'Install Kali tool metapackages', tags: ['packages'],
+            detail: 'Kali provides metapackages grouping tools by category.',
+            flags: [],
+            example: 'sudo apt install kali-tools-web\nsudo apt install kali-tools-wireless\nsudo apt install kali-linux-everything  # all tools' },
+        ]
+      },
+      {
+        id: 'kali-tools', icon: '🔐', name: 'Security Tools',
+        commands: [
+          { cmd: 'nmap', desc: 'Network scanner and port mapper', tags: ['network','scan'],
+            detail: 'The gold standard for network discovery and security auditing.',
+            flags: [
+              { f: '-sV', d: 'Detect service/version info' },
+              { f: '-sS', d: 'TCP SYN scan (stealth)' },
+              { f: '-O', d: 'OS detection' },
+              { f: '-A', d: 'Aggressive: OS + version + scripts + traceroute' },
+              { f: '-p-', d: 'Scan all 65535 ports' },
+              { f: '--script=vuln', d: 'Run vulnerability scripts' },
+            ],
+            example: 'nmap -sV -sS -O 192.168.1.1\nnmap -p- -A target.com' },
+          { cmd: 'msfconsole', desc: 'Launch Metasploit Framework', tags: ['exploit'],
+            detail: 'The world\'s most used penetration testing framework.',
+            flags: [],
+            example: 'msfconsole\n# inside msf:\nuse exploit/multi/handler\nset payload windows/x64/meterpreter/reverse_tcp' },
+          { cmd: 'aircrack-ng', desc: 'WiFi network security auditing suite', tags: ['wireless'],
+            detail: 'Suite for monitoring, attacking, and cracking WiFi networks.',
+            flags: [],
+            example: 'airmon-ng start wlan0\nairodump-ng wlan0mon\naircrack-ng -w wordlist.txt capture.cap' },
+          { cmd: 'john', desc: 'John the Ripper password cracker', tags: ['passwords'],
+            detail: 'Fast password cracker supporting many hash formats.',
+            flags: [
+              { f: '--wordlist=FILE', d: 'Use a wordlist for dictionary attack' },
+              { f: '--format=TYPE', d: 'Specify hash format' },
+              { f: '--show', d: 'Show cracked passwords' },
+            ],
+            example: 'john --wordlist=/usr/share/wordlists/rockyou.txt hashes.txt\njohn --show hashes.txt' },
+          { cmd: 'hashcat', desc: 'GPU-accelerated password recovery', tags: ['passwords'],
+            detail: 'The fastest password cracker, uses GPU for massive speedup.',
+            flags: [
+              { f: '-m TYPE', d: 'Hash type (0=MD5, 1000=NTLM, 1800=sha512crypt)' },
+              { f: '-a 0', d: 'Attack mode: 0=dictionary, 3=brute-force' },
+            ],
+            example: 'hashcat -m 0 -a 0 hash.txt rockyou.txt' },
+          { cmd: 'burpsuite', desc: 'Web application security testing platform', tags: ['web'],
+            detail: 'GUI tool for intercepting/modifying HTTP traffic, web scanning, fuzzing.',
+            flags: [],
+            example: 'burpsuite &' },
+          { cmd: 'sqlmap', desc: 'Automatic SQL injection tool', tags: ['web','sql'],
+            detail: 'Detects and exploits SQL injection flaws in web applications.',
+            flags: [
+              { f: '-u URL', d: 'Target URL' },
+              { f: '--dbs', d: 'Enumerate databases' },
+              { f: '--dump', d: 'Dump database contents' },
+              { f: '--level=5', d: 'Thorough testing level' },
+            ],
+            example: "sqlmap -u 'http://target.com/page?id=1' --dbs" },
+          { cmd: 'hydra', desc: 'Network login brute-forcer', tags: ['bruteforce'],
+            detail: 'Fast login cracker supporting dozens of protocols.',
+            flags: [
+              { f: '-l USER', d: 'Single username' },
+              { f: '-L FILE', d: 'Username list file' },
+              { f: '-P FILE', d: 'Password list file' },
+              { f: '-t N', d: 'Parallel tasks (threads)' },
+            ],
+            example: 'hydra -l admin -P rockyou.txt ssh://192.168.1.1\nhydra -L users.txt -P passwords.txt ftp://target.com' },
+          { cmd: 'gobuster', desc: 'Directory/file brute-forcer for web', tags: ['web','recon'],
+            detail: 'Brute-forces URLs, subdomains, and virtual hosts.',
+            flags: [
+              { f: 'dir -u URL -w WORDLIST', d: 'Directory enumeration' },
+              { f: 'dns -d DOMAIN -w WORDLIST', d: 'Subdomain enumeration' },
+            ],
+            example: 'gobuster dir -u http://target.com -w /usr/share/wordlists/dirb/common.txt' },
+          { cmd: 'wireshark / tshark', desc: 'Network protocol analyzer', tags: ['network','capture'],
+            detail: 'Capture and analyze network packets. tshark is the CLI version.',
+            flags: [
+              { f: '-i INTERFACE', d: 'Capture on interface' },
+              { f: '-r FILE.pcap', d: 'Read from file' },
+              { f: '-Y "filter"', d: 'Display filter (e.g. http, tcp.port==80)' },
+            ],
+            example: 'tshark -i eth0 -Y "http"\ntshark -r capture.pcap -Y "tcp.port==443"' },
+        ]
+      },
+      {
+        id: 'kali-sys', icon: '🔧', name: 'Kali-Specific',
+        commands: [
+          { cmd: 'kali-tweaks', desc: 'Kali configuration tool', tags: ['system'],
+            detail: 'GUI tool to configure Kali-specific settings.',
+            flags: [],
+            example: 'kali-tweaks' },
+          { cmd: 'update-alternatives --config java', desc: 'Switch Java version', tags: ['system'],
+            detail: 'Kali often needs specific Java versions for tools like Metasploit.',
+            flags: [],
+            example: 'sudo update-alternatives --config java' },
+        ]
+      }
+    ]
+  },
+
+  manjaro: {
+    name: 'Manjaro', icon: '🟢', color: '#35bf5c',
+    tagline: 'Arch made accessible — rolling release with guardrails',
+    history: "Manjaro Linux was founded in 2011 by Roland Singer and Philip Müller in Austria. It's built on Arch Linux but adds a curated, stable layer on top — packages are held in a staging repo for ~2 weeks to catch breakage before reaching users. It ships with full desktop environments pre-configured (GNOME, KDE, XFCE), hardware detection tools, and proprietary drivers. The goal: rolling release power without the maintenance burden of pure Arch.",
+    bestFor: 'Users who want Arch benefits without manual setup, gaming, desktop daily drivers',
+    founded: '2011', base: 'Arch Linux', packageMgr: 'pacman / pamac',
+    pros: ['Beginner-friendly Arch', 'AUR access', 'Great hardware support', 'Pamac GUI package manager', 'Multiple DE editions'],
+    cons: ['Staging delay = not truly cutting edge', 'AUR compatibility sometimes lags', 'Smaller community than pure Arch'],
+    downloadUrl: 'https://manjaro.org/download/',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management (Pamac + Pacman)',
+        commands: [
+          { cmd: 'pamac update', desc: 'Update all packages', tags: ['packages'],
+            detail: 'Pamac is Manjaro\'s friendly package manager wrapper around pacman + AUR.',
+            flags: [
+              { f: '--no-confirm', d: 'Auto-yes' },
+              { f: '-a', d: 'Include AUR packages' },
+            ],
+            example: 'pamac update -a' },
+          { cmd: 'pamac install', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs from repos or AUR automatically.',
+            flags: [],
+            example: 'pamac install nginx\npamac install visual-studio-code-bin  # from AUR' },
+          { cmd: 'pamac remove', desc: 'Remove a package', tags: ['packages'],
+            detail: 'Removes package and optionally orphaned deps.',
+            flags: [{ f: '-o', d: 'Remove orphaned dependencies too' }],
+            example: 'pamac remove nginx' },
+          { cmd: 'pamac search', desc: 'Search repos and AUR', tags: ['packages'],
+            detail: 'Searches both official repos and AUR.',
+            flags: [{ f: '-a', d: 'Include AUR results' }],
+            example: 'pamac search -a discord' },
+          { cmd: 'pamac build', desc: 'Build and install from AUR', tags: ['packages','aur'],
+            detail: 'Explicitly builds and installs an AUR package.',
+            flags: [],
+            example: 'pamac build yay' },
+          { cmd: 'pacman -Syu', desc: 'Full system update via pacman', tags: ['packages'],
+            detail: 'Standard Arch pacman works normally on Manjaro.',
+            flags: [],
+            example: 'sudo pacman -Syu' },
+        ]
+      },
+      {
+        id: 'manjaro-sys', icon: '🔧', name: 'Manjaro-Specific',
+        commands: [
+          { cmd: 'mhwd', desc: 'Manjaro Hardware Detection', tags: ['hardware','drivers'],
+            detail: 'Installs and manages hardware drivers automatically.',
+            flags: [
+              { f: '-l', d: 'List available drivers' },
+              { f: '-li', d: 'List installed drivers' },
+              { f: '-a pci free/nonfree 0300', d: 'Auto-install GPU driver' },
+            ],
+            example: 'mhwd -l\nsudo mhwd -a pci nonfree 0300  # install nonfree GPU driver' },
+          { cmd: 'manjaro-settings-manager', desc: 'Manjaro settings GUI', tags: ['system'],
+            detail: 'GUI tool for kernel, language, hardware detection.',
+            flags: [],
+            example: 'manjaro-settings-manager' },
+          { cmd: 'mhwd-kernel', desc: 'Install/switch Linux kernel', tags: ['system'],
+            detail: 'Manjaro lets you easily install and switch kernel versions.',
+            flags: [
+              { f: '-l', d: 'List available kernels' },
+              { f: '-li', d: 'List installed kernels' },
+              { f: '-i linux65', d: 'Install kernel 6.5' },
+            ],
+            example: 'mhwd-kernel -l\nsudo mhwd-kernel -i linux66 rmc  # install + remove current' },
+        ]
+      }
+    ]
+  },
+
+  popos: {
+    name: 'Pop!_OS', icon: '🚀', color: '#48b9c7',
+    tagline: "System76's developer-focused Ubuntu — great for gaming and NVIDIA",
+    history: "Pop!_OS was created in 2017 by System76, a Denver-based Linux hardware company. It's based on Ubuntu but adds its own COSMIC desktop (transitioning to a full Rust-based DE), a polished tiling window manager, and exceptional GPU/NVIDIA driver support. It gained a huge following in the gaming community due to its out-of-the-box NVIDIA support, and among developers for its clean UX. System76 uses it on all their laptops and desktops.",
+    bestFor: 'Developers, gamers, NVIDIA GPU users, Ubuntu users wanting more polish',
+    founded: '2017', base: 'Ubuntu', packageMgr: 'apt / flatpak',
+    pros: ['Best NVIDIA out-of-box experience', 'Tiling WM built-in', 'COSMIC desktop (unique)', 'Auto-update recovery partition', 'Developer-focused defaults'],
+    cons: ['Smaller community than Ubuntu', 'COSMIC DE still maturing', 'Leans on Flatpak over apt for apps'],
+    downloadUrl: 'https://pop.system76.com/',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'apt install / update', desc: 'Standard apt (Ubuntu-based)', tags: ['packages'],
+            detail: 'Pop!_OS uses standard Ubuntu apt for system packages.',
+            flags: [],
+            example: 'sudo apt update && sudo apt upgrade -y' },
+          { cmd: 'flatpak install', desc: 'Install a Flatpak app', tags: ['packages'],
+            detail: 'Pop!_OS heavily promotes Flatpak for desktop apps via Pop!_Shop.',
+            flags: [],
+            example: 'flatpak install flathub com.spotify.Client\nflatpak install flathub com.discordapp.Discord' },
+          { cmd: 'flatpak update', desc: 'Update all Flatpak apps', tags: ['packages'],
+            detail: 'Updates all installed Flatpak applications.',
+            flags: [],
+            example: 'flatpak update' },
+          { cmd: 'flatpak list', desc: 'List installed Flatpaks', tags: ['packages'],
+            detail: 'Shows all installed Flatpak apps and runtimes.',
+            flags: [],
+            example: 'flatpak list --app' },
+          { cmd: 'flatpak run', desc: 'Run a Flatpak app from terminal', tags: ['packages'],
+            detail: 'Launches a Flatpak application.',
+            flags: [],
+            example: 'flatpak run com.spotify.Client' },
+        ]
+      },
+      {
+        id: 'popos-sys', icon: '🔧', name: 'Pop!_OS-Specific',
+        commands: [
+          { cmd: 'pop-upgrade', desc: 'Upgrade to next Pop!_OS release', tags: ['system'],
+            detail: 'System76\'s tool for upgrading between Pop!_OS releases.',
+            flags: [
+              { f: 'release upgrade', d: 'Start the upgrade process' },
+            ],
+            example: 'sudo pop-upgrade release upgrade' },
+          { cmd: 'system76-driver', desc: 'System76 hardware drivers', tags: ['hardware'],
+            detail: 'Installs System76-specific hardware support and firmware tools.',
+            flags: [],
+            example: 'sudo apt install system76-driver\nsudo apt install system76-driver-nvidia  # for NVIDIA' },
+          { cmd: 'fwupdmgr', desc: 'Firmware update tool', tags: ['hardware'],
+            detail: 'Updates system firmware (BIOS, EC, etc.) — Pop!_OS integrates this well.',
+            flags: [
+              { f: 'get-updates', d: 'Check for firmware updates' },
+              { f: 'update', d: 'Apply all firmware updates' },
+            ],
+            example: 'fwupdmgr get-updates\nfwupdmgr update' },
+        ]
+      }
+    ]
+  },
+
+  gentoo: {
+    name: 'Gentoo', icon: '🐉', color: '#54487a',
+    tagline: 'Compile everything from source — maximum control, maximum learning',
+    history: "Gentoo was created by Daniel Robbins in 1999 (originally called Enoch Linux). Named after the fast-swimming Gentoo penguin. It's famous for compiling virtually all software from source code using the Portage package manager, allowing per-machine optimization flags (USE flags). This gives unparalleled control over what features are compiled in, but takes enormous time. It's the distro that teaches you the most about Linux internals — if you survive the install.",
+    bestFor: 'Advanced users, learning Linux deeply, custom-optimized systems, embedded',
+    founded: '1999', base: 'Independent', packageMgr: 'emerge / portage',
+    pros: ['Maximum customization', 'Source-based = highly optimized', 'Teaches Linux deeply', 'Rolling release', 'USE flags for fine-grained control'],
+    cons: ['Compiling takes hours/days', 'Very steep learning curve', 'Slow to set up initially', 'Not for beginners or time-constrained users'],
+    downloadUrl: 'https://www.gentoo.org/downloads/',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management (Portage / emerge)',
+        commands: [
+          { cmd: 'emerge --sync', desc: 'Sync the Portage tree', tags: ['packages'],
+            detail: 'Fetches the latest package tree (like apt update).',
+            flags: [],
+            example: 'sudo emerge --sync\n# or faster:\nsudo emaint sync -a' },
+          { cmd: 'emerge -avuDN @world', desc: 'Full system upgrade', tags: ['packages'],
+            detail: 'The main Gentoo update command. -a=ask, -v=verbose, -u=upgrade, -D=deep deps, -N=new USE flags.',
+            flags: [],
+            example: 'sudo emerge -avuDN @world' },
+          { cmd: 'emerge package-name', desc: 'Install a package (ebuild)', tags: ['packages'],
+            detail: 'Compiles and installs a package from source.',
+            flags: [
+              { f: '-a', d: 'Ask before proceeding' },
+              { f: '-v', d: 'Verbose' },
+              { f: '--pretend', d: 'Show what would be done without doing it' },
+            ],
+            example: 'sudo emerge -av nginx' },
+          { cmd: 'emerge --depclean', desc: 'Remove unused packages', tags: ['packages'],
+            detail: 'Removes packages that are no longer needed as deps.',
+            flags: [],
+            example: 'sudo emerge --depclean' },
+          { cmd: 'equery', desc: 'Query package info (gentoolkit)', tags: ['packages'],
+            detail: 'Part of gentoolkit — query installed packages, deps, files.',
+            flags: [],
+            example: 'equery list "*nginx*"\nequery depends nginx\nequery files nginx' },
+          { cmd: 'USE flags', desc: 'Build-time feature flags', tags: ['packages'],
+            detail: 'USE flags control what features are compiled into packages. Edit /etc/portage/make.conf.',
+            flags: [],
+            example: '# /etc/portage/make.conf\nUSE="X gtk -qt5 alsa pulseaudio"\n# Then rebuild affected packages:\nsudo emerge -avuDN @world' },
+        ]
+      },
+      {
+        id: 'gentoo-sys', icon: '🔧', name: 'Gentoo-Specific',
+        commands: [
+          { cmd: 'eselect', desc: 'Manage active software profiles/versions', tags: ['system'],
+            detail: 'Switches between profiles, kernels, compilers, etc.',
+            flags: [],
+            example: 'eselect profile list\neselect profile set default/linux/amd64/17.1/desktop\neselect kernel list' },
+          { cmd: 'genkernel', desc: 'Automated kernel build tool', tags: ['system'],
+            detail: 'Automates the Linux kernel compile and initramfs process.',
+            flags: [],
+            example: 'sudo genkernel all' },
+          { cmd: 'dispatch-conf', desc: 'Manage config file updates', tags: ['system'],
+            detail: 'Interactively merges new config files after package updates.',
+            flags: [],
+            example: 'sudo dispatch-conf' },
+          { cmd: 'cat /etc/gentoo-release', desc: 'Show Gentoo version', tags: ['system'],
+            detail: 'Displays the Gentoo release info.',
+            flags: [],
+            example: 'cat /etc/gentoo-release' },
+        ]
+      }
+    ]
+  },
+
+  nixos: {
+    name: 'NixOS', icon: '❄️', color: '#5277c3',
+    tagline: 'Declarative, reproducible Linux — the entire OS as configuration',
+    history: "NixOS was created in 2003 by Eelco Dolstra as part of his PhD research. It's built on the Nix package manager, which is purely functional — packages are installed in isolation with content-addressed hashes, so multiple versions can coexist without conflict. The entire system is declared in a single configuration.nix file. You can roll back any change instantly, reproduce the exact same environment on any machine, and atomic upgrades mean broken updates can be trivially reversed.",
+    bestFor: 'DevOps, reproducible builds, server configs as code, power users',
+    founded: '2003', base: 'Independent', packageMgr: 'nix / nixos-rebuild',
+    pros: ['Atomic upgrades + rollback', 'Reproducible environments', 'Whole system as one config file', '80k+ packages in nixpkgs', 'No dependency conflicts ever'],
+    cons: ['Steep learning curve', 'Nix language is unique', 'Disk space heavy (store accumulates)', 'Documentation can be cryptic'],
+    downloadUrl: 'https://nixos.org/download/',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management (Nix)',
+        commands: [
+          { cmd: 'nix-env -iA', desc: 'Install a package imperatively', tags: ['packages'],
+            detail: 'Installs a package for the current user (imperative, not declarative).',
+            flags: [],
+            example: 'nix-env -iA nixpkgs.git\nnix-env -iA nixpkgs.nodejs' },
+          { cmd: 'nix-env -e', desc: 'Remove a package', tags: ['packages'],
+            detail: 'Removes a user-installed nix package.',
+            flags: [],
+            example: 'nix-env -e git' },
+          { cmd: 'nix-env -u', desc: 'Update user packages', tags: ['packages'],
+            detail: 'Upgrades all user-installed packages to latest in channel.',
+            flags: [],
+            example: 'nix-env -u "*"' },
+          { cmd: 'nix search nixpkgs', desc: 'Search nixpkgs', tags: ['packages'],
+            detail: 'Searches the nixpkgs package repository.',
+            flags: [],
+            example: 'nix search nixpkgs nodejs\nnix search nixpkgs "web server"' },
+          { cmd: 'nix-shell', desc: 'Temporary dev environment', tags: ['packages','dev'],
+            detail: 'Drops into a shell with specified packages available (not permanently installed).',
+            flags: [],
+            example: 'nix-shell -p python3 nodejs git\n# or with shell.nix file:\nnix-shell' },
+          { cmd: 'nix flake', desc: 'Modern Nix with flakes (reproducible)', tags: ['packages'],
+            detail: 'Flakes are the modern way to use Nix — fully pinned, reproducible builds.',
+            flags: [],
+            example: 'nix flake init\nnix develop  # enter dev shell from flake.nix\nnix build' },
+        ]
+      },
+      {
+        id: 'nixos-sys', icon: '🔧', name: 'NixOS-Specific',
+        commands: [
+          { cmd: 'nixos-rebuild switch', desc: 'Apply system configuration changes', tags: ['system'],
+            detail: 'Rebuilds and activates the system from /etc/nixos/configuration.nix.',
+            flags: [
+              { f: '--upgrade', d: 'Also update channels/inputs first' },
+            ],
+            example: 'sudo nixos-rebuild switch\nsudo nixos-rebuild switch --upgrade' },
+          { cmd: 'nixos-rebuild test', desc: 'Test config without making it default', tags: ['system'],
+            detail: 'Applies config to the running system but does not set it as the boot default.',
+            flags: [],
+            example: 'sudo nixos-rebuild test' },
+          { cmd: 'nix-collect-garbage', desc: 'Clean up old generations', tags: ['system'],
+            detail: 'Removes old package generations to reclaim disk space.',
+            flags: [
+              { f: '-d', d: 'Delete all old generations' },
+            ],
+            example: 'sudo nix-collect-garbage -d' },
+          { cmd: 'nixos-option', desc: 'Inspect NixOS configuration options', tags: ['system'],
+            detail: 'Shows documentation and current value of NixOS config options.',
+            flags: [],
+            example: 'nixos-option services.nginx.enable' },
+          { cmd: 'configuration.nix', desc: 'The declarative system config file', tags: ['system'],
+            detail: 'Edit /etc/nixos/configuration.nix to define your entire system — packages, services, users.',
+            flags: [],
+            example: '# /etc/nixos/configuration.nix snippet:\nenvironment.systemPackages = with pkgs; [ git vim nodejs ];\nservices.nginx.enable = true;\nusers.users.alice.isNormalUser = true;' },
+        ]
+      }
+    ]
+  },
+
+  void: {
+    name: 'Void Linux', icon: '🌀', color: '#478061',
+    tagline: 'Independent, runit-based, rolling — lean and fast',
+    history: "Void Linux was created in 2008 by Juan RP as a personal project. It's completely independent — not based on Debian, Arch, or any other distro. It uses runit as its init system instead of systemd, xbps as its package manager, and libc options include both glibc and musl. It's a rolling release with a small but dedicated community. Often praised for its simplicity, speed, and non-systemd stance. The mascot is the 'void' — empty but full of potential.",
+    bestFor: 'Users who want a non-systemd rolling distro, lightweight servers, power users',
+    founded: '2008', base: 'Independent', packageMgr: 'xbps',
+    pros: ['No systemd (runit)', 'Very fast boot', 'xbps is simple and fast', 'glibc and musl variants', 'Rolling release'],
+    cons: ['Smaller package repo', 'Small community = less support', 'runit learning curve', 'Less hardware driver support'],
+    downloadUrl: 'https://voidlinux.org/download/',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management (xbps)',
+        commands: [
+          { cmd: 'xbps-install -Su', desc: 'Sync and upgrade all packages', tags: ['packages'],
+            detail: 'The main Void update command.',
+            flags: [],
+            example: 'sudo xbps-install -Su' },
+          { cmd: 'xbps-install -S', desc: 'Install a package', tags: ['packages'],
+            detail: 'Installs one or more packages.',
+            flags: [],
+            example: 'sudo xbps-install -S nginx git curl' },
+          { cmd: 'xbps-remove', desc: 'Remove a package', tags: ['packages'],
+            detail: 'Removes a package from the system.',
+            flags: [
+              { f: '-R', d: 'Remove package and unneeded deps' },
+              { f: '-o', d: 'Remove orphaned packages' },
+            ],
+            example: 'sudo xbps-remove nginx\nsudo xbps-remove -o  # clean orphans' },
+          { cmd: 'xbps-query -Rs', desc: 'Search available packages', tags: ['packages'],
+            detail: 'Searches the remote package repository.',
+            flags: [],
+            example: 'xbps-query -Rs nodejs' },
+          { cmd: 'xbps-query -l', desc: 'List installed packages', tags: ['packages'],
+            detail: 'Shows all locally installed packages.',
+            flags: [],
+            example: 'xbps-query -l' },
+        ]
+      },
+      {
+        id: 'void-sys', icon: '🔧', name: 'Void-Specific (runit)',
+        commands: [
+          { cmd: 'sv start/stop', desc: 'Start/stop a runit service', tags: ['services'],
+            detail: 'runit service manager. Services live in /etc/sv/.',
+            flags: [],
+            example: 'sudo sv start nginx\nsudo sv stop nginx\nsudo sv status nginx' },
+          { cmd: 'ln -s /etc/sv/SERVICE /var/service/', desc: 'Enable a service at boot', tags: ['services'],
+            detail: 'Enabling a service in runit means symlinking it into /var/service/.',
+            flags: [],
+            example: 'sudo ln -s /etc/sv/nginx /var/service/\n# To disable:\nsudo rm /var/service/nginx' },
+          { cmd: 'sv status all', desc: 'Show all service statuses', tags: ['services'],
+            detail: 'Lists all enabled services and their state.',
+            flags: [],
+            example: 'sudo sv status /var/service/*' },
+          { cmd: 'cat /etc/os-release', desc: 'Show Void version', tags: ['system'],
+            detail: 'Displays Void Linux version and variant (glibc or musl).',
+            flags: [],
+            example: 'cat /etc/os-release' },
+        ]
+      }
+    ]
+  },
+
+  cachyos: {
+    name: 'CachyOS', icon: '⚡', color: '#00b4d8',
+    tagline: 'Arch-based performance distro — optimized kernels, blazing fast',
+    history: "CachyOS was founded in 2021 by ptr1337 and is one of the newest and fastest-growing Arch-based distros. Its name comes from 'cachy' — a reference to CPU cache optimization. CachyOS ships custom-compiled kernels with optimizations like BORE, EEVDF, and TT schedulers, along with PGO (Profile-Guided Optimization) and LTO (Link-Time Optimization) applied to core packages. It's essentially Arch Linux but with every possible performance tweak baked in. The Steam Deck community has embraced it as a gaming powerhouse.",
+    bestFor: 'Gaming, performance-focused desktops, Steam Deck custom installs, power users',
+    founded: '2021', base: 'Arch Linux', packageMgr: 'pacman / paru / cachyos repos',
+    pros: ['Best out-of-box performance of any Arch distro', 'Multiple optimized kernel choices', 'Gaming-tuned defaults', 'AUR access', 'x86-64-v3/v4 optimized binaries'],
+    cons: ['Very new — still maturing', 'Smaller community', 'Custom kernels can be harder to troubleshoot', 'Arch complexity still underneath'],
+    downloadUrl: 'https://cachyos.org/download/',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'pacman -Syu', desc: 'Full system upgrade', tags: ['packages'],
+            detail: 'Standard Arch pacman — CachyOS adds its own repos on top with optimized builds.',
+            flags: [],
+            example: 'sudo pacman -Syu' },
+          { cmd: 'paru -Syu', desc: 'Upgrade all including AUR', tags: ['packages','aur'],
+            detail: 'paru is the recommended AUR helper on CachyOS.',
+            flags: [],
+            example: 'paru -Syu' },
+          { cmd: 'paru -S', desc: 'Install from repos or AUR', tags: ['packages'],
+            detail: 'Installs packages from CachyOS repos, Arch repos, or AUR.',
+            flags: [],
+            example: 'paru -S firefox\nparu -S visual-studio-code-bin' },
+        ]
+      },
+      {
+        id: 'cachyos-sys', icon: '🔧', name: 'CachyOS-Specific',
+        commands: [
+          { cmd: 'cachyos-kernel-manager', desc: 'Switch between CachyOS kernels', tags: ['system','kernel'],
+            detail: 'GUI tool to install/switch between CachyOS optimized kernels (bore, eevdf, tt, etc).',
+            flags: [],
+            example: 'cachyos-kernel-manager' },
+          { cmd: 'cachyos-hello', desc: 'CachyOS welcome/setup app', tags: ['system'],
+            detail: 'Post-install setup tool for drivers, gaming tweaks, and system options.',
+            flags: [],
+            example: 'cachyos-hello' },
+          { cmd: 'scx_loader', desc: 'sched-ext scheduler switcher', tags: ['system','performance'],
+            detail: 'CachyOS ships sched-ext support — switch CPU schedulers at runtime for gaming vs server workloads.',
+            flags: [],
+            example: 'scx_loader\n# Or via systemd:\nsudo systemctl start scx' },
+          { cmd: 'cachyos-rate-mirrors', desc: 'Auto-select fastest CachyOS mirrors', tags: ['packages'],
+            detail: 'Ranks and selects the fastest mirrors for CachyOS repos.',
+            flags: [],
+            example: 'sudo cachyos-rate-mirrors' },
+          { cmd: 'uname -r', desc: 'Check active CachyOS kernel', tags: ['system'],
+            detail: 'Shows which kernel is currently running — CachyOS kernels have "-cachy" suffix.',
+            flags: [],
+            example: 'uname -r\n# Example output: 6.12.0-2-cachy' },
+        ]
+      }
+    ]
+  },
+
+  garuda: {
+    name: 'Garuda Linux', icon: '🦅', color: '#e84393',
+    tagline: 'Arch-based, btrfs by default, beautiful and fast',
+    history: "Garuda Linux was launched in 2020 by the Garuda Linux team (dr460nf1r3 and others) from India. Named after the mythical Hindu eagle Garuda. It's Arch-based and ships with btrfs + Snapper for automatic system snapshots before every update — giving you easy rollback if an update breaks something. It comes in many desktop editions (Dr460nized with KDE Plasma being the most popular — a stunning glass-morphism look). Gaming edition ships with Wine, Lutris, and game launchers pre-installed.",
+    bestFor: 'Gaming, beautiful desktops, users who want Arch + automatic snapshots safety net',
+    founded: '2020', base: 'Arch Linux', packageMgr: 'pacman / paru',
+    pros: ['Stunning Dr460nized desktop', 'Btrfs snapshots = easy rollback', 'Gaming edition ready out-of-box', 'AUR access', 'Fish shell by default'],
+    cons: ['Heavy on resources', 'Very opinionated look', 'Rolling Arch risks', 'Younger project'],
+    downloadUrl: 'https://garudalinux.org/downloads',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'pacman -Syu', desc: 'Full system upgrade', tags: ['packages'],
+            detail: 'Standard Arch pacman. Garuda hooks trigger Snapper snapshots before updates automatically.',
+            flags: [],
+            example: 'sudo pacman -Syu' },
+          { cmd: 'paru -S', desc: 'Install from repos or AUR', tags: ['packages','aur'],
+            detail: 'paru is the default AUR helper on Garuda.',
+            flags: [],
+            example: 'paru -S discord\nparu -Syu  # upgrade all + AUR' },
+        ]
+      },
+      {
+        id: 'garuda-sys', icon: '🔧', name: 'Garuda-Specific',
+        commands: [
+          { cmd: 'garuda-update', desc: 'Garuda-aware full system update', tags: ['system'],
+            detail: 'Garuda\'s wrapper around pacman update that handles Garuda-specific hooks and fixes.',
+            flags: [],
+            example: 'sudo garuda-update' },
+          { cmd: 'snapper list', desc: 'List btrfs snapshots', tags: ['system','backup'],
+            detail: 'Garuda auto-creates snapshots before updates. Use snapper to view and restore.',
+            flags: [],
+            example: 'snapper list\nsnapper -c root list' },
+          { cmd: 'snapper rollback N', desc: 'Roll back to snapshot N', tags: ['system','backup'],
+            detail: 'Restores system to a previous snapshot. Can also boot from snapshot in GRUB.',
+            flags: [],
+            example: 'sudo snapper rollback 5' },
+          { cmd: 'garuda-assistant', desc: 'Garuda GUI system tool', tags: ['system'],
+            detail: 'GUI tool for maintenance, driver management, and system settings.',
+            flags: [],
+            example: 'garuda-assistant' },
+          { cmd: 'btrfs-assistant', desc: 'Btrfs + Snapper GUI manager', tags: ['system','backup'],
+            detail: 'Visual interface for managing btrfs subvolumes and Snapper snapshots.',
+            flags: [],
+            example: 'btrfs-assistant' },
+        ]
+      }
+    ]
+  },
+
+  endeavouros: {
+    name: 'EndeavourOS', icon: '🪐', color: '#7b4fa0',
+    tagline: 'Arch made welcoming — terminal-centric but not intimidating',
+    history: "EndeavourOS launched in 2019 as a spiritual successor to Antergos (which shut down that year). Created by a small community team, it aims to be a near-vanilla Arch experience but with a guided installer (Calamares) and a welcome app to ease newcomers in. Unlike Manjaro, EndeavourOS stays very close to upstream Arch — minimal customization, no staging delays, just a friendly on-ramp. It's become one of the most popular Arch-based distros because it respects the user's desire to learn.",
+    bestFor: 'Arch newcomers, users who want vanilla Arch with an easier install, tinkerers',
+    founded: '2019', base: 'Arch Linux', packageMgr: 'pacman / yay',
+    pros: ['Near-vanilla Arch', 'Calamares GUI installer', 'Active friendly community', 'AUR access', 'Stays close to upstream'],
+    cons: ['Less hand-holding than Manjaro', 'Still Arch under the hood', 'Smaller team'],
+    downloadUrl: 'https://endeavouros.com/',
+    categories: [
+      {
+        id: 'pkg', icon: '📦', name: 'Package Management',
+        commands: [
+          { cmd: 'pacman -Syu', desc: 'Full system upgrade', tags: ['packages'],
+            detail: 'Standard upstream Arch pacman — no staging delays like Manjaro.',
+            flags: [], example: 'sudo pacman -Syu' },
+          { cmd: 'yay -S', desc: 'Install from AUR', tags: ['packages','aur'],
+            detail: 'yay is the default AUR helper on EndeavourOS.',
+            flags: [], example: 'yay -S visual-studio-code-bin\nyay -Syu' },
+          { cmd: 'yay -Ss', desc: 'Search AUR and repos', tags: ['packages'],
+            detail: 'Searches both official repos and the AUR.',
+            flags: [], example: 'yay -Ss discord' },
+        ]
+      },
+      {
+        id: 'endeavour-sys', icon: '🔧', name: 'EndeavourOS-Specific',
+        commands: [
+          { cmd: 'eos-update', desc: 'EndeavourOS system updater', tags: ['system'],
+            detail: 'EOS wrapper that checks news and handles pacman + AUR updates.',
+            flags: [{ f: '--yay', d: 'Include AUR packages' }],
+            example: 'eos-update --yay' },
+          { cmd: 'welcome', desc: 'Launch EndeavourOS welcome app', tags: ['system'],
+            detail: 'GUI app for post-install setup, theming, and community links.',
+            flags: [], example: 'welcome' },
+          { cmd: 'eos-rankmirrors', desc: 'Rank and update EOS mirrors', tags: ['packages'],
+            detail: 'Selects the fastest EndeavourOS mirrors for your location.',
+            flags: [], example: 'eos-rankmirrors' },
+        ]
+      }
+    ]
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════════════════════════
+
+function buildCommandHTML(cmd, id) {
+  const flags = cmd.flags.map(f =>
+    `<div class="flag-row"><span class="flag-name">${escHtml(f.f)}</span><span class="flag-desc">${escHtml(f.d)}</span></div>`
+  ).join('');
+  const flagsSection = flags ? `<h5>Common Flags</h5><div class="flag-list">${flags}</div>` : '';
+  const exampleLines = cmd.example.split('\n').map(escHtml).join('\n');
+  return `
+    <div class="cmd-row" id="${id}" data-cmd="${escHtml(cmd.cmd)}" data-desc="${escHtml(cmd.desc)}" data-tags="${(cmd.tags||[]).join(' ')}">
+      <div class="cmd-summary" onclick="toggleCmd(this.parentElement)">
+        <span class="cmd-name">${escHtml(cmd.cmd)}</span>
+        <span class="cmd-desc">${escHtml(cmd.desc)}</span>
+        <div class="cmd-tags">${(cmd.tags||[]).map(t=>`<span class="cmd-tag">${t}</span>`).join('')}</div>
+        <span class="cmd-expand-icon">▼</span>
+      </div>
+      <div class="cmd-detail">
+        <p>${escHtml(cmd.detail)}</p>
+        ${flagsSection}
+        <h5>Example</h5>
+        <pre class="example-block">${exampleLines}</pre>
+      </div>
+    </div>`;
+}
+
+function buildCategoryHTML(cat, prefix) {
+  const cmds = cat.commands.map((c,i) => buildCommandHTML(c, `${prefix}-${cat.id}-${i}`)).join('');
+  return `
+    <div class="category" id="cat-${prefix}-${cat.id}">
+      <div class="cat-header" onclick="toggleCat(this)">
+        <span class="cat-icon">${cat.icon}</span>
+        <h3>${escHtml(cat.name)}</h3>
+        <span class="cat-count">${cat.commands.length} commands</span>
+        <span class="cat-toggle">▼</span>
+      </div>
+      <div class="cmd-list">${cmds}</div>
+    </div>`;
+}
+
+function buildUniversalPanel() {
+  const cats = UNIVERSAL.categories.map(c => buildCategoryHTML(c, 'u')).join('');
+  return `<div class="tab-panel active" id="panel-universal">
+    <p class="section-label">Commands available across all Linux distros</p>
+    ${cats}
+  </div>`;
+}
+
+function buildDistroPanel(id, distro) {
+  const bio = `
+    <div class="distro-bio">
+      <div class="distro-logo">${distro.icon}</div>
+      <div class="distro-info">
+        <h2>${escHtml(distro.name)}</h2>
+        <p class="tagline">${escHtml(distro.tagline)}</p>
+        <p class="history">${escHtml(distro.history)}</p>
+        <div class="distro-meta">
+          <span class="meta-badge">Founded: ${escHtml(distro.founded)}</span>
+          <span class="meta-badge">Base: ${escHtml(distro.base)}</span>
+          <span class="meta-badge good">Package Mgr: ${escHtml(distro.packageMgr)}</span>
+        </div>
+        <div class="pros-cons">
+          <div class="pros"><h4>Pros</h4><ul>${distro.pros.map(p=>`<li>${escHtml(p)}</li>`).join('')}</ul></div>
+          <div class="cons"><h4>Cons</h4><ul>${distro.cons.map(c=>`<li>${escHtml(c)}</li>`).join('')}</ul></div>
+        </div>
+      </div>
+      <div class="distro-actions">
+        <a class="dl-btn" href="${distro.downloadUrl}" target="_blank" rel="noopener">⬇️ Download ${escHtml(distro.name)}</a>
+        <p class="best-for">Best for: ${escHtml(distro.bestFor)}</p>
+      </div>
+    </div>`;
+
+  const cats = distro.categories.map(c => buildCategoryHTML(c, id)).join('');
+
+  return `<div class="tab-panel" id="panel-${id}">
+    ${bio}
+    <p class="section-label">Distro-specific commands &amp; package management</p>
+    ${cats}
+    <div class="universal-divider"><span>📌 Universal commands also apply — see the Universal tab</span></div>
+  </div>`;
+}
+
+function buildAllPanels() {
+  const main = document.getElementById('mainContent');
+  let html = buildUniversalPanel();
+  for (const [id, distro] of Object.entries(DISTROS)) {
+    html += buildDistroPanel(id, distro);
+  }
+  main.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════════════════════════════════
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const panel = document.getElementById('panel-' + tabId);
+  if (panel) panel.classList.add('active');
+  clearSearch();
+}
+
+function toggleCmd(row) {
+  row.classList.toggle('open');
+}
+
+function toggleCat(header) {
+  header.classList.toggle('collapsed');
+  const list = header.nextElementSibling;
+  list.style.display = header.classList.contains('collapsed') ? 'none' : '';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SEARCH / AUTOCOMPLETE
+// ═══════════════════════════════════════════════════════════════
+
+let allCommands = [];
+let acIndex = -1;
+
+function buildSearchIndex() {
+  // Universal
+  for (const cat of UNIVERSAL.categories) {
+    for (const cmd of cat.commands) {
+      allCommands.push({ cmd: cmd.cmd, desc: cmd.desc, tags: cmd.tags, tab: 'universal', tabLabel: 'Universal', cat: cat.name });
+    }
+  }
+  // Distros
+  for (const [id, distro] of Object.entries(DISTROS)) {
+    for (const cat of distro.categories) {
+      for (const cmd of cat.commands) {
+        allCommands.push({ cmd: cmd.cmd, desc: cmd.desc, tags: cmd.tags, tab: id, tabLabel: distro.name, cat: cat.name });
+      }
+    }
+  }
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('autocompleteList').style.display = 'none';
+  // Show all hidden rows
+  document.querySelectorAll('.cmd-row').forEach(r => { r.style.display = ''; r.classList.remove('highlight'); });
+  document.querySelectorAll('.category').forEach(c => c.style.display = '');
+}
+
+function doSearch(query) {
+  const q = query.toLowerCase().trim();
+  const list = document.getElementById('autocompleteList');
+  if (!q) { list.style.display = 'none'; acIndex = -1; return; }
+
+  const matches = allCommands.filter(c =>
+    c.cmd.toLowerCase().includes(q) ||
+    c.desc.toLowerCase().includes(q) ||
+    (c.tags||[]).some(t => t.toLowerCase().includes(q))
+  ).slice(0, 12);
+
+  if (!matches.length) { list.style.display = 'none'; return; }
+
+  list.innerHTML = matches.map((m, i) =>
+    `<div class="autocomplete-item" data-tab="${m.tab}" data-cmd="${escHtml(m.cmd)}" onclick="selectResult('${m.tab}', '${escHtml(m.cmd)}')">
+      <span class="autocomplete-cmd">${escHtml(m.cmd)}</span>
+      <span class="autocomplete-desc">${escHtml(m.desc)}</span>
+      <span class="autocomplete-tag">${escHtml(m.tabLabel)}</span>
+    </div>`
+  ).join('');
+  list.style.display = 'block';
+  acIndex = -1;
+}
+
+function selectResult(tabId, cmdName) {
+  // Switch to correct tab
+  const tabBtn = document.querySelector(`[data-tab="${tabId}"]`);
+  if (tabBtn) switchTab(tabId, tabBtn);
+
+  // Find and highlight the command row
+  setTimeout(() => {
+    const rows = document.querySelectorAll('.cmd-row');
+    let target = null;
+    for (const row of rows) {
+      if (row.getAttribute('data-cmd') === cmdName) { target = row; break; }
+    }
+    if (target) {
+      document.querySelectorAll('.cmd-row').forEach(r => r.classList.remove('highlight'));
+      target.classList.add('highlight', 'open');
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    document.getElementById('autocompleteList').style.display = 'none';
+  }, 50);
+}
+
+// Keyboard nav for autocomplete
+document.addEventListener('keydown', e => {
+  const list = document.getElementById('autocompleteList');
+  if (list.style.display === 'none') return;
+  const items = list.querySelectorAll('.autocomplete-item');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    acIndex = Math.min(acIndex + 1, items.length - 1);
+    items.forEach((item, i) => item.classList.toggle('active', i === acIndex));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    acIndex = Math.max(acIndex - 1, 0);
+    items.forEach((item, i) => item.classList.toggle('active', i === acIndex));
+  } else if (e.key === 'Enter' && acIndex >= 0) {
+    e.preventDefault();
+    items[acIndex].click();
+  } else if (e.key === 'Escape') {
+    list.style.display = 'none';
+  }
+});
+
+document.getElementById('searchInput').addEventListener('input', e => doSearch(e.target.value));
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) {
+    document.getElementById('autocompleteList').style.display = 'none';
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+buildAllPanels();
+buildSearchIndex();
+</script>
+</body>
+</html>
