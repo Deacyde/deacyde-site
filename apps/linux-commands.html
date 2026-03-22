@@ -27,13 +27,19 @@
     .autocomplete-desc { color: #666; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .autocomplete-tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: #252525; color: #888; white-space: nowrap; }
 
-    /* Tab bar */
-    .tab-bar-wrap { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem; border-bottom: 1px solid #1e1e1e; overflow-x: auto; scrollbar-width: thin; }
-    .tab-bar { display: flex; gap: 0; white-space: nowrap; }
-    .tab-btn { padding: 0.7rem 1.1rem; background: none; border: none; border-bottom: 2px solid transparent; color: #666; font-size: 0.85rem; cursor: pointer; transition: color .15s, border-color .15s; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; }
-    .tab-btn:hover { color: #ccc; }
-    .tab-btn.active { color: #fff; border-bottom-color: #3b82f6; }
-    .tab-btn .distro-icon { font-size: 1rem; }
+    /* Distro selector grid */
+    .distro-selector { max-width: 1400px; margin: 0 auto; padding: 1rem 1.5rem 0; }
+    .distro-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.6rem; margin-bottom: 1rem; }
+    .distro-tile { background: #111; border: 1px solid #222; border-radius: 10px; padding: 0.75rem 0.5rem; cursor: pointer; text-align: center; transition: border-color .15s, background .15s; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+    .distro-tile:hover { background: #1a1a1a; border-color: #444; }
+    .distro-tile.active { border-color: #3b82f6; background: #0f1f3d; }
+    .distro-tile .tile-icon { font-size: 1.6rem; line-height: 1; }
+    .distro-tile .tile-name { font-size: 0.75rem; color: #aaa; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: center; }
+    .distro-tile.active .tile-name { color: #fff; }
+    .universal-tile { border-color: #1e3a5f !important; }
+    .universal-tile.active { background: #0a1f35 !important; border-color: #3b82f6 !important; }
+    @media (max-width: 900px) { .distro-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (max-width: 600px) { .distro-grid { grid-template-columns: repeat(3, 1fr); } }
 
     /* Main layout */
     .main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
@@ -132,58 +138,58 @@
   <div class="autocomplete-list" id="autocompleteList"></div>
 </div>
 
-<div class="tab-bar-wrap">
-  <div class="tab-bar" id="tabBar">
-    <button class="tab-btn active" data-tab="universal" onclick="switchTab('universal', this)">
-      <span class="distro-icon">🌐</span> Universal
+<div class="distro-selector">
+  <div class="distro-grid">
+    <button class="distro-tile universal-tile active" data-tab="universal" onclick="switchTab('universal', this)">
+      <span class="tile-icon">🌐</span><span class="tile-name">Universal</span>
     </button>
-    <button class="tab-btn" data-tab="ubuntu" onclick="switchTab('ubuntu', this)">
-      <span class="distro-icon">🟠</span> Ubuntu
+    <button class="distro-tile" data-tab="ubuntu" onclick="switchTab('ubuntu', this)">
+      <span class="tile-icon">🟠</span><span class="tile-name">Ubuntu</span>
     </button>
-    <button class="tab-btn" data-tab="debian" onclick="switchTab('debian', this)">
-      <span class="distro-icon">🔴</span> Debian
+    <button class="distro-tile" data-tab="debian" onclick="switchTab('debian', this)">
+      <span class="tile-icon">🔴</span><span class="tile-name">Debian</span>
     </button>
-    <button class="tab-btn" data-tab="fedora" onclick="switchTab('fedora', this)">
-      <span class="distro-icon">🔵</span> Fedora
+    <button class="distro-tile" data-tab="fedora" onclick="switchTab('fedora', this)">
+      <span class="tile-icon">🔵</span><span class="tile-name">Fedora</span>
     </button>
-    <button class="tab-btn" data-tab="rhel" onclick="switchTab('rhel', this)">
-      <span class="distro-icon">🎩</span> RHEL/Rocky
+    <button class="distro-tile" data-tab="rhel" onclick="switchTab('rhel', this)">
+      <span class="tile-icon">🎩</span><span class="tile-name">RHEL/Rocky</span>
     </button>
-    <button class="tab-btn" data-tab="arch" onclick="switchTab('arch', this)">
-      <span class="distro-icon">🏹</span> Arch
+    <button class="distro-tile" data-tab="arch" onclick="switchTab('arch', this)">
+      <span class="tile-icon">🏹</span><span class="tile-name">Arch</span>
     </button>
-    <button class="tab-btn" data-tab="opensuse" onclick="switchTab('opensuse', this)">
-      <span class="distro-icon">🦎</span> openSUSE
+    <button class="distro-tile" data-tab="opensuse" onclick="switchTab('opensuse', this)">
+      <span class="tile-icon">🦎</span><span class="tile-name">openSUSE</span>
     </button>
-    <button class="tab-btn" data-tab="alpine" onclick="switchTab('alpine', this)">
-      <span class="distro-icon">🏔️</span> Alpine
+    <button class="distro-tile" data-tab="alpine" onclick="switchTab('alpine', this)">
+      <span class="tile-icon">🏔️</span><span class="tile-name">Alpine</span>
     </button>
-    <button class="tab-btn" data-tab="kali" onclick="switchTab('kali', this)">
-      <span class="distro-icon">🐉</span> Kali
+    <button class="distro-tile" data-tab="kali" onclick="switchTab('kali', this)">
+      <span class="tile-icon">🐉</span><span class="tile-name">Kali</span>
     </button>
-    <button class="tab-btn" data-tab="manjaro" onclick="switchTab('manjaro', this)">
-      <span class="distro-icon">🟢</span> Manjaro
+    <button class="distro-tile" data-tab="manjaro" onclick="switchTab('manjaro', this)">
+      <span class="tile-icon">🟢</span><span class="tile-name">Manjaro</span>
     </button>
-    <button class="tab-btn" data-tab="popos" onclick="switchTab('popos', this)">
-      <span class="distro-icon">🚀</span> Pop!_OS
+    <button class="distro-tile" data-tab="popos" onclick="switchTab('popos', this)">
+      <span class="tile-icon">🚀</span><span class="tile-name">Pop!_OS</span>
     </button>
-    <button class="tab-btn" data-tab="gentoo" onclick="switchTab('gentoo', this)">
-      <span class="distro-icon">🐉</span> Gentoo
+    <button class="distro-tile" data-tab="gentoo" onclick="switchTab('gentoo', this)">
+      <span class="tile-icon">🐉</span><span class="tile-name">Gentoo</span>
     </button>
-    <button class="tab-btn" data-tab="nixos" onclick="switchTab('nixos', this)">
-      <span class="distro-icon">❄️</span> NixOS
+    <button class="distro-tile" data-tab="nixos" onclick="switchTab('nixos', this)">
+      <span class="tile-icon">❄️</span><span class="tile-name">NixOS</span>
     </button>
-    <button class="tab-btn" data-tab="void" onclick="switchTab('void', this)">
-      <span class="distro-icon">🌀</span> Void
+    <button class="distro-tile" data-tab="void" onclick="switchTab('void', this)">
+      <span class="tile-icon">🌀</span><span class="tile-name">Void</span>
     </button>
-    <button class="tab-btn" data-tab="garuda" onclick="switchTab('garuda', this)">
-      <span class="distro-icon">🦅</span> Garuda
+    <button class="distro-tile" data-tab="garuda" onclick="switchTab('garuda', this)">
+      <span class="tile-icon">🦅</span><span class="tile-name">Garuda</span>
     </button>
-    <button class="tab-btn" data-tab="cachyos" onclick="switchTab('cachyos', this)">
-      <span class="distro-icon">⚡</span> CachyOS
+    <button class="distro-tile" data-tab="cachyos" onclick="switchTab('cachyos', this)">
+      <span class="tile-icon">⚡</span><span class="tile-name">CachyOS</span>
     </button>
-    <button class="tab-btn" data-tab="endeavouros" onclick="switchTab('endeavouros', this)">
-      <span class="distro-icon">🪐</span> EndeavourOS
+    <button class="distro-tile" data-tab="endeavouros" onclick="switchTab('endeavouros', this)">
+      <span class="tile-icon">🪐</span><span class="tile-name">EndeavourOS</span>
     </button>
   </div>
 </div>
@@ -1961,7 +1967,7 @@ function escHtml(str) {
 }
 
 function switchTab(tabId, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.distro-tile').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   const panel = document.getElementById('panel-' + tabId);
@@ -2037,7 +2043,7 @@ function doSearch(query) {
 
 function selectResult(tabId, cmdName) {
   // Switch to correct tab
-  const tabBtn = document.querySelector(`[data-tab="${tabId}"]`);
+  const tabBtn = document.querySelector(`.distro-tile[data-tab="${tabId}"]`);
   if (tabBtn) switchTab(tabId, tabBtn);
 
   // Find and highlight the command row
