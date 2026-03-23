@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deacyde — Parallax Hero Mockup</title>
+    <link rel="icon" href="logo.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --accent: #10b981;
+            --accent-glow: rgba(16,185,129,0.15);
+            --bg: #0a0a0f;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --font: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: top 0.3s ease, background 0.3s ease;
+        }
+        .navbar.scrolled {
+            background: rgba(10,10,15,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .nav-brand img { height: 38px; }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--muted);
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+
+        /* ===== PARALLAX HERO ===== */
+        #hero {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* The harbor image — moves slower than scroll = parallax */
+        #harbor-bg {
+            position: absolute;
+            top: -20%;
+            left: 0;
+            width: 100%;
+            height: 140%;
+            background: url('https://deacyde.com/images/slider-bg.jpg') center/cover no-repeat;
+            will-change: transform;
+        }
+
+        /* Dark overlay gradient */
+        #hero-overlay {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(135deg, rgba(10,10,15,0.88) 0%, rgba(10,10,15,0.6) 60%, rgba(10,10,15,0.3) 100%),
+                radial-gradient(ellipse at 20% 50%, var(--accent-glow) 0%, transparent 55%);
+            z-index: 1;
+        }
+
+        /* Bottom fade into next section */
+        #hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 180px;
+            background: linear-gradient(to top, var(--bg), transparent);
+            z-index: 2;
+        }
+
+        /* Floating accent orb — moves at different parallax speed */
+        #orb {
+            position: absolute;
+            width: 420px; height: 420px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%);
+            top: 20%; left: 5%;
+            will-change: transform;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Hero text content */
+        #hero-content {
+            position: relative;
+            z-index: 3;
+            text-align: left;
+            max-width: 700px;
+            padding: 0 2rem;
+            will-change: transform;
+        }
+
+        .hero-tag {
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 1.2rem;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.2s forwards;
+        }
+
+        #hero-content h1 {
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.2rem;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.4s forwards;
+        }
+
+        #hero-content h1 .accent { color: var(--accent); }
+
+        .hero-sub {
+            font-size: 1.1rem;
+            color: var(--muted);
+            margin-bottom: 2rem;
+            max-width: 480px;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.6s forwards;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: fadeUp 0.8s 0.8s forwards;
+        }
+
+        .btn {
+            padding: 0.75rem 1.75rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            letter-spacing: 0.3px;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover { opacity: 0.85; transform: translateY(-2px); }
+        .btn-outline {
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text);
+        }
+        .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Scroll hint */
+        .scroll-hint {
+            position: absolute;
+            bottom: 2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--muted);
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeUp 1s 1.2s forwards;
+        }
+        .scroll-hint .line {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--accent), transparent);
+            animation: scrollLine 1.5s 1.5s ease-in-out infinite;
+        }
+
+        /* ===== NEXT SECTION (to demo scroll continuity) ===== */
+        .next-section {
+            background: var(--bg);
+            padding: 6rem 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .next-section h2 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .next-section p { color: var(--muted); max-width: 600px; margin: 0 auto; line-height: 1.8; }
+        .accent { color: var(--accent); }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scrollLine {
+            0%, 100% { opacity: 1; transform: scaleY(1); }
+            50%       { opacity: 0.3; transform: scaleY(0.6); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <a href="#" class="nav-brand"><img src="logo.png" alt="Deacyde"></a>
+        <ul class="nav-links">
+            <li><a href="#">Services</a></li>
+            <li><a href="#">Portfolio</a></li>
+            <li><a href="#">Games</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- Parallax Hero -->
+    <section id="hero">
+        <div id="harbor-bg"></div>
+        <div id="hero-overlay"></div>
+        <div id="orb"></div>
+
+        <div id="hero-content">
+            <p class="hero-tag">Web Developer · SEO Specialist · Crypto Consultant</p>
+            <h1>Michael Williams<br><span class="accent">Aka: Deacyde</span></h1>
+            <p class="hero-sub">An active proof of resume — browse and enjoy!</p>
+            <div class="hero-actions">
+                <a href="#" class="btn btn-primary">Explore My Work</a>
+                <a href="#" class="btn btn-outline">Get In Touch</a>
+            </div>
+        </div>
+
+        <div class="scroll-hint">
+            <span>Scroll</span>
+            <div class="line"></div>
+        </div>
+    </section>
+
+    <!-- Next section to show scroll effect -->
+    <div class="next-section">
+        <h2>What I <span class="accent">Do</span></h2>
+        <p>Full-stack web development, SEO strategy, and crypto consulting. Based in Baltimore — building on the web since before it was cool.</p>
+    </div>
+    <div class="next-section" style="padding-top:2rem;border-top:none;">
+        <p style="color:#444;font-size:0.8rem;letter-spacing:1px;">— MOCKUP — dev.deacyde.com/mockup.html —</p>
+    </div>
+
+    <script>
+        const harborBg    = document.getElementById('harbor-bg');
+        const orb         = document.getElementById('orb');
+        const heroContent = document.getElementById('hero-content');
+        const navbar      = document.getElementById('navbar');
+
+        window.addEventListener('scroll', function() {
+            const y = window.scrollY;
+
+            // Harbor image moves at 40% of scroll speed (slow = deep depth)
+            harborBg.style.transform = 'translateY(' + (y * 0.4) + 'px)';
+
+            // Orb drifts up slightly faster for layered feel
+            orb.style.transform = 'translateY(' + (y * 0.2) + 'px)';
+
+            // Hero text lifts out faster — creates separation from bg
+            heroContent.style.transform = 'translateY(' + (y * -0.15) + 'px)';
+            heroContent.style.opacity = Math.max(0, 1 - y / 500);
+
+            // Navbar gets bg after scrolling down
+            navbar.classList.toggle('scrolled', y > 60);
+        });
+    </script>
+</body>
+</html>
