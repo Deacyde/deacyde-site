@@ -1051,43 +1051,28 @@ crosh> ping google.com</div>
 <!-- ═══════════════════════════════════════════════════════ -->
 <div class="panel" id="panel-copilot">
   <div class="panel-header">
-    <div class="panel-title">🤖 GitHub Copilot CLI on Kali Chroot</div>
-    <div class="panel-sub">Install gh + Copilot CLI inside your newkali chroot — copy &amp; paste each block</div>
+    <div class="panel-title">🤖 GitHub Copilot CLI on Fedora</div>
+    <div class="panel-sub">Install gh + Copilot CLI natively on Fedora — copy &amp; paste each block in a terminal</div>
   </div>
 
-  <div class="info-box">💡 Do these steps in order. Start from <strong>chronos@localhost</strong> (crosh → shell). Each block is one paste.</div>
+  <div class="info-box">💡 Open a terminal (Activities → Terminal or right-click desktop). Do these steps in order — each block is one paste.</div>
 
   <div class="section-card open">
     <div class="section-header" onclick="toggleSection(this.parentElement)">
       <span class="section-icon">1️⃣</span>
-      <span class="section-title">Enter your Kali chroot</span>
+      <span class="section-title">Install the gh CLI</span>
       <span class="section-chevron">▼</span>
     </div>
     <div class="section-body">
-      <div class="step-desc" style="font-size:0.82rem;color:#888;margin-bottom:0.5rem;">Run this from the <code>chronos@localhost</code> bash prompt:</div>
-      <div class="step-code">sudo enter-chroot -n newkali</div>
-      <div class="cmd-tip" style="margin-top:0.6rem;">💚 Your prompt changes to something like <code>root@localhost</code> — you're now inside Kali.</div>
+      <div class="step-desc" style="font-size:0.82rem;color:#888;margin-bottom:0.5rem;">gh is in the official Fedora repos — one command:</div>
+      <div class="step-code">sudo dnf install gh -y</div>
+      <div class="cmd-tip" style="margin-top:0.6rem;">💚 Takes about 30 seconds. Enter your password when prompted.</div>
     </div>
   </div>
 
   <div class="section-card open">
     <div class="section-header" onclick="toggleSection(this.parentElement)">
       <span class="section-icon">2️⃣</span>
-      <span class="section-title">Install the gh CLI</span>
-      <span class="section-chevron">▼</span>
-    </div>
-    <div class="section-body">
-      <div class="step-desc" style="font-size:0.82rem;color:#888;margin-bottom:0.5rem;">Adds the GitHub CLI apt repo and installs it:</div>
-      <div class="step-code">curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg</div>
-      <div class="step-code" style="margin-top:0.5rem;">sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg</div>
-      <div class="step-code" style="margin-top:0.5rem;">echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list</div>
-      <div class="step-code" style="margin-top:0.5rem;">sudo apt update && sudo apt install gh -y</div>
-    </div>
-  </div>
-
-  <div class="section-card open">
-    <div class="section-header" onclick="toggleSection(this.parentElement)">
-      <span class="section-icon">3️⃣</span>
       <span class="section-title">Log into GitHub</span>
       <span class="section-chevron">▼</span>
     </div>
@@ -1098,20 +1083,20 @@ crosh> ping google.com</div>
         → <strong>GitHub.com</strong><br>
         → <strong>HTTPS</strong><br>
         → <strong>Login with a web browser</strong><br>
-        → Copy the one-time code, open Chrome, paste it at github.com/login/device
+        → Copy the one-time code, open Firefox, paste it at github.com/login/device
       </div>
     </div>
   </div>
 
   <div class="section-card open">
     <div class="section-header" onclick="toggleSection(this.parentElement)">
-      <span class="section-icon">4️⃣</span>
+      <span class="section-icon">3️⃣</span>
       <span class="section-title">Install Copilot CLI extension</span>
       <span class="section-chevron">▼</span>
     </div>
     <div class="section-body">
       <div class="step-code">gh extension install github/gh-copilot</div>
-      <div class="cmd-tip" style="margin-top:0.6rem;">💚 Only need to do this once. It installs permanently into your chroot.</div>
+      <div class="cmd-tip" style="margin-top:0.6rem;">💚 Only need to do this once — persists permanently.</div>
     </div>
   </div>
 
@@ -1146,8 +1131,8 @@ gh copilot suggest "check what is using port 8080"</div>
         <div class="cmd-detail">
           <div class="cmd-example-label">Examples:</div>
           <div class="cmd-example">gh copilot explain "nmap -sV -O 192.168.1.0/24"
-gh copilot explain "iptables -A INPUT -p tcp --dport 22 -j ACCEPT"
-gh copilot explain "ps aux | grep nginx"</div>
+gh copilot explain "systemctl status NetworkManager"
+gh copilot explain "ps aux | grep gnome"</div>
         </div>
       </div>
       <div class="cmd-row">
@@ -1168,12 +1153,13 @@ gh copilot suggest -t git "undo last commit without losing changes"</div>
   <div class="section-card">
     <div class="section-header" onclick="toggleSection(this.parentElement)">
       <span class="section-icon">🔁</span>
-      <span class="section-title">Next time you open the chroot</span>
+      <span class="section-title">Every time after install</span>
       <span class="section-chevron">▼</span>
     </div>
     <div class="section-body">
-      <div class="step-desc" style="font-size:0.82rem;color:#888;margin-bottom:0.5rem;">gh and Copilot CLI persist in the chroot — you don't reinstall. Just:</div>
-      <div class="step-code">Ctrl+Alt+T  →  shell  →  sudo enter-chroot -n newkali  →  gh copilot suggest "..."</div>
+      <div class="step-desc" style="font-size:0.82rem;color:#888;margin-bottom:0.5rem;">gh and Copilot CLI are installed natively — just open a terminal and use it:</div>
+      <div class="step-code">gh copilot suggest "..."</div>
+      <div class="cmd-tip" style="margin-top:0.6rem;">💡 No chroot, no setup — works in any terminal window on Fedora.</div>
     </div>
   </div>
 </div>
