@@ -10,216 +10,163 @@
 
         :root {
             --accent: #10b981;
-            --accent-glow: rgba(16,185,129,0.15);
             --bg: #0a0a0f;
             --text: #f1f5f9;
             --muted: #94a3b8;
-            --font: 'Inter', sans-serif;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: var(--font);
-            background: var(--bg);
-            color: var(--text);
-            overflow-x: hidden;
-        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
 
         /* ===== NAVBAR ===== */
         .navbar {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%;
-            z-index: 100;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: top 0.3s ease, background 0.3s ease;
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 200;
+            padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;
+            transition: background 0.3s;
         }
-        .navbar.scrolled {
-            background: rgba(10,10,15,0.92);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
+        .navbar.scrolled { background: rgba(10,10,15,0.93); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.06); }
         .nav-brand img { height: 38px; }
         .nav-links { display: flex; gap: 2rem; list-style: none; }
-        .nav-links a {
-            text-decoration: none;
-            color: var(--muted);
-            font-size: 0.9rem;
-            transition: color 0.2s;
-        }
+        .nav-links a { text-decoration: none; color: var(--muted); font-size: 0.9rem; transition: color 0.2s; }
         .nav-links a:hover { color: var(--text); }
 
-        /* ===== PARALLAX HERO ===== */
+        /* ===== HERO ===== */
         #hero {
             position: relative;
-            width: 100%;
-            height: 100vh;
+            width: 100%; height: 100vh;
             overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* The harbor image — moves slower than scroll = parallax */
-        #harbor-bg {
-            position: absolute;
-            top: -20%;
-            left: 0;
-            width: 100%;
-            height: 140%;
+        /* Layer 0 — actual harbor photo, barely moves (deepest) */
+        #layer-photo {
+            position: absolute; top: -15%; left: 0;
+            width: 100%; height: 130%;
             background: url('https://deacyde.com/images/slider-bg.jpg') center/cover no-repeat;
             will-change: transform;
         }
 
-        /* Dark overlay gradient */
-        #hero-overlay {
-            position: absolute;
-            inset: 0;
-            background:
-                linear-gradient(135deg, rgba(10,10,15,0.88) 0%, rgba(10,10,15,0.6) 60%, rgba(10,10,15,0.3) 100%),
-                radial-gradient(ellipse at 20% 50%, var(--accent-glow) 0%, transparent 55%);
+        /* Layer 1 — dark base tint so photo doesn't blow out text */
+        #layer-tint {
+            position: absolute; inset: 0;
+            background: rgba(5,8,14,0.45);
             z-index: 1;
         }
 
-        /* Bottom fade into next section */
-        #hero::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0;
-            width: 100%; height: 180px;
-            background: linear-gradient(to top, var(--bg), transparent);
-            z-index: 2;
+        /* Layer 2 — CSS water (animated waves at bottom) slides down on scroll */
+        #layer-water {
+            position: absolute; bottom: -10px; left: -5%; width: 110%;
+            height: 220px; z-index: 2; will-change: transform;
+        }
+        .wave {
+            position: absolute; left: 0; width: 200%; height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent 0px, transparent 60px,
+                rgba(16,185,129,0.06) 60px, rgba(16,185,129,0.06) 62px
+            );
+            border-radius: 50% 50% 0 0 / 20px 20px 0 0;
+        }
+        .wave-svg {
+            position: absolute; bottom: 0; left: -5%; width: 110%;
+        }
+        /* Idle water animation (before scroll) */
+        @keyframes waveIdle {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .wave-svg path { animation: waveIdle 8s linear infinite; }
+        .wave-svg path:nth-child(2) { animation-duration: 12s; animation-direction: reverse; opacity: 0.6; }
+
+        /* Layer 3 — CSS city skyline, slides UP and splits apart on scroll */
+        #layer-buildings-left {
+            position: absolute; bottom: 100px; left: 0;
+            width: 50%; height: 55vh;
+            z-index: 3; will-change: transform;
+        }
+        #layer-buildings-right {
+            position: absolute; bottom: 100px; right: 0;
+            width: 50%; height: 55vh;
+            z-index: 3; will-change: transform;
         }
 
-        /* Floating accent orb — moves at different parallax speed */
-        #orb {
-            position: absolute;
-            width: 420px; height: 420px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%);
-            top: 20%; left: 5%;
-            will-change: transform;
-            z-index: 2;
-            pointer-events: none;
+        /* Layer 4 — foreground dark ground strip, slides down */
+        #layer-ground {
+            position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 110px;
+            background: linear-gradient(to top, #0a0a0f 40%, transparent);
+            z-index: 4; will-change: transform;
         }
 
-        /* Hero text content */
+        /* Layer 5 — accent glow behind text */
+        #layer-glow {
+            position: absolute; top: 15%; left: 5%;
+            width: 500px; height: 500px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%);
+            z-index: 5; pointer-events: none; will-change: transform;
+        }
+
+        /* Layer 6 — hero text (moves up, fades out faster) */
         #hero-content {
-            position: relative;
-            z-index: 3;
-            text-align: left;
-            max-width: 700px;
-            padding: 0 2rem;
-            will-change: transform;
+            position: relative; z-index: 6;
+            max-width: 700px; padding: 0 2rem;
+            will-change: transform, opacity;
         }
-
         .hero-tag {
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--accent);
-            margin-bottom: 1.2rem;
-            opacity: 0;
-            animation: fadeUp 0.8s 0.2s forwards;
+            font-size: 0.78rem; font-weight: 600; letter-spacing: 3px;
+            text-transform: uppercase; color: var(--accent); margin-bottom: 1.2rem;
+            opacity: 0; animation: fadeUp 0.7s 0.2s forwards;
         }
-
         #hero-content h1 {
-            font-size: clamp(2.5rem, 6vw, 5rem);
-            font-weight: 800;
-            line-height: 1.1;
-            margin-bottom: 1.2rem;
-            opacity: 0;
-            animation: fadeUp 0.8s 0.4s forwards;
+            font-size: clamp(2.4rem, 6vw, 5rem); font-weight: 800; line-height: 1.1;
+            margin-bottom: 1.2rem; opacity: 0; animation: fadeUp 0.7s 0.4s forwards;
         }
-
-        #hero-content h1 .accent { color: var(--accent); }
-
+        .accent { color: var(--accent); }
         .hero-sub {
-            font-size: 1.1rem;
-            color: var(--muted);
-            margin-bottom: 2rem;
-            max-width: 480px;
-            opacity: 0;
-            animation: fadeUp 0.8s 0.6s forwards;
+            font-size: 1.05rem; color: var(--muted); margin-bottom: 2rem; max-width: 480px;
+            opacity: 0; animation: fadeUp 0.7s 0.6s forwards;
         }
-
         .hero-actions {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            opacity: 0;
-            animation: fadeUp 0.8s 0.8s forwards;
+            display: flex; gap: 1rem; flex-wrap: wrap;
+            opacity: 0; animation: fadeUp 0.7s 0.8s forwards;
         }
-
         .btn {
-            padding: 0.75rem 1.75rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-            letter-spacing: 0.3px;
+            padding: 0.75rem 1.75rem; border-radius: 8px;
+            font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: all 0.2s;
         }
-        .btn-primary {
-            background: var(--accent);
-            color: #fff;
-        }
+        .btn-primary { background: var(--accent); color: #fff; }
         .btn-primary:hover { opacity: 0.85; transform: translateY(-2px); }
-        .btn-outline {
-            border: 1px solid rgba(255,255,255,0.2);
-            color: var(--text);
-        }
+        .btn-outline { border: 1px solid rgba(255,255,255,0.2); color: var(--text); }
         .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
 
         /* Scroll hint */
         .scroll-hint {
-            position: absolute;
-            bottom: 2.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 3;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.4rem;
-            color: var(--muted);
-            font-size: 0.75rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            opacity: 0;
-            animation: fadeUp 1s 1.2s forwards;
+            position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+            z-index: 7; display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+            color: var(--muted); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase;
+            opacity: 0; animation: fadeUp 1s 1.2s forwards;
         }
         .scroll-hint .line {
-            width: 1px;
-            height: 40px;
+            width: 1px; height: 36px;
             background: linear-gradient(to bottom, var(--accent), transparent);
-            animation: scrollLine 1.5s 1.5s ease-in-out infinite;
+            animation: pulse 1.5s ease-in-out infinite;
         }
 
-        /* ===== NEXT SECTION (to demo scroll continuity) ===== */
+        /* ===== NEXT SECTION ===== */
         .next-section {
-            background: var(--bg);
-            padding: 6rem 2rem;
-            text-align: center;
+            background: var(--bg); padding: 6rem 2rem; text-align: center;
             border-top: 1px solid rgba(255,255,255,0.06);
         }
         .next-section h2 { font-size: 2.5rem; margin-bottom: 1rem; }
         .next-section p { color: var(--muted); max-width: 600px; margin: 0 auto; line-height: 1.8; }
-        .accent { color: var(--accent); }
 
         /* ===== ANIMATIONS ===== */
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(24px); }
+            from { opacity: 0; transform: translateY(20px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-        @keyframes scrollLine {
-            0%, 100% { opacity: 1; transform: scaleY(1); }
-            50%       { opacity: 0.3; transform: scaleY(0.6); }
+        @keyframes pulse {
+            0%,100% { opacity:1; } 50% { opacity:0.3; }
         }
     </style>
 </head>
@@ -236,12 +183,136 @@
         </ul>
     </nav>
 
-    <!-- Parallax Hero -->
     <section id="hero">
-        <div id="harbor-bg"></div>
-        <div id="hero-overlay"></div>
-        <div id="orb"></div>
 
+        <!-- Layer 0: Harbor photo (barely moves) -->
+        <div id="layer-photo"></div>
+
+        <!-- Layer 1: Dark tint -->
+        <div id="layer-tint"></div>
+
+        <!-- Layer 2: CSS animated water (slides down on scroll) -->
+        <div id="layer-water">
+            <svg class="wave-svg" viewBox="0 0 1440 220" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill="rgba(10,185,129,0.08)" d="M0,100 C180,160 360,40 540,100 C720,160 900,40 1080,100 C1260,160 1440,80 1440,80 L1440,220 L0,220 Z
+                          M1440,100 C1260,160 1080,40 900,100 C720,160 540,40 360,100 C180,160 0,80 0,80 L0,220 L1440,220 Z"/>
+                <path fill="rgba(10,185,129,0.05)" d="M0,130 C240,80 480,180 720,130 C960,80 1200,180 1440,130 L1440,220 L0,220 Z
+                          M1440,130 C1200,80 960,180 720,130 C480,80 240,180 0,130 L0,220 L1440,220 Z"/>
+            </svg>
+        </div>
+
+        <!-- Layer 3: CSS city skyline — splits left/right on scroll -->
+        <div id="layer-buildings-left">
+            <svg width="100%" height="100%" viewBox="0 0 720 440" preserveAspectRatio="xMaxYMax meet" xmlns="http://www.w3.org/2000/svg">
+                <!-- Baltimore-style skyline, left half -->
+                <g fill="rgba(8,12,20,0.82)">
+                    <!-- Tall tower -->
+                    <rect x="580" y="60" width="48" height="380"/>
+                    <rect x="592" y="40" width="24" height="30"/>
+                    <rect x="600" y="20" width="8" height="25"/>
+                    <!-- Antenna -->
+                    <rect x="603" y="0" width="2" height="22"/>
+                    <!-- Windows on tall tower -->
+                    <rect x="586" y="80" width="6" height="8" fill="rgba(255,220,100,0.35)"/>
+                    <rect x="596" y="80" width="6" height="8" fill="rgba(255,220,100,0.2)"/>
+                    <rect x="606" y="80" width="6" height="8" fill="rgba(255,220,100,0.4)"/>
+                    <rect x="586" y="100" width="6" height="8" fill="rgba(255,220,100,0.15)"/>
+                    <rect x="606" y="100" width="6" height="8" fill="rgba(255,220,100,0.3)"/>
+                    <rect x="586" y="120" width="6" height="8" fill="rgba(255,220,100,0.25)"/>
+                    <rect x="596" y="120" width="6" height="8" fill="rgba(255,220,100,0.35)"/>
+                    <rect x="586" y="150" width="6" height="8" fill="rgba(255,220,100,0.2)"/>
+                    <rect x="606" y="150" width="6" height="8" fill="rgba(255,220,100,0.4)"/>
+                    <!-- Mid building -->
+                    <rect x="490" y="140" width="72" height="300"/>
+                    <rect x="490" y="160" width="8" height="6" fill="rgba(255,220,100,0.3)"/>
+                    <rect x="502" y="160" width="8" height="6" fill="rgba(255,220,100,0.2)"/>
+                    <rect x="514" y="160" width="8" height="6" fill="rgba(255,220,100,0.35)"/>
+                    <rect x="526" y="160" width="8" height="6" fill="rgba(255,220,100,0.15)"/>
+                    <rect x="490" y="180" width="8" height="6" fill="rgba(255,220,100,0.25)"/>
+                    <rect x="514" y="180" width="8" height="6" fill="rgba(255,220,100,0.3)"/>
+                    <rect x="490" y="200" width="8" height="6" fill="rgba(255,220,100,0.2)"/>
+                    <rect x="502" y="200" width="8" height="6" fill="rgba(255,220,100,0.35)"/>
+                    <rect x="526" y="200" width="8" height="6" fill="rgba(255,220,100,0.15)"/>
+                    <!-- Shorter wide building -->
+                    <rect x="390" y="200" width="90" height="240"/>
+                    <rect x="395" y="215" width="10" height="8" fill="rgba(255,220,100,0.2)"/>
+                    <rect x="410" y="215" width="10" height="8" fill="rgba(255,220,100,0.3)"/>
+                    <rect x="425" y="215" width="10" height="8" fill="rgba(255,220,100,0.15)"/>
+                    <rect x="455" y="215" width="10" height="8" fill="rgba(255,220,100,0.35)"/>
+                    <rect x="395" y="235" width="10" height="8" fill="rgba(255,220,100,0.25)"/>
+                    <rect x="425" y="235" width="10" height="8" fill="rgba(255,220,100,0.2)"/>
+                    <!-- Small building -->
+                    <rect x="320" y="240" width="55" height="200"/>
+                    <rect x="325" y="255" width="8" height="6" fill="rgba(255,220,100,0.3)"/>
+                    <rect x="338" y="255" width="8" height="6" fill="rgba(255,220,100,0.2)"/>
+                    <rect x="325" y="270" width="8" height="6" fill="rgba(255,220,100,0.15)"/>
+                    <rect x="350" y="270" width="8" height="6" fill="rgba(255,220,100,0.35)"/>
+                    <!-- Crane / industrial left -->
+                    <rect x="200" y="280" width="10" height="160"/>
+                    <rect x="160" y="290" width="90" height="6"/>
+                    <rect x="160" y="296" width="4" height="50"/>
+                    <rect x="200" y="296" width="4" height="30"/>
+                    <!-- Low waterfront buildings -->
+                    <rect x="0" y="310" width="80" height="130"/>
+                    <rect x="85" y="300" width="60" height="140"/>
+                    <rect x="150" y="320" width="45" height="120"/>
+                    <rect x="210" y="295" width="100" height="145"/>
+                </g>
+            </svg>
+        </div>
+        <div id="layer-buildings-right">
+            <svg width="100%" height="100%" viewBox="0 0 720 440" preserveAspectRatio="xMinYMax meet" xmlns="http://www.w3.org/2000/svg">
+                <g fill="rgba(8,12,20,0.82)">
+                    <!-- Tall left-side of right panel -->
+                    <rect x="0" y="100" width="52" height="340"/>
+                    <rect x="4" y="82" width="44" height="22"/>
+                    <rect x="10" y="115" width="8" height="6" fill="rgba(255,220,100,0.3)"/>
+                    <rect x="22" y="115" width="8" height="6" fill="rgba(255,220,100,0.2)"/>
+                    <rect x="34" y="115" width="8" height="6" fill="rgba(255,220,100,0.35)"/>
+                    <rect x="10" y="135" width="8" height="6" fill="rgba(255,220,100,0.15)"/>
+                    <rect x="34" y="135" width="8" height="6" fill="rgba(255,220,100,0.25)"/>
+                    <rect x="10" y="155" width="8" height="6" fill="rgba(255,220,100,0.3)"/>
+                    <rect x="22" y="155" width="8" height="6" fill="rgba(255,220,100,0.2)"/>
+                    <!-- Stepped building -->
+                    <rect x="58" y="160" width="80" height="280"/>
+                    <rect x="68" y="140" width="60" height="25"/>
+                    <rect x="78" y="120" width="40" height="25"/>
+                    <rect x="62" y="175" width="10" height="8" fill="rgba(255,220,100,0.25)"/>
+                    <rect x="76" y="175" width="10" height="8" fill="rgba(255,220,100,0.35)"/>
+                    <rect x="90" y="175" width="10" height="8" fill="rgba(255,220,100,0.15)"/>
+                    <rect x="104" y="175" width="10" height="8" fill="rgba(255,220,100,0.3)"/>
+                    <rect x="62" y="195" width="10" height="8" fill="rgba(255,220,100,0.2)"/>
+                    <rect x="90" y="195" width="10" height="8" fill="rgba(255,220,100,0.3)"/>
+                    <rect x="104" y="195" width="10" height="8" fill="rgba(255,220,100,0.15)"/>
+                    <!-- Medium building -->
+                    <rect x="148" y="190" width="65" height="250"/>
+                    <rect x="153" y="205" width="9" height="7" fill="rgba(255,220,100,0.3)"/>
+                    <rect x="166" y="205" width="9" height="7" fill="rgba(255,220,100,0.2)"/>
+                    <rect x="179" y="205" width="9" height="7" fill="rgba(255,220,100,0.35)"/>
+                    <rect x="192" y="205" width="9" height="7" fill="rgba(255,220,100,0.15)"/>
+                    <rect x="153" y="225" width="9" height="7" fill="rgba(255,220,100,0.25)"/>
+                    <rect x="179" y="225" width="9" height="7" fill="rgba(255,220,100,0.3)"/>
+                    <!-- Waterfront warehouses right -->
+                    <rect x="220" y="300" width="120" height="140"/>
+                    <rect x="350" y="290" width="80" height="150"/>
+                    <rect x="440" y="310" width="100" height="130"/>
+                    <rect x="548" y="280" width="172" height="160"/>
+                    <!-- Dock structure -->
+                    <rect x="560" y="260" width="8" height="25"/>
+                    <rect x="580" y="255" width="8" height="30"/>
+                    <rect x="600" y="265" width="8" height="20"/>
+                    <rect x="550" y="283" width="170" height="5"/>
+                </g>
+            </svg>
+        </div>
+
+        <!-- Layer 4: Ground fade -->
+        <div id="layer-ground"></div>
+
+        <!-- Layer 5: Glow -->
+        <div id="layer-glow"></div>
+
+        <!-- Layer 6: Hero text -->
         <div id="hero-content">
             <p class="hero-tag">Web Developer · SEO Specialist · Crypto Consultant</p>
             <h1>Michael Williams<br><span class="accent">Aka: Deacyde</span></h1>
@@ -256,38 +327,55 @@
             <span>Scroll</span>
             <div class="line"></div>
         </div>
+
     </section>
 
-    <!-- Next section to show scroll effect -->
+    <!-- Next section -->
     <div class="next-section">
         <h2>What I <span class="accent">Do</span></h2>
         <p>Full-stack web development, SEO strategy, and crypto consulting. Based in Baltimore — building on the web since before it was cool.</p>
     </div>
-    <div class="next-section" style="padding-top:2rem;border-top:none;">
-        <p style="color:#444;font-size:0.8rem;letter-spacing:1px;">— MOCKUP — dev.deacyde.com/mockup.html —</p>
+    <div style="background:var(--bg);padding:1.5rem;text-align:center;">
+        <p style="color:#333;font-size:0.75rem;letter-spacing:1px;">— MOCKUP — dev.deacyde.com/mockup.html —</p>
     </div>
 
     <script>
-        const harborBg    = document.getElementById('harbor-bg');
-        const orb         = document.getElementById('orb');
-        const heroContent = document.getElementById('hero-content');
-        const navbar      = document.getElementById('navbar');
+        const photo    = document.getElementById('layer-photo');
+        const water    = document.getElementById('layer-water');
+        const bLeft    = document.getElementById('layer-buildings-left');
+        const bRight   = document.getElementById('layer-buildings-right');
+        const ground   = document.getElementById('layer-ground');
+        const glow     = document.getElementById('layer-glow');
+        const content  = document.getElementById('hero-content');
+        const navbar   = document.getElementById('navbar');
 
         window.addEventListener('scroll', function() {
             const y = window.scrollY;
 
-            // Harbor image moves at 40% of scroll speed (slow = deep depth)
-            harborBg.style.transform = 'translateY(' + (y * 0.4) + 'px)';
+            // Photo: barely drifts up (deepest layer)
+            photo.style.transform = 'translateY(' + (y * 0.25) + 'px)';
 
-            // Orb drifts up slightly faster for layered feel
-            orb.style.transform = 'translateY(' + (y * 0.2) + 'px)';
+            // Water: slides down (away from buildings, creates split)
+            water.style.transform = 'translateY(' + (y * 0.8) + 'px)';
+            water.style.opacity = Math.max(0, 1 - y / 400);
 
-            // Hero text lifts out faster — creates separation from bg
-            heroContent.style.transform = 'translateY(' + (y * -0.15) + 'px)';
-            heroContent.style.opacity = Math.max(0, 1 - y / 500);
+            // Buildings: left half slides up+left, right half slides up+right
+            bLeft.style.transform  = 'translate(' + (y * -0.3) + 'px, ' + (y * -0.6) + 'px)';
+            bRight.style.transform = 'translate(' + (y *  0.3) + 'px, ' + (y * -0.6) + 'px)';
+            bLeft.style.opacity  = Math.max(0, 1 - y / 350);
+            bRight.style.opacity = Math.max(0, 1 - y / 350);
 
-            // Navbar gets bg after scrolling down
-            navbar.classList.toggle('scrolled', y > 60);
+            // Ground: fades down out of view
+            ground.style.transform = 'translateY(' + (y * 0.5) + 'px)';
+
+            // Glow: gentle drift
+            glow.style.transform = 'translateY(' + (y * 0.15) + 'px)';
+
+            // Text: lifts up and fades — feels like emerging from the city
+            content.style.transform = 'translateY(' + (y * -0.12) + 'px)';
+            content.style.opacity   = Math.max(0, 1 - y / 450);
+
+            navbar.classList.toggle('scrolled', y > 50);
         });
     </script>
 </body>
