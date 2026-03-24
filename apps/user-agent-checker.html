@@ -617,8 +617,8 @@ function setView(v) {
   currentView = v;
   document.getElementById('vbtn-table').classList.toggle('active', v === 'table');
   document.getElementById('vbtn-matrix').classList.toggle('active', v === 'matrix');
-  document.getElementById('view-table').style.display   = v === 'table'  ? '' : 'none';
-  document.getElementById('view-matrix').style.display  = v === 'matrix' ? '' : 'none';
+  document.getElementById('view-table').style.display   = v === 'table'  ? 'block' : 'none';
+  document.getElementById('view-matrix').style.display  = v === 'matrix' ? 'block' : 'none';
   v === 'table' ? renderTable() : renderMatrix();
 }
 
