@@ -190,7 +190,7 @@
     <div class="settings-grid">
       <div class="setting-item">
         <label>Worker URL</label>
-        <input type="url" id="s-worker" placeholder="https://ua-checker.deacyde.workers.dev" />
+        <input type="url" id="s-worker" placeholder="https://empty-bonus-280d.muddy-river-68bb.workers.dev" />
         <div class="setting-note">Your Cloudflare Worker endpoint (saved locally)</div>
       </div>
       <div class="setting-item">
@@ -332,7 +332,7 @@ let robotsCache   = {};
 // ─── SETTINGS ──────────────────────────────────────────────────────────────
 function getSettings() {
   return {
-    workerUrl:   (document.getElementById('s-worker').value.trim() || 'https://ua-checker.deacyde.workers.dev').replace(/\/$/, ''),
+    workerUrl:   (document.getElementById('s-worker').value.trim() || 'https://empty-bonus-280d.muddy-river-68bb.workers.dev').replace(/\/$/, ''),
     concurrency: parseInt(document.getElementById('s-concurrency').value) || 3,
     delay:       parseInt(document.getElementById('s-delay').value) || 0,
   };
