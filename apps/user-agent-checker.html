@@ -641,7 +641,7 @@ function renderTable() {
     return `<tr>
       <td style="color:#555">${r.index}</td>
       <td>
-        <span class="url-text">${getDomain(r.url)}</span>
+        <span class="url-text">${escHtml(r.url)}</span>
         ${hasR ? `<button class="robots-btn" onclick="toggleRobots('${rid}')" title="Show robots.txt rules">📋</button>
         <div class="robots-box" id="${rid}">${hasR ? escHtml(formatRobots(parseRobots(rtxt))) : 'N/A'}</div>` : ''}
       </td>
