@@ -9,6 +9,547 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         :root { --accent:#10b981; --bg:#0a0a0f; --text:#f1f5f9; --muted:#94a3b8; }
         * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; }
+
+        /* NAVBAR */
+        .navbar {
+            position:fixed; top:0; left:0; width:100%; z-index:300;
+            padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center;
+            transition:background .3s;
+        }
+        .navbar.scrolled { background:rgba(10,10,15,.93); backdrop-filter:blur(12px); border-bottom:1px solid rgba(255,255,255,.06); }
+        .nav-brand img { height:38px; }
+        .nav-links { display:flex; gap:2rem; list-style:none; }
+        .nav-links a { text-decoration:none; color:var(--muted); font-size:.9rem; transition:color .2s; }
+        .nav-links a:hover { color:var(--text); }
+
+        /* HERO WRAPPER — tall for scroll room */
+        #hero-wrapper { position:relative; height:300vh; }
+
+        /* STICKY container */
+        #hero-sticky {
+            position:sticky; top:0; height:100vh; overflow:hidden;
+        }
+
+        /* Harbor photo sits at back */
+        #harbor-bg {
+            position:absolute; inset:0;
+            background:url('https://deacyde.com/images/slider-bg.jpg') center/cover no-repeat;
+            z-index:0;
+        }
+        #harbor-bg::after {
+            content:''; position:absolute; inset:0;
+            background:rgba(0,0,0,.3);
+        }
+
+        /* ===== PANELS ===== */
+        #panel-left, #panel-right {
+            position:absolute; top:0; height:100%; width:51%;
+            z-index:2; will-change:transform; overflow:hidden;
+            background:#060b10;
+        }
+        #panel-left  { left:0; }
+        #panel-right { right:0; }
+
+        /* Night sky gradient inside panels */
+        .sky {
+            position:absolute; inset:0;
+            background:linear-gradient(to bottom,
+                #020608 0%,
+                #04101a 30%,
+                #071520 55%,
+                #061018 65%,
+                #08131c 68%,  /* waterline */
+                #050e16 72%,
+                #030a10 85%,
+                #020608 100%);
+        }
+
+        /* Moon on left panel */
+        .moon {
+            position:absolute; top:10%; right:18%;
+            width:48px; height:48px; border-radius:50%;
+            background:radial-gradient(circle at 40% 40%, #fff9e0, #f0e080);
+            box-shadow:0 0 30px 10px rgba(255,240,120,.18), 0 0 60px 20px rgba(255,240,120,.08);
+        }
+        .moon::after {
+            content:''; position:absolute; top:6px; left:10px;
+            width:12px; height:12px; border-radius:50%;
+            background:rgba(200,180,60,.15);
+        }
+
+        /* Stars layer */
+        .stars { position:absolute; inset:0; pointer-events:none; z-index:1; }
+        .star {
+            position:absolute; border-radius:50%; background:#fff;
+            animation:twinkle var(--d,3s) ease-in-out infinite;
+        }
+        /* Water reflection stars (lower half, more horizontal shimmer) */
+        .star-reflect {
+            position:absolute; border-radius:50%;
+            background:rgba(255,255,255,.7);
+            animation:shimmer var(--d,2s) ease-in-out infinite;
+        }
+        @keyframes twinkle  { 0%,100%{opacity:var(--o,.6);transform:scale(1)}   50%{opacity:.1;transform:scale(.6)} }
+        @keyframes shimmer  { 0%,100%{opacity:var(--o,.4);transform:scaleX(1)}  50%{opacity:.05;transform:scaleX(3)} }
+
+        /* Waterline */
+        .waterline {
+            position:absolute; left:0; right:0;
+            top:62%; height:2px;
+            background:linear-gradient(90deg, transparent, rgba(16,185,129,.25), rgba(100,200,255,.2), rgba(16,185,129,.25), transparent);
+            z-index:3;
+        }
+        .waterline::after {
+            content:''; position:absolute; top:0; left:0; right:0; bottom:0;
+            animation:waterlineShimmer 3s ease-in-out infinite;
+            background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,.15) 50%, transparent 100%);
+            background-size:200% 100%;
+        }
+        @keyframes waterlineShimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        /* Buildings SVG */
+        .buildings {
+            position:absolute; bottom:38%; left:0; width:100%; height:55%;
+            z-index:2;
+        }
+
+        /* Water ripple overlay */
+        .water-ripples {
+            position:absolute; bottom:0; left:0; right:0; top:62%;
+            z-index:3; pointer-events:none; overflow:hidden;
+        }
+        .ripple-line {
+            position:absolute; left:-10%; width:120%; height:1px;
+            background:linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent);
+            animation:rippleMove var(--s,4s) linear infinite;
+        }
+        @keyframes rippleMove { from{top:0%;opacity:.6} to{top:100%;opacity:0} }
+
+        /* Water color tint */
+        .water-tint {
+            position:absolute; bottom:0; left:0; right:0; top:63%;
+            background:linear-gradient(to bottom, rgba(4,18,30,.5) 0%, rgba(2,10,18,.85) 100%);
+            z-index:2;
+        }
+
+        /* ===== SPLIT NAME ON PANELS ===== */
+        .panel-name {
+            position:absolute; top:50%; z-index:10;
+            font-size:clamp(2.8rem,7vw,6.5rem); font-weight:800;
+            color:#ffd700;
+            -webkit-text-stroke:2px #fff;
+            text-stroke:2px #fff;
+            white-space:nowrap;
+            transform:translateY(-50%);
+            text-shadow:0 0 40px rgba(255,215,0,.3), 0 2px 20px rgba(0,0,0,.9);
+            line-height:1;
+        }
+        #name-michael { right:5%; text-align:right; }
+        #name-williams { left:5%; text-align:left; }
+
+        /* Aka: Deacyde sub-line on panels */
+        .panel-sub {
+            position:absolute; top:calc(50% + clamp(3rem,8vw,7.5rem)); z-index:10;
+            font-size:clamp(.7rem,1.5vw,1rem); font-weight:600;
+            letter-spacing:4px; text-transform:uppercase;
+            color:var(--accent); white-space:nowrap;
+        }
+        #sub-left  { right:5%; text-align:right; }
+        #sub-right { left:5%; text-align:left; }
+
+        /* ===== HERO TEXT (revealed after panels open) ===== */
+        #hero-content {
+            position:absolute; top:50%; left:50%;
+            transform:translate(-50%,-50%);
+            text-align:center; width:100%; max-width:700px; padding:0 2rem;
+            z-index:10; opacity:0; pointer-events:none; will-change:opacity;
+        }
+        #hero-content.active { pointer-events:auto; }
+        .hero-tag {
+            font-size:.78rem; font-weight:600; letter-spacing:3px;
+            text-transform:uppercase; color:var(--accent); margin-bottom:1rem;
+        }
+        #hero-content h1 {
+            font-size:clamp(2.4rem,6vw,5rem); font-weight:800; line-height:1.1;
+            margin-bottom:1rem; color:#ffd700; -webkit-text-stroke:1px #fff;
+            text-shadow:0 2px 30px rgba(0,0,0,.8);
+        }
+        .accent { color:var(--accent); -webkit-text-stroke:0; }
+        .hero-sub { font-size:1rem; color:var(--muted); margin-bottom:2rem; text-shadow:0 1px 10px rgba(0,0,0,.9); }
+        .hero-actions { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
+        .btn { padding:.75rem 1.75rem; border-radius:8px; font-size:.9rem; font-weight:600; text-decoration:none; transition:all .2s; }
+        .btn-primary { background:var(--accent); color:#fff; }
+        .btn-primary:hover { opacity:.85; transform:translateY(-2px); }
+        .btn-outline { border:1px solid rgba(255,255,255,.25); color:var(--text); }
+        .btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+
+        /* Scroll hint */
+        #scroll-hint {
+            position:absolute; bottom:2rem; left:50%; transform:translateX(-50%);
+            z-index:20; display:flex; flex-direction:column; align-items:center; gap:.4rem;
+            color:rgba(255,255,255,.35); font-size:.72rem; letter-spacing:2px; text-transform:uppercase;
+        }
+        #scroll-hint .line {
+            width:1px; height:36px;
+            background:linear-gradient(to bottom,rgba(255,215,0,.7),transparent);
+            animation:pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+        /* NEXT SECTION */
+        .next-section { background:var(--bg); padding:6rem 2rem; text-align:center; border-top:1px solid rgba(255,255,255,.06); }
+        .next-section h2 { font-size:2.5rem; margin-bottom:1rem; }
+        .next-section p { color:var(--muted); max-width:600px; margin:0 auto; line-height:1.8; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" id="navbar">
+        <a href="#" class="nav-brand"><img src="logo.png" alt="Deacyde"></a>
+        <ul class="nav-links">
+            <li><a href="#">Services</a></li>
+            <li><a href="#">Portfolio</a></li>
+            <li><a href="#">Games</a></li>
+            <li><a href="#">Contact</a></li>
+        </ul>
+    </nav>
+
+    <div id="hero-wrapper">
+        <div id="hero-sticky">
+
+            <div id="harbor-bg"></div>
+
+            <!-- LEFT PANEL -->
+            <div id="panel-left">
+                <div class="sky"></div>
+                <div class="moon"></div>
+                <div class="stars" id="stars-left"></div>
+
+                <!-- Buildings (right side of left panel = city centre) -->
+                <svg class="buildings" viewBox="0 0 620 420" preserveAspectRatio="xMaxYMax meet" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="gL" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#0f2035"/>
+                            <stop offset="100%" stop-color="#060b10"/>
+                        </linearGradient>
+                        <!-- Reflection gradient — fades out at bottom -->
+                        <linearGradient id="rL" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#0a1820" stop-opacity=".75"/>
+                            <stop offset="100%" stop-color="#060b10" stop-opacity="0"/>
+                        </linearGradient>
+                    </defs>
+
+                    <!-- BUILDINGS (upper half, mirrored below waterline at y=210) -->
+
+                    <!-- Tall skyscraper far right -->
+                    <rect x="510" y="20" width="55"  height="190" fill="url(#gL)"/>
+                    <rect x="522" y="4"  width="31"  height="20"  fill="#0e2030"/>
+                    <rect x="535" y="0"  width="5"   height="7"   fill="#1a4060"/>
+                    <!-- windows -->
+                    <rect x="515" y="38"  width="6" height="5" fill="rgba(255,220,80,.6)"/>
+                    <rect x="525" y="38"  width="6" height="5" fill="rgba(255,220,80,.4)"/>
+                    <rect x="535" y="38"  width="6" height="5" fill="rgba(255,220,80,.6)"/>
+                    <rect x="545" y="38"  width="6" height="5" fill="rgba(255,220,80,.3)"/>
+                    <rect x="515" y="52"  width="6" height="5" fill="rgba(255,220,80,.3)"/>
+                    <rect x="535" y="52"  width="6" height="5" fill="rgba(255,220,80,.5)"/>
+                    <rect x="545" y="52"  width="6" height="5" fill="rgba(255,220,80,.4)"/>
+                    <rect x="515" y="66"  width="6" height="5" fill="rgba(255,220,80,.5)"/>
+                    <rect x="525" y="66"  width="6" height="5" fill="rgba(255,220,80,.2)"/>
+                    <rect x="515" y="88"  width="6" height="5" fill="rgba(255,220,80,.4)"/>
+                    <rect x="545" y="88"  width="6" height="5" fill="rgba(255,220,80,.6)"/>
+                    <rect x="515" y="108" width="6" height="5" fill="rgba(255,220,80,.3)"/>
+                    <rect x="525" y="108" width="6" height="5" fill="rgba(255,220,80,.5)"/>
+                    <rect x="535" y="108" width="6" height="5" fill="rgba(255,220,80,.4)"/>
+
+                    <!-- Mid tower -->
+                    <rect x="420" y="70"  width="78" height="140" fill="url(#gL)"/>
+                    <rect x="428" y="55"  width="62" height="18"  fill="#0e2030"/>
+                    <rect x="436" y="90"  width="9"  height="7"   fill="rgba(255,220,80,.5)"/>
+                    <rect x="450" y="90"  width="9"  height="7"   fill="rgba(255,220,80,.3)"/>
+                    <rect x="464" y="90"  width="9"  height="7"   fill="rgba(255,220,80,.5)"/>
+                    <rect x="478" y="90"  width="9"  height="7"   fill="rgba(255,220,80,.2)"/>
+                    <rect x="436" y="108" width="9"  height="7"   fill="rgba(255,220,80,.4)"/>
+                    <rect x="464" y="108" width="9"  height="7"   fill="rgba(255,220,80,.5)"/>
+                    <rect x="436" y="130" width="9"  height="7"   fill="rgba(255,220,80,.2)"/>
+                    <rect x="450" y="130" width="9"  height="7"   fill="rgba(255,220,80,.4)"/>
+                    <rect x="478" y="130" width="9"  height="7"   fill="rgba(255,220,80,.5)"/>
+
+                    <!-- Stepped building -->
+                    <rect x="330" y="95"  width="78" height="115" fill="url(#gL)"/>
+                    <rect x="340" y="76"  width="58" height="22"  fill="#0d1e2e"/>
+                    <rect x="350" y="60"  width="38" height="18"  fill="#0b1828"/>
+                    <rect x="335" y="115" width="9"  height="6"   fill="rgba(255,220,80,.4)"/>
+                    <rect x="349" y="115" width="9"  height="6"   fill="rgba(255,220,80,.6)"/>
+                    <rect x="363" y="115" width="9"  height="6"   fill="rgba(255,220,80,.2)"/>
+                    <rect x="377" y="115" width="9"  height="6"   fill="rgba(255,220,80,.5)"/>
+                    <rect x="335" y="135" width="9"  height="6"   fill="rgba(255,220,80,.3)"/>
+                    <rect x="363" y="135" width="9"  height="6"   fill="rgba(255,220,80,.5)"/>
+
+                    <!-- Crane -->
+                    <rect x="278" y="130" width="7"  height="80"  fill="#0c1a26"/>
+                    <rect x="238" y="138" width="85" height="5"   fill="#0c1a26"/>
+                    <rect x="238" y="143" width="4"  height="35"  fill="#0c1a26"/>
+                    <rect x="281" y="143" width="4"  height="22"  fill="#0c1a26"/>
+                    <circle cx="238" cy="138" r="3" fill="rgba(255,60,60,.7)"/>
+
+                    <!-- Low waterfront buildings -->
+                    <rect x="0"   y="155" width="80"  height="55"  fill="url(#gL)"/>
+                    <rect x="85"  y="145" width="60"  height="65"  fill="url(#gL)"/>
+                    <rect x="150" y="160" width="50"  height="50"  fill="url(#gL)"/>
+                    <rect x="206" y="142" width="68"  height="68"  fill="url(#gL)"/>
+
+                    <!-- Dock lights -->
+                    <circle cx="86"  cy="143" r="2.5" fill="rgba(255,180,60,.7)"/>
+                    <circle cx="151" cy="158" r="2.5" fill="rgba(255,180,60,.6)"/>
+                    <circle cx="207" cy="140" r="2.5" fill="rgba(255,180,60,.7)"/>
+
+                    <!-- ===== WATERLINE at y=210 ===== -->
+
+                    <!-- REFLECTION (flipped buildings, y reflected around 210) -->
+                    <!-- reflection opacity = ~0.4, distorted slightly -->
+                    <g opacity=".38" transform="scale(1,-1) translate(0,-420)" filter="url(#blur)">
+                        <!-- Skyscraper reflection -->
+                        <rect x="510" y="20" width="55"  height="190" fill="url(#rL)"/>
+                        <rect x="515" y="38"  width="6" height="5" fill="rgba(255,220,80,.8)"/>
+                        <rect x="535" y="38"  width="6" height="5" fill="rgba(255,220,80,.8)"/>
+                        <rect x="515" y="52"  width="6" height="5" fill="rgba(255,220,80,.6)"/>
+                        <rect x="545" y="52"  width="6" height="5" fill="rgba(255,220,80,.7)"/>
+                        <rect x="515" y="88"  width="6" height="5" fill="rgba(255,220,80,.7)"/>
+                        <!-- Mid tower reflection -->
+                        <rect x="420" y="70"  width="78" height="140" fill="url(#rL)"/>
+                        <rect x="436" y="90"  width="9"  height="7"   fill="rgba(255,220,80,.7)"/>
+                        <rect x="464" y="90"  width="9"  height="7"   fill="rgba(255,220,80,.6)"/>
+                        <rect x="436" y="108" width="9"  height="7"   fill="rgba(255,220,80,.5)"/>
+                        <!-- Stepped building reflection -->
+                        <rect x="330" y="95"  width="78" height="115" fill="url(#rL)"/>
+                        <rect x="349" y="115" width="9"  height="6"   fill="rgba(255,220,80,.6)"/>
+                        <rect x="363" y="135" width="9"  height="6"   fill="rgba(255,220,80,.5)"/>
+                        <!-- Waterfront reflection -->
+                        <rect x="0"   y="155" width="80"  height="55"  fill="url(#rL)"/>
+                        <rect x="85"  y="145" width="60"  height="65"  fill="url(#rL)"/>
+                        <rect x="150" y="160" width="50"  height="50"  fill="url(#rL)"/>
+                        <rect x="206" y="142" width="68"  height="68"  fill="url(#rL)"/>
+                    </g>
+                </svg>
+
+                <!-- Animated water ripples over reflection -->
+                <div class="water-tint"></div>
+                <div class="water-ripples" id="ripples-left"></div>
+                <div class="waterline"></div>
+
+                <!-- Stars reflected in water -->
+                <div class="stars" id="stars-left-reflect" style="top:62%;height:38%;"></div>
+
+                <!-- "Michael" name text -->
+                <div class="panel-name" id="name-michael">Michael</div>
+                <div class="panel-sub"  id="sub-left">Aka: Deacyde</div>
+            </div>
+
+            <!-- RIGHT PANEL -->
+            <div id="panel-right">
+                <div class="sky"></div>
+                <div class="stars" id="stars-right"></div>
+
+                <svg class="buildings" viewBox="0 0 620 420" preserveAspectRatio="xMinYMax meet" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="gR" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#0f2035"/>
+                            <stop offset="100%" stop-color="#060b10"/>
+                        </linearGradient>
+                        <linearGradient id="rR" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#0a1820" stop-opacity=".75"/>
+                            <stop offset="100%" stop-color="#060b10" stop-opacity="0"/>
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Tall tower left edge -->
+                    <rect x="55"  y="25"  width="52" height="185" fill="url(#gR)"/>
+                    <rect x="60"  y="7"   width="42" height="21"  fill="#0e2030"/>
+                    <rect x="79"  y="0"   width="5"  height="10"  fill="#1a4060"/>
+                    <rect x="81"  y="0"   width="2"  height="8"   fill="rgba(255,60,60,.8)"/>
+                    <rect x="58"  y="42"  width="6" height="5" fill="rgba(255,220,80,.5)"/>
+                    <rect x="68"  y="42"  width="6" height="5" fill="rgba(255,220,80,.3)"/>
+                    <rect x="78"  y="42"  width="6" height="5" fill="rgba(255,220,80,.6)"/>
+                    <rect x="88"  y="42"  width="6" height="5" fill="rgba(255,220,80,.4)"/>
+                    <rect x="58"  y="56"  width="6" height="5" fill="rgba(255,220,80,.4)"/>
+                    <rect x="78"  y="56"  width="6" height="5" fill="rgba(255,220,80,.6)"/>
+                    <rect x="88"  y="56"  width="6" height="5" fill="rgba(255,220,80,.2)"/>
+                    <rect x="58"  y="76"  width="6" height="5" fill="rgba(255,220,80,.5)"/>
+                    <rect x="68"  y="76"  width="6" height="5" fill="rgba(255,220,80,.3)"/>
+                    <rect x="88"  y="76"  width="6" height="5" fill="rgba(255,220,80,.5)"/>
+                    <rect x="58"  y="100" width="6" height="5" fill="rgba(255,220,80,.3)"/>
+                    <rect x="78"  y="100" width="6" height="5" fill="rgba(255,220,80,.5)"/>
+
+                    <!-- Stepped tower -->
+                    <rect x="116" y="60"  width="84" height="150" fill="url(#gR)"/>
+                    <rect x="126" y="42"  width="64" height="21"  fill="#0d1e2e"/>
+                    <rect x="136" y="26"  width="44" height="18"  fill="#0b1828"/>
+                    <rect x="119" y="80"  width="10" height="7"   fill="rgba(255,220,80,.5)"/>
+                    <rect x="134" y="80"  width="10" height="7"   fill="rgba(255,220,80,.3)"/>
+                    <rect x="149" y="80"  width="10" height="7"   fill="rgba(255,220,80,.6)"/>
+                    <rect x="164" y="80"  width="10" height="7"   fill="rgba(255,220,80,.2)"/>
+                    <rect x="179" y="80"  width="10" height="7"   fill="rgba(255,220,80,.4)"/>
+                    <rect x="119" y="100" width="10" height="7"   fill="rgba(255,220,80,.4)"/>
+                    <rect x="149" y="100" width="10" height="7"   fill="rgba(255,220,80,.6)"/>
+                    <rect x="179" y="100" width="10" height="7"   fill="rgba(255,220,80,.3)"/>
+                    <rect x="119" y="125" width="10" height="7"   fill="rgba(255,220,80,.5)"/>
+                    <rect x="134" y="125" width="10" height="7"   fill="rgba(255,220,80,.2)"/>
+                    <rect x="164" y="125" width="10" height="7"   fill="rgba(255,220,80,.4)"/>
+
+                    <!-- Medium building -->
+                    <rect x="210" y="100" width="68" height="110" fill="url(#gR)"/>
+                    <rect x="215" y="118" width="9"  height="6"   fill="rgba(255,220,80,.4)"/>
+                    <rect x="229" y="118" width="9"  height="6"   fill="rgba(255,220,80,.6)"/>
+                    <rect x="243" y="118" width="9"  height="6"   fill="rgba(255,220,80,.2)"/>
+                    <rect x="257" y="118" width="9"  height="6"   fill="rgba(255,220,80,.5)"/>
+                    <rect x="215" y="138" width="9"  height="6"   fill="rgba(255,220,80,.3)"/>
+                    <rect x="243" y="138" width="9"  height="6"   fill="rgba(255,220,80,.5)"/>
+
+                    <!-- Waterfront right -->
+                    <rect x="286" y="148" width="95"  height="62"  fill="url(#gR)"/>
+                    <rect x="388" y="138" width="72"  height="72"  fill="url(#gR)"/>
+                    <rect x="468" y="155" width="152" height="55"  fill="url(#gR)"/>
+                    <!-- Dock right -->
+                    <rect x="290" y="128" width="4" height="22" fill="#0c1a26"/>
+                    <rect x="308" y="124" width="4" height="26" fill="#0c1a26"/>
+                    <rect x="282" y="148" width="140" height="4" fill="#0c1a26"/>
+                    <circle cx="290" cy="126" r="2.5" fill="rgba(255,180,60,.7)"/>
+                    <circle cx="312" cy="122" r="2.5" fill="rgba(255,180,60,.6)"/>
+                    <circle cx="390" cy="136" r="2.5" fill="rgba(255,180,60,.7)"/>
+
+                    <!-- REFLECTION -->
+                    <g opacity=".38" transform="scale(1,-1) translate(0,-420)">
+                        <rect x="55"  y="25"  width="52" height="185" fill="url(#rR)"/>
+                        <rect x="58"  y="42"  width="6" height="5" fill="rgba(255,220,80,.7)"/>
+                        <rect x="78"  y="42"  width="6" height="5" fill="rgba(255,220,80,.8)"/>
+                        <rect x="58"  y="76"  width="6" height="5" fill="rgba(255,220,80,.6)"/>
+                        <rect x="116" y="60"  width="84" height="150" fill="url(#rR)"/>
+                        <rect x="149" y="80"  width="10" height="7" fill="rgba(255,220,80,.6)"/>
+                        <rect x="119" y="100" width="10" height="7" fill="rgba(255,220,80,.5)"/>
+                        <rect x="210" y="100" width="68" height="110" fill="url(#rR)"/>
+                        <rect x="229" y="118" width="9"  height="6"   fill="rgba(255,220,80,.6)"/>
+                        <rect x="286" y="148" width="95"  height="62"  fill="url(#rR)"/>
+                        <rect x="388" y="138" width="72"  height="72"  fill="url(#rR)"/>
+                        <rect x="468" y="155" width="152" height="55"  fill="url(#rR)"/>
+                    </g>
+                </svg>
+
+                <div class="water-tint"></div>
+                <div class="water-ripples" id="ripples-right"></div>
+                <div class="waterline"></div>
+                <div class="stars" id="stars-right-reflect" style="top:62%;height:38%;"></div>
+
+                <!-- "Williams" name -->
+                <div class="panel-name" id="name-williams">Williams</div>
+                <div class="panel-sub"  id="sub-right">Web Dev · SEO · Crypto</div>
+            </div>
+
+            <!-- Hero content revealed after panels open -->
+            <div id="hero-content">
+                <p class="hero-tag">Web Developer · SEO Specialist · Crypto Consultant</p>
+                <h1>Michael Williams<br><span class="accent">Aka: Deacyde</span></h1>
+                <p class="hero-sub">An active proof of resume — browse and enjoy!</p>
+                <div class="hero-actions">
+                    <a href="#" class="btn btn-primary">Explore My Work</a>
+                    <a href="#" class="btn btn-outline">Get In Touch</a>
+                </div>
+            </div>
+
+            <div id="scroll-hint">
+                <span>Scroll</span>
+                <div class="line"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="next-section">
+        <h2>What I <span class="accent">Do</span></h2>
+        <p>Full-stack web development, SEO strategy, and crypto consulting. Based in Baltimore — building on the web since before it was cool.</p>
+    </div>
+    <div style="background:var(--bg);padding:1.5rem;text-align:center;">
+        <p style="color:#333;font-size:.75rem;letter-spacing:1px;">— MOCKUP — dev.deacyde.com/mockup.html —</p>
+    </div>
+
+    <script>
+        // Generate stars
+        function makeStars(id, count, reflect) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            for (var i = 0; i < count; i++) {
+                var s = document.createElement('div');
+                s.className = reflect ? 'star-reflect' : 'star';
+                var size = Math.random() * (reflect ? 1.5 : 2.5) + 0.8;
+                s.style.cssText = [
+                    'width:' + size + 'px',
+                    'height:' + size + 'px',
+                    'top:'  + (Math.random() * 95) + '%',
+                    'left:' + (Math.random() * 100) + '%',
+                    '--o:' + (Math.random() * (reflect ? 0.4 : 0.7) + 0.1),
+                    '--d:' + (Math.random() * 4 + 1.5) + 's'
+                ].join(';');
+                el.appendChild(s);
+            }
+        }
+        makeStars('stars-left', 70, false);
+        makeStars('stars-right', 70, false);
+        makeStars('stars-left-reflect', 40, true);
+        makeStars('stars-right-reflect', 40, true);
+
+        // Generate water ripple lines
+        function makeRipples(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            for (var i = 0; i < 8; i++) {
+                var r = document.createElement('div');
+                r.className = 'ripple-line';
+                r.style.cssText = '--s:' + (Math.random() * 5 + 3) + 's;top:' + (Math.random() * 100) + '%;animation-delay:' + (Math.random() * 4) + 's';
+                el.appendChild(r);
+            }
+        }
+        makeRipples('ripples-left');
+        makeRipples('ripples-right');
+
+        var panelLeft  = document.getElementById('panel-left');
+        var panelRight = document.getElementById('panel-right');
+        var content    = document.getElementById('hero-content');
+        var hint       = document.getElementById('scroll-hint');
+        var navbar     = document.getElementById('navbar');
+
+        window.addEventListener('scroll', function() {
+            var y        = window.scrollY;
+            var vh       = window.innerHeight;
+            var progress = Math.min(y / vh, 1); // 0→1 over 1 viewport height
+
+            // Panels slide apart
+            var slide = progress * window.innerWidth * 0.58;
+            panelLeft.style.transform  = 'translateX(-' + slide + 'px)';
+            panelRight.style.transform = 'translateX(' + slide + 'px)';
+
+            // Hero content fades in after 40% open
+            var textProgress = Math.max(0, (progress - 0.4) / 0.45);
+            content.style.opacity = textProgress;
+            if (textProgress > 0) content.classList.add('active');
+            else content.classList.remove('active');
+
+            // Scroll hint fades out quickly
+            hint.style.opacity = Math.max(0, 1 - progress * 5);
+
+            navbar.classList.toggle('scrolled', y > 50);
+        });
+    </script>
+</body>
+</html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deacyde — Parallax Hero Mockup</title>
+    <link rel="icon" href="logo.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        :root { --accent:#10b981; --bg:#0a0a0f; --text:#f1f5f9; --muted:#94a3b8; }
+        * { margin:0; padding:0; box-sizing:border-box; }
         html { scroll-behavior:smooth; }
         body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; }
 
