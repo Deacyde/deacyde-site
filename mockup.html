@@ -93,10 +93,10 @@
         @keyframes twinkle  { 0%,100%{opacity:var(--o,.6);transform:scale(1)}   50%{opacity:.1;transform:scale(.6)} }
         @keyframes shimmer  { 0%,100%{opacity:var(--o,.4);transform:scaleX(1)}  50%{opacity:.05;transform:scaleX(3)} }
 
-        /* Waterline */
+        /* Waterline — sits below the name text */
         .waterline {
             position:absolute; left:0; right:0;
-            top:62%; height:2px;
+            top:76%; height:2px;
             background:linear-gradient(90deg, transparent, rgba(16,185,129,.25), rgba(100,200,255,.2), rgba(16,185,129,.25), transparent);
             z-index:3;
         }
@@ -108,15 +108,15 @@
         }
         @keyframes waterlineShimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-        /* Buildings SVG */
+        /* Buildings SVG — upper portion of panel, bottom edge at ~58% from top */
         .buildings {
-            position:absolute; bottom:38%; left:0; width:100%; height:55%;
+            position:absolute; bottom:42%; left:0; width:100%; height:54%;
             z-index:2;
         }
 
-        /* Water ripple overlay */
+        /* Water ripple overlay — below waterline */
         .water-ripples {
-            position:absolute; bottom:0; left:0; right:0; top:62%;
+            position:absolute; bottom:0; left:0; right:0; top:76%;
             z-index:3; pointer-events:none; overflow:hidden;
         }
         .ripple-line {
@@ -126,17 +126,17 @@
         }
         @keyframes rippleMove { from{top:0%;opacity:.6} to{top:100%;opacity:0} }
 
-        /* Water color tint */
+        /* Water color tint — below waterline */
         .water-tint {
-            position:absolute; bottom:0; left:0; right:0; top:63%;
+            position:absolute; bottom:0; left:0; right:0; top:77%;
             background:linear-gradient(to bottom, rgba(4,18,30,.5) 0%, rgba(2,10,18,.85) 100%);
             z-index:2;
         }
 
-        /* ===== SPLIT NAME ON PANELS ===== */
+        /* ===== SPLIT NAME ON PANELS — below buildings, above waterline ===== */
         .panel-name {
-            position:absolute; top:50%; z-index:10;
-            font-size:clamp(2.8rem,7vw,6.5rem); font-weight:800;
+            position:absolute; top:63%; z-index:10;
+            font-size:clamp(2.4rem,6.5vw,6rem); font-weight:800;
             color:#ffd700;
             -webkit-text-stroke:2px #fff;
             text-stroke:2px #fff;
@@ -148,12 +148,13 @@
         #name-michael { right:5%; text-align:right; }
         #name-williams { left:5%; text-align:left; }
 
-        /* Aka: Deacyde sub-line on panels */
+        /* Aka sub-line — just below name */
         .panel-sub {
-            position:absolute; top:calc(50% + clamp(3rem,8vw,7.5rem)); z-index:10;
-            font-size:clamp(.7rem,1.5vw,1rem); font-weight:600;
+            position:absolute; top:72%; z-index:10;
+            font-size:clamp(.65rem,1.4vw,.9rem); font-weight:600;
             letter-spacing:4px; text-transform:uppercase;
             color:var(--accent); white-space:nowrap;
+            transform:translateY(-50%);
         }
         #sub-left  { right:5%; text-align:right; }
         #sub-right { left:5%; text-align:left; }
@@ -339,7 +340,7 @@
                 <div class="waterline"></div>
 
                 <!-- Stars reflected in water -->
-                <div class="stars" id="stars-left-reflect" style="top:62%;height:38%;"></div>
+                <div class="stars" id="stars-left-reflect" style="top:76%;height:24%;"></div>
 
                 <!-- "Michael" name text -->
                 <div class="panel-name" id="name-michael">Michael</div>
@@ -438,7 +439,7 @@
                 <div class="water-tint"></div>
                 <div class="water-ripples" id="ripples-right"></div>
                 <div class="waterline"></div>
-                <div class="stars" id="stars-right-reflect" style="top:62%;height:38%;"></div>
+                <div class="stars" id="stars-right-reflect" style="top:76%;height:24%;"></div>
 
                 <!-- "Williams" name -->
                 <div class="panel-name" id="name-williams">Williams</div>
