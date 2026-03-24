@@ -108,9 +108,9 @@
         }
         @keyframes waterlineShimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-        /* Buildings SVG — upper portion of panel, bottom edge at ~58% from top */
+        /* Buildings SVG — top:39% so SVG y=210 (50% mark) lands exactly on waterline at 76% */
         .buildings {
-            position:absolute; bottom:42%; left:0; width:100%; height:54%;
+            position:absolute; top:39%; left:0; width:100%; height:75%;
             z-index:2;
         }
 
@@ -133,10 +133,10 @@
             z-index:2;
         }
 
-        /* ===== SPLIT NAME ON PANELS — below buildings, above waterline ===== */
+        /* ===== SPLIT NAME ON PANELS — centered on waterline ===== */
         .panel-name {
-            position:absolute; top:63%; z-index:10;
-            font-size:clamp(2.4rem,6.5vw,6rem); font-weight:800;
+            position:absolute; top:76%; z-index:10;
+            font-size:clamp(1.8rem,4.9vw,4.5rem); font-weight:800;
             color:#ffd700;
             -webkit-text-stroke:2px #fff;
             text-stroke:2px #fff;
@@ -148,9 +148,9 @@
         #name-michael { right:5%; text-align:right; }
         #name-williams { left:5%; text-align:left; }
 
-        /* Aka sub-line — just below name */
+        /* Sub-line — just below name/waterline */
         .panel-sub {
-            position:absolute; top:72%; z-index:10;
+            position:absolute; top:83%; z-index:10;
             font-size:clamp(.65rem,1.4vw,.9rem); font-weight:600;
             letter-spacing:4px; text-transform:uppercase;
             color:var(--accent); white-space:nowrap;
@@ -228,7 +228,7 @@
                 <div class="stars" id="stars-left"></div>
 
                 <!-- Buildings (right side of left panel = city centre) -->
-                <svg class="buildings" viewBox="0 0 620 420" preserveAspectRatio="xMaxYMax meet" xmlns="http://www.w3.org/2000/svg">
+                <svg class="buildings" viewBox="0 0 620 420" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="gL" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stop-color="#0f2035"/>
@@ -352,7 +352,7 @@
                 <div class="sky"></div>
                 <div class="stars" id="stars-right"></div>
 
-                <svg class="buildings" viewBox="0 0 620 420" preserveAspectRatio="xMinYMax meet" xmlns="http://www.w3.org/2000/svg">
+                <svg class="buildings" viewBox="0 0 620 420" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="gR" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stop-color="#0f2035"/>
