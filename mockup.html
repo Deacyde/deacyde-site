@@ -59,9 +59,9 @@
                 #04101a 30%,
                 #071520 55%,
                 #061018 65%,
-                #08131c 68%,  /* waterline */
-                #050e16 72%,
-                #030a10 85%,
+                #08131c 48%,  /* waterline */
+                #050e16 52%,
+                #030a10 65%,
                 #020608 100%);
         }
 
@@ -96,7 +96,7 @@
         /* Waterline — sits below the name text */
         .waterline {
             position:absolute; left:0; right:0;
-            top:76%; height:2px;
+            top:56%; height:2px;
             background:linear-gradient(90deg, transparent, rgba(16,185,129,.25), rgba(100,200,255,.2), rgba(16,185,129,.25), transparent);
             z-index:3;
         }
@@ -108,15 +108,15 @@
         }
         @keyframes waterlineShimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-        /* Buildings SVG — top:39% so SVG y=210 (50% mark) lands exactly on waterline at 76% */
+        /* Buildings SVG — top:19% so SVG y=210 (50% mark) lands exactly on waterline at 56% */
         .buildings {
-            position:absolute; top:39%; left:0; width:100%; height:75%;
+            position:absolute; top:19%; left:0; width:100%; height:75%;
             z-index:2;
         }
 
         /* Water ripple overlay — below waterline */
         .water-ripples {
-            position:absolute; bottom:0; left:0; right:0; top:76%;
+            position:absolute; bottom:0; left:0; right:0; top:56%;
             z-index:3; pointer-events:none; overflow:hidden;
         }
         .ripple-line {
@@ -128,14 +128,14 @@
 
         /* Water color tint — below waterline */
         .water-tint {
-            position:absolute; bottom:0; left:0; right:0; top:77%;
+            position:absolute; bottom:0; left:0; right:0; top:57%;
             background:linear-gradient(to bottom, rgba(4,18,30,.5) 0%, rgba(2,10,18,.85) 100%);
             z-index:2;
         }
 
         /* ===== SPLIT NAME ON PANELS — centered on waterline ===== */
         .panel-name {
-            position:absolute; top:76%; z-index:10;
+            position:absolute; top:56%; z-index:10;
             font-size:clamp(1.8rem,4.9vw,4.5rem); font-weight:800;
             color:#ffd700;
             -webkit-text-stroke:2px #fff;
@@ -150,7 +150,7 @@
 
         /* Sub-line — just below name/waterline */
         .panel-sub {
-            position:absolute; top:83%; z-index:10;
+            position:absolute; top:63%; z-index:10;
             font-size:clamp(.65rem,1.4vw,.9rem); font-weight:600;
             letter-spacing:4px; text-transform:uppercase;
             color:var(--accent); white-space:nowrap;
@@ -340,7 +340,7 @@
                 <div class="waterline"></div>
 
                 <!-- Stars reflected in water -->
-                <div class="stars" id="stars-left-reflect" style="top:76%;height:24%;"></div>
+                <div class="stars" id="stars-left-reflect" style="top:56%;height:44%;"></div>
 
                 <!-- "Michael" name text -->
                 <div class="panel-name" id="name-michael">Michael</div>
@@ -439,7 +439,7 @@
                 <div class="water-tint"></div>
                 <div class="water-ripples" id="ripples-right"></div>
                 <div class="waterline"></div>
-                <div class="stars" id="stars-right-reflect" style="top:76%;height:24%;"></div>
+                <div class="stars" id="stars-right-reflect" style="top:56%;height:44%;"></div>
 
                 <!-- "Williams" name -->
                 <div class="panel-name" id="name-williams">Williams</div>
