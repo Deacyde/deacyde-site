@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🤖 Bulk User Agent Checker | Deacyde</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#0d0d0d; color:#fff; padding:2rem 1rem; max-width:1200px; margin:0 auto; }
+    h1 { font-size:1.8rem; margin-bottom:0.4rem; }
+    .subtitle { color:#888; margin-bottom:2rem; font-size:0.95rem; }
+    .back { color:#888; text-decoration:none; font-size:0.9rem; display:inline-block; margin-bottom:1.5rem; }
+    .back:hover { color:#fff; }
+
+    /* Buttons */
+    .btn { padding:0.65rem 1.5rem; background:#4285f4; border:none; border-radius:8px; color:#fff; font-size:0.95rem; font-weight:600; cursor:pointer; transition:background .2s; white-space:nowrap; }
+    .btn:hover { background:#3367d6; }
+    .btn:disabled { opacity:0.5; cursor:not-allowed; }
+    .btn-ghost { padding:0.65rem 1rem; background:#1a1a1a; border:1px solid #333; border-radius:8px; color:#888; font-size:0.9rem; cursor:pointer; transition:color .2s,border-color .2s; white-space:nowrap; }
+    .btn-ghost:hover { color:#fff; border-color:#666; }
+    .btn-sm { padding:0.38rem 0.85rem; font-size:0.8rem; }
+
+    /* Input card */
+    .input-card { background:#111; border:1px solid #222; border-radius:10px; padding:1.5rem; margin-bottom:1.5rem; }
+    .input-card-title { font-size:0.9rem; color:#666; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:1rem; }
+
+    /* Category checkboxes */
+    .cat-grid { display:flex; gap:2rem; flex-wrap:wrap; margin-bottom:1.25rem; }
+    .cat-label { display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-size:0.9rem; color:#ccc; user-select:none; }
+    .cat-label input[type=checkbox] { accent-color:#4285f4; width:16px; height:16px; cursor:pointer; }
+    .cat-count { font-size:0.75rem; color:#555; }
+
+    /* Textarea */
+    textarea { width:100%; height:130px; padding:0.85rem 1rem; background:#1a1a1a; border:1px solid #333; border-radius:8px; color:#fff; font-size:0.85rem; font-family:monospace; resize:vertical; outline:none; margin-bottom:0.6rem; line-height:1.6; }
+    textarea:focus { border-color:#4285f4; }
+    .helper { font-size:0.78rem; color:#555; margin-bottom:1.1rem; }
+
+    /* Action row */
+    .action-row { display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; }
+    .settings-toggle { background:none; border:none; color:#555; font-size:0.82rem; cursor:pointer; padding:0; margin-left:auto; transition:color .2s; }
+    .settings-toggle:hover { color:#aaa; }
+
+    /* Settings panel */
+    .settings-panel { background:#0a0a0a; border:1px solid #1e1e1e; border-radius:8px; padding:1rem 1.25rem; margin-top:1rem; display:none; }
+    .settings-panel.open { display:block; }
+    .settings-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; }
+    .setting-item label { display:block; font-size:0.78rem; color:#888; margin-bottom:0.35rem; }
+    .setting-item input, .setting-item select { width:100%; padding:0.45rem 0.75rem; background:#1a1a1a; border:1px solid #333; border-radius:6px; color:#fff; font-size:0.85rem; outline:none; }
+    .setting-item input:focus, .setting-item select:focus { border-color:#4285f4; }
+    .setting-note { font-size:0.73rem; color:#555; margin-top:0.4rem; }
+
+    /* Progress */
+    .progress-wrap { margin-bottom:1.5rem; display:none; background:#111; border:1px solid #222; border-radius:8px; padding:1rem 1.25rem; }
+    .progress-bar-track { background:#1a1a1a; border-radius:999px; height:6px; overflow:hidden; margin-bottom:0.6rem; }
+    .progress-bar-fill { height:100%; background:linear-gradient(90deg,#4285f4,#34d399); border-radius:999px; transition:width .25s; width:0%; }
+    .progress-text { font-size:0.82rem; color:#888; }
+
+    /* Stats */
+    .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(125px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+    .stat { background:#111; border:1px solid #222; border-radius:8px; padding:1rem; text-align:center; }
+    .stat-num { font-size:1.9rem; font-weight:700; }
+    .stat-label { font-size:0.74rem; color:#888; margin-top:0.2rem; }
+    .stat-total  .stat-num { color:#fff; }
+    .stat-ok     .stat-num { color:#4ade80; }
+    .stat-blocked .stat-num { color:#f87171; }
+    .stat-redirect .stat-num { color:#fbbf24; }
+    .stat-error  .stat-num { color:#888; }
+
+    /* Toolbar */
+    .toolbar { display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; margin-bottom:1rem; }
+    .filter-btn { padding:0.4rem 0.85rem; border-radius:6px; border:1px solid #333; background:#1a1a1a; color:#aaa; font-size:0.8rem; cursor:pointer; transition:background .15s,color .15s; white-space:nowrap; }
+    .filter-btn.active,.filter-btn:hover { background:#4285f4; border-color:#4285f4; color:#fff; }
+    .toolbar-right { display:flex; gap:0.5rem; align-items:center; margin-left:auto; flex-wrap:wrap; }
+    .view-toggle { display:flex; border:1px solid #333; border-radius:6px; overflow:hidden; }
+    .view-btn { padding:0.4rem 0.85rem; background:#1a1a1a; border:none; color:#aaa; font-size:0.8rem; cursor:pointer; transition:background .15s,color .15s; }
+    .view-btn.active { background:#4285f4; color:#fff; }
+
+    /* Table */
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    th { text-align:left; padding:0.65rem 1rem; font-size:0.74rem; color:#666; border-bottom:1px solid #222; text-transform:uppercase; letter-spacing:0.05em; background:#0d0d0d; position:sticky; top:0; cursor:pointer; white-space:nowrap; user-select:none; z-index:1; }
+    th:hover { color:#aaa; }
+    th .sa { margin-left:3px; opacity:0.35; font-size:0.7rem; }
+    th.sorted .sa { opacity:1; color:#4285f4; }
+    td { padding:0.75rem 1rem; border-bottom:1px solid #1a1a1a; vertical-align:middle; }
+    tr:hover td { background:#111; }
+    .empty { text-align:center; color:#555; padding:3rem; }
+
+    /* URL cell */
+    .url-text { color:#60a5fa; font-size:0.82rem; }
+    .robots-btn { background:none; border:none; color:#555; font-size:0.72rem; cursor:pointer; padding:0 0.2rem; vertical-align:middle; transition:color .15s; }
+    .robots-btn:hover { color:#fbbf24; }
+    .robots-box { background:#0a0a0a; border:1px solid #1e1e1e; border-radius:6px; padding:0.65rem; margin-top:0.4rem; font-size:0.73rem; color:#888; font-family:monospace; white-space:pre-wrap; line-height:1.5; display:none; max-height:180px; overflow-y:auto; }
+    .robots-box.open { display:block; }
+
+    /* Badges */
+    .badge { display:inline-block; font-size:0.72rem; padding:2px 8px; border-radius:4px; font-weight:700; white-space:nowrap; }
+    .b200 { background:#14532d; color:#4ade80; }
+    .b3xx { background:#3a2a00; color:#fbbf24; }
+    .b403,.b451 { background:#3b1111; color:#f87171; }
+    .b4xx { background:#2a1212; color:#f87171; }
+    .b5xx { background:#1a0808; color:#ef4444; }
+    .berr { background:#1a1a1a; color:#888; }
+    .bcat-ai     { background:#1a1a2e; color:#818cf8; font-size:0.67rem; }
+    .bcat-search { background:#0a2a1a; color:#34d399; font-size:0.67rem; }
+    .bcat-seo    { background:#2a1a0a; color:#fb923c; font-size:0.67rem; }
+
+    /* Matrix */
+    .matrix-wrap { overflow:auto; display:none; }
+    .matrix-table { border-collapse:collapse; font-size:0.72rem; }
+    .matrix-table th { background:#0d0d0d; color:#666; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.03em; white-space:nowrap; padding:0.5rem 0.4rem; border-bottom:1px solid #222; position:sticky; top:0; z-index:1; cursor:default; }
+    .matrix-table th.corner { position:sticky; left:0; top:0; z-index:3; min-width:160px; background:#0d0d0d; }
+    .matrix-table td { border:1px solid #111; padding:0.28rem 0.35rem; text-align:center; min-width:48px; font-weight:700; font-size:0.69rem; }
+    .matrix-table td.row-lbl { text-align:left; background:#0a0a0a; position:sticky; left:0; color:#aaa; word-break:break-all; padding:0.4rem 0.65rem; border-right:1px solid #222; font-weight:400; font-size:0.75rem; max-width:220px; z-index:1; }
+    .mc200 { background:#14532d; color:#4ade80; }
+    .mc3xx { background:#3a2a00; color:#fbbf24; }
+    .mc4xx { background:#3b1111; color:#f87171; }
+    .mc5xx { background:#1a0808; color:#ef4444; }
+    .mcerr { background:#1a1a1a; color:#555; }
+    .mcpend { background:#111; color:#333; }
+
+    /* History */
+    .history-section { margin-top:2.5rem; padding-top:2rem; border-top:1px solid #1a1a1a; }
+    .section-head { font-size:0.82rem; color:#555; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.85rem; }
+    .history-list { display:flex; flex-direction:column; gap:0.5rem; }
+    .history-item { background:#111; border:1px solid #1e1e1e; border-radius:8px; padding:0.75rem 1rem; display:flex; justify-content:space-between; align-items:center; cursor:pointer; transition:border-color .15s; }
+    .history-item:hover { border-color:#333; }
+    .history-meta { color:#555; font-size:0.75rem; margin-top:0.2rem; }
+    .history-load { color:#4285f4; font-size:0.75rem; background:none; border:none; cursor:pointer; padding:0; flex-shrink:0; }
+    .history-load:hover { text-decoration:underline; }
+
+    /* Disclaimer */
+    .disclaimer { margin-top:2.5rem; padding:1rem 1.25rem; background:#111; border:1px solid #1e1e1e; border-radius:8px; font-size:0.77rem; color:#555; line-height:1.6; }
+
+    /* Toast */
+    .toast { position:fixed; bottom:2rem; right:2rem; background:#1a1a1a; border:1px solid #333; border-radius:8px; padding:0.7rem 1.25rem; font-size:0.85rem; color:#fff; z-index:9999; transform:translateY(16px); opacity:0; transition:all .25s; pointer-events:none; max-width:320px; }
+    .toast.show { transform:translateY(0); opacity:1; }
+
+    /* Hidden by default */
+    #retry-btn, #share-btn { display:none; }
+
+    /* Responsive */
+    @media (max-width:640px) {
+      body { padding:1rem 0.75rem; }
+      h1 { font-size:1.4rem; }
+      .stats { grid-template-columns:repeat(3,1fr); }
+      .toolbar { flex-direction:column; align-items:stretch; }
+      .toolbar-right { margin-left:0; }
+      .cat-grid { gap:1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<a href="../index.html#apps" class="back">← Back to Deacyde.com</a>
+<h1>🤖 Bulk User Agent Checker</h1>
+<p class="subtitle">Audit how websites respond to AI, search engine, and SEO bot user agents — in bulk</p>
+
+<!-- ── INPUT CARD ─────────────────────────────────── -->
+<div class="input-card">
+  <div class="input-card-title">Bot Categories</div>
+  <div class="cat-grid">
+    <label class="cat-label">
+      <input type="checkbox" id="cat-ai" checked>
+      🤖 AI Training Bots <span class="cat-count">(9)</span>
+    </label>
+    <label class="cat-label">
+      <input type="checkbox" id="cat-search">
+      🔍 Search Engine Bots <span class="cat-count">(6)</span>
+    </label>
+    <label class="cat-label">
+      <input type="checkbox" id="cat-seo">
+      📊 SEO Bots <span class="cat-count">(8)</span>
+    </label>
+  </div>
+
+  <textarea id="url-input" placeholder="cnn.com&#10;nytimes.com&#10;reddit.com&#10;https://example.com/page"></textarea>
+  <p class="helper">Enter URLs or domains, one per line. We'll check how each responds to selected bot user agents.</p>
+
+  <div class="action-row">
+    <button class="btn" id="run-btn" onclick="startChecks()">🚀 Check All</button>
+    <button class="btn-ghost" id="stop-btn" style="display:none" onclick="stopChecks()">⏹ Stop</button>
+    <button class="btn-ghost" id="retry-btn" onclick="retryFailed()">🔄 Retry Failed</button>
+    <button class="btn-ghost" onclick="clearAll()">Clear</button>
+    <button class="btn-ghost" id="share-btn" onclick="copyShareLink()">🔗 Share Link</button>
+    <button class="settings-toggle" id="settings-toggle" onclick="toggleSettings()">⚙ Settings ▾</button>
+  </div>
+
+  <div class="settings-panel" id="settings-panel">
+    <div class="settings-grid">
+      <div class="setting-item">
+        <label>Worker URL</label>
+        <input type="url" id="s-worker" placeholder="https://ua-checker.deacyde.workers.dev" />
+        <div class="setting-note">Your Cloudflare Worker endpoint (saved locally)</div>
+      </div>
+      <div class="setting-item">
+        <label>Concurrency</label>
+        <select id="s-concurrency">
+          <option value="1">1 at a time (safest)</option>
+          <option value="3" selected>3 at a time</option>
+          <option value="5">5 at a time</option>
+          <option value="10">10 at a time (fastest)</option>
+        </select>
+      </div>
+      <div class="setting-item">
+        <label>Delay between requests (ms)</label>
+        <input type="number" id="s-delay" value="200" min="0" max="5000" />
+        <div class="setting-note">200ms default — increase to avoid rate limiting</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROGRESS ───────────────────────────────────── -->
+<div class="progress-wrap" id="progress-wrap">
+  <div class="progress-bar-track">
+    <div class="progress-bar-fill" id="progress-fill"></div>
+  </div>
+  <div class="progress-text" id="progress-text">Starting…</div>
+</div>
+
+<!-- ── RESULTS ────────────────────────────────────── -->
+<div id="results" style="display:none">
+  <!-- Stats row -->
+  <div class="stats">
+    <div class="stat stat-total">   <div class="stat-num" id="s-total">0</div>    <div class="stat-label">Total Checks</div></div>
+    <div class="stat stat-ok">      <div class="stat-num" id="s-ok">0</div>       <div class="stat-label">Allowed (2xx)</div></div>
+    <div class="stat stat-blocked"> <div class="stat-num" id="s-blocked">0</div>  <div class="stat-label">Blocked (4xx)</div></div>
+    <div class="stat stat-redirect"><div class="stat-num" id="s-redirect">0</div> <div class="stat-label">Redirected (3xx)</div></div>
+    <div class="stat stat-error">   <div class="stat-num" id="s-error">0</div>    <div class="stat-label">Errors</div></div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('ai',this)">AI Bots</button>
+    <button class="filter-btn" onclick="setFilter('search',this)">Search Bots</button>
+    <button class="filter-btn" onclick="setFilter('seo',this)">SEO Bots</button>
+    <button class="filter-btn" onclick="setFilter('blocked',this)">Blocked Only</button>
+    <button class="filter-btn" onclick="setFilter('allowed',this)">Allowed Only</button>
+    <div class="toolbar-right">
+      <button class="btn-ghost btn-sm" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn-ghost btn-sm" onclick="exportJSON()">⬇ JSON</button>
+      <div class="view-toggle">
+        <button class="view-btn active" id="vbtn-table"  onclick="setView('table')">≡ Table</button>
+        <button class="view-btn"        id="vbtn-matrix" onclick="setView('matrix')">⊞ Matrix</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table view -->
+  <div class="table-wrap" id="view-table">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortBy('index')"   >#<span class="sa">↕</span></th>
+          <th onclick="sortBy('url')"     >URL<span class="sa">↕</span></th>
+          <th onclick="sortBy('bot')"     >Bot<span class="sa">↕</span></th>
+          <th onclick="sortBy('category')">Category<span class="sa">↕</span></th>
+          <th onclick="sortBy('status')"  >Status<span class="sa">↕</span></th>
+          <th onclick="sortBy('time')"    >Response Time<span class="sa">↕</span></th>
+        </tr>
+      </thead>
+      <tbody id="results-body"></tbody>
+    </table>
+    <div class="empty" id="no-results" style="display:none">No results match the current filter.</div>
+  </div>
+
+  <!-- Matrix view -->
+  <div class="matrix-wrap" id="view-matrix">
+    <div id="matrix-inner"></div>
+  </div>
+</div>
+
+<!-- ── HISTORY ────────────────────────────────────── -->
+<div class="history-section" id="history-section" style="display:none">
+  <div class="section-head">Recent Checks</div>
+  <div class="history-list" id="history-list"></div>
+</div>
+
+<!-- ── DISCLAIMER ────────────────────────────────── -->
+<div class="disclaimer">
+  <strong>Note:</strong> Checks are performed via a Cloudflare Worker proxy. Results may differ from direct server responses. Some servers detect proxy requests and return different status codes than they would to real bots. Use a server-side tool for production-grade auditing.
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── BOT DEFINITIONS ───────────────────────────────────────────────────────
+const BOTS = {
+  ai: [
+    { name:'GPTBot',             ua:'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; GPTBot/1.2; +https://openai.com/gptbot' },
+    { name:'ChatGPT-User',       ua:'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ChatGPT-User/1.0; +https://openai.com/bot' },
+    { name:'Google-Extended',    ua:'Mozilla/5.0 (compatible; Google-Extended)' },
+    { name:'ClaudeBot',          ua:'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ClaudeBot/1.0; +claudebot@anthropic.com' },
+    { name:'PerplexityBot',      ua:'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; PerplexityBot/1.0; +https://perplexity.ai/perplexitybot' },
+    { name:'Applebot-Extended',  ua:'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/600.2.5 (KHTML, like Gecko) Version/8.0.2 Safari/600.2.5 (Applebot-Extended/0.1)' },
+    { name:'Bytespider',         ua:'Mozilla/5.0 (Linux; Android 5.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Mobile Safari/537.36 (compatible; Bytespider)' },
+    { name:'CCBot',              ua:'CCBot/2.0 (https://commoncrawl.org/faq/)' },
+    { name:'Meta-ExternalAgent', ua:'Mozilla/5.0 (compatible; Meta-ExternalAgent/1.0; +https://developers.facebook.com/docs/sharing/webmasters/crawler)' },
+  ],
+  search: [
+    { name:'Googlebot',          ua:'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' },
+    { name:'Googlebot-Mobile',   ua:'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/W.X.Y.Z Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' },
+    { name:'Bingbot',            ua:'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)' },
+    { name:'Applebot',           ua:'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/600.2.5 (KHTML, like Gecko) Version/8.0.2 Safari/600.2.5 (Applebot/0.1; +http://www.apple.com/go/applebot)' },
+    { name:'YandexBot',          ua:'Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)' },
+    { name:'DuckDuckBot',        ua:'DuckDuckBot/1.1; (+http://duckduckgo.com/duckduckbot.html)' },
+  ],
+  seo: [
+    { name:'AhrefsBot',          ua:'Mozilla/5.0 (compatible; AhrefsBot/7.0; +http://ahrefs.com/robot/)' },
+    { name:'SemrushBot',         ua:'Mozilla/5.0 (compatible; SemrushBot/7~bl; +http://www.semrush.com/bot.html)' },
+    { name:'DataForSEOBot',      ua:'Mozilla/5.0 (compatible; DataForSEOBot/1.0; +https://dataforseo.com/dataforseo-bot)' },
+    { name:'ScreamingFrog',      ua:'Screaming Frog SEO Spider/20.3' },
+    { name:'Sitebulb',           ua:'Mozilla/5.0 (compatible; Sitebulb; +http://sitebulb.com)' },
+    { name:'SERankingBot',       ua:'Mozilla/5.0 (compatible; SERankingBot; +https://seranking.com/seo-spider/)' },
+    { name:'MJ12bot',            ua:'Mozilla/5.0 (compatible; MJ12bot/v1.4.8; http://mj12bot.com/)' },
+    { name:'DotBot',             ua:'Mozilla/5.0 (compatible; DotBot/1.2; +https://opensiteexplorer.org/dotbot; help@moz.com)' },
+  ],
+};
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let allResults   = [];
+let currentFilter = 'all';
+let currentSort   = 'index';
+let sortAsc       = true;
+let currentView   = 'table';
+let running       = false;
+let abortFlag     = false;
+let robotsCache   = {};
+
+// ─── SETTINGS ──────────────────────────────────────────────────────────────
+function getSettings() {
+  return {
+    workerUrl:   (document.getElementById('s-worker').value.trim() || 'https://ua-checker.deacyde.workers.dev').replace(/\/$/, ''),
+    concurrency: parseInt(document.getElementById('s-concurrency').value) || 3,
+    delay:       parseInt(document.getElementById('s-delay').value) || 0,
+  };
+}
+function toggleSettings() {
+  const p = document.getElementById('settings-panel');
+  const b = document.getElementById('settings-toggle');
+  p.classList.toggle('open');
+  b.textContent = p.classList.contains('open') ? '⚙ Settings ▴' : '⚙ Settings ▾';
+}
+
+// ─── URL PARSING ───────────────────────────────────────────────────────────
+function parseUrls() {
+  return document.getElementById('url-input').value
+    .split('\n').map(l => l.trim()).filter(Boolean)
+    .map(l => /^https?:\/\//i.test(l) ? l : 'https://' + l)
+    .filter(l => { try { new URL(l); return true; } catch { return false; } });
+}
+function getOrigin(url) { try { return new URL(url).origin; } catch { return url; } }
+function getDomain(url) { try { return new URL(url).hostname; } catch { return url; } }
+
+// ─── SELECTED BOTS ─────────────────────────────────────────────────────────
+function getSelectedBots() {
+  const bots = [];
+  if (document.getElementById('cat-ai').checked)     BOTS.ai.forEach(b => bots.push({ ...b, category: 'ai' }));
+  if (document.getElementById('cat-search').checked) BOTS.search.forEach(b => bots.push({ ...b, category: 'search' }));
+  if (document.getElementById('cat-seo').checked)    BOTS.seo.forEach(b => bots.push({ ...b, category: 'seo' }));
+  return bots;
+}
+
+// ─── SINGLE CHECK ──────────────────────────────────────────────────────────
+async function checkOne(url, bot, workerUrl) {
+  const endpoint = `${workerUrl}?url=${encodeURIComponent(url)}&ua=${encodeURIComponent(bot.ua)}`;
+  const start = Date.now();
+  try {
+    const ctrl = new AbortController();
+    const tid  = setTimeout(() => ctrl.abort(), 13000);
+    const res  = await fetch(endpoint, { signal: ctrl.signal });
+    clearTimeout(tid);
+    const data = await res.json();
+    return { url, bot: bot.name, category: bot.category, ua: bot.ua, status: data.status || 0, time: data.time || (Date.now() - start), error: data.error || null };
+  } catch (e) {
+    return { url, bot: bot.name, category: bot.category, ua: bot.ua, status: 0, time: Date.now() - start, error: e.name === 'AbortError' ? 'TIMEOUT' : 'NETWORK_ERROR' };
+  }
+}
+
+// ─── ROBOTS.TXT ────────────────────────────────────────────────────────────
+async function fetchRobots(origin, workerUrl) {
+  if (robotsCache[origin] !== undefined) return;
+  try {
+    const res  = await fetch(`${workerUrl}?url=${encodeURIComponent(origin + '/robots.txt')}&mode=robots`);
+    const data = await res.json();
+    robotsCache[origin] = data.body || null;
+  } catch { robotsCache[origin] = null; }
+}
+
+function parseRobots(txt) {
+  if (!txt) return null;
+  const rules = {}; let agents = [];
+  for (const raw of txt.split('\n')) {
+    const line = raw.trim();
+    if (!line || line.startsWith('#')) { if (!line) agents = []; continue; }
+    if (/^user-agent:/i.test(line)) {
+      agents.push(line.replace(/^user-agent:\s*/i, '').trim());
+    } else if (/^(dis)?allow:/i.test(line)) {
+      const [key, val] = line.split(':'); const path = val?.trim();
+      agents.forEach(a => {
+        if (!rules[a]) rules[a] = { allow:[], disallow:[] };
+        if (/disallow/i.test(key) && path) rules[a].disallow.push(path);
+        else if (/allow/i.test(key) && path) rules[a].allow.push(path);
+      });
+    } else { agents = []; }
+  }
+  return rules;
+}
+
+function formatRobots(rules) {
+  if (!rules) return '(Could not fetch robots.txt)';
+  const out = [];
+  for (const [agent, r] of Object.entries(rules)) {
+    if (!r.disallow.length && !r.allow.length) continue;
+    out.push(`User-agent: ${agent}`);
+    r.disallow.forEach(d => out.push(`  Disallow: ${d}`));
+    r.allow.forEach(a    => out.push(`  Allow: ${a}`));
+  }
+  return out.length ? out.join('\n') : '(No rules found in robots.txt)';
+}
+
+// ─── CONCURRENCY RUNNER ────────────────────────────────────────────────────
+async function runQueue(tasks, concurrency, delay, onResult) {
+  let idx = 0;
+  async function worker() {
+    while (idx < tasks.length && !abortFlag) {
+      const task = tasks[idx++];
+      const result = await task();
+      if (result) onResult(result);
+      if (delay > 0) await sleep(delay);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, tasks.length) }, worker));
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// ─── START ─────────────────────────────────────────────────────────────────
+async function startChecks() {
+  const urls  = parseUrls();
+  const bots  = getSelectedBots();
+  if (!urls.length) { showToast('Please enter at least one URL or domain.'); return; }
+  if (!bots.length) { showToast('Please select at least one bot category.'); return; }
+
+  const s = getSettings();
+  running   = true;
+  abortFlag = false;
+  allResults = [];
+  robotsCache = {};
+
+  document.getElementById('run-btn').style.display   = 'none';
+  document.getElementById('stop-btn').style.display  = '';
+  document.getElementById('retry-btn').style.display = 'none';
+  document.getElementById('share-btn').style.display = 'none';
+  document.getElementById('results').style.display   = 'block';
+  document.getElementById('progress-wrap').style.display = 'block';
+  updateStats();
+
+  const total   = urls.length * bots.length;
+  const origins = [...new Set(urls.map(getOrigin))];
+  updateProgress(0, total, 'Fetching robots.txt files…');
+  await Promise.allSettled(origins.map(o => fetchRobots(o, s.workerUrl)));
+
+  updateProgress(0, total, `Checking 0 of ${total}…`);
+  let done = 0;
+  const tasks = urls.flatMap(url => bots.map(bot => async () => {
+    if (abortFlag) return null;
+    return checkOne(url, bot, s.workerUrl);
+  }));
+
+  await runQueue(tasks, s.concurrency, s.delay, result => {
+    done++;
+    allResults.push({ ...result, index: allResults.length + 1 });
+    updateProgress(done, total, `Checking ${done} of ${total}…`);
+    updateStats();
+    currentView === 'table' ? renderTable() : renderMatrix();
+  });
+
+  running = false;
+  document.getElementById('run-btn').style.display   = '';
+  document.getElementById('stop-btn').style.display  = 'none';
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('retry-btn').style.display = allResults.some(r => r.error) ? '' : 'none';
+  document.getElementById('share-btn').style.display = '';
+
+  showToast(abortFlag
+    ? `Stopped. ${done} checks completed.`
+    : `Done! ${done} checks completed.${allResults.filter(r=>r.error).length ? ` (${allResults.filter(r=>r.error).length} errors)` : ''}`
+  );
+  saveHistory(urls, bots, allResults);
+  renderHistory();
+}
+
+function stopChecks() { abortFlag = true; }
+
+// ─── RETRY FAILED ──────────────────────────────────────────────────────────
+async function retryFailed() {
+  const failed = allResults.filter(r => r.error);
+  if (!failed.length) return;
+  const s = getSettings();
+  running = true; abortFlag = false;
+  document.getElementById('run-btn').style.display   = 'none';
+  document.getElementById('stop-btn').style.display  = '';
+  document.getElementById('retry-btn').style.display = 'none';
+  document.getElementById('progress-wrap').style.display = 'block';
+
+  let done = 0, total = failed.length;
+  for (const item of failed) {
+    if (abortFlag) break;
+    const botDef = [...BOTS.ai, ...BOTS.search, ...BOTS.seo].find(b => b.name === item.bot) || { name: item.bot, ua: item.ua };
+    const r = await checkOne(item.url, botDef, s.workerUrl);
+    const idx = allResults.findIndex(x => x.url === item.url && x.bot === item.bot);
+    if (idx !== -1) allResults[idx] = { ...r, index: allResults[idx].index };
+    done++;
+    updateProgress(done, total, `Retrying ${done} of ${total}…`);
+    updateStats();
+    currentView === 'table' ? renderTable() : renderMatrix();
+    if (s.delay > 0) await sleep(s.delay);
+  }
+
+  running = false;
+  document.getElementById('run-btn').style.display   = '';
+  document.getElementById('stop-btn').style.display  = 'none';
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('retry-btn').style.display = allResults.some(r => r.error) ? '' : 'none';
+  showToast(`Retry complete. ${done} rechecked.`);
+}
+
+// ─── PROGRESS ──────────────────────────────────────────────────────────────
+function updateProgress(done, total, text) {
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = text;
+}
+
+// ─── STATS ─────────────────────────────────────────────────────────────────
+function updateStats() {
+  const r = allResults;
+  document.getElementById('s-total').textContent    = r.length;
+  document.getElementById('s-ok').textContent       = r.filter(x => x.status >= 200 && x.status < 300).length;
+  document.getElementById('s-blocked').textContent  = r.filter(x => x.status >= 400 && x.status < 500).length;
+  document.getElementById('s-redirect').textContent = r.filter(x => x.status >= 300 && x.status < 400).length;
+  document.getElementById('s-error').textContent    = r.filter(x => !x.status || x.status >= 500 || x.error).length;
+}
+
+// ─── BADGE HELPERS ─────────────────────────────────────────────────────────
+function statusBadge(r) {
+  if (r.error === 'TIMEOUT')       return `<span class="badge berr" title="Request timed out">TIMEOUT</span>`;
+  if (r.error)                     return `<span class="badge berr" title="${r.error}">ERR</span>`;
+  const s = r.status;
+  if (s === 200)                   return `<span class="badge b200">200 OK</span>`;
+  if (s === 301)                   return `<span class="badge b3xx">301 Moved</span>`;
+  if (s === 302)                   return `<span class="badge b3xx">302 Found</span>`;
+  if (s >= 300 && s < 400)        return `<span class="badge b3xx">${s}</span>`;
+  if (s === 403)                   return `<span class="badge b403">403 Blocked</span>`;
+  if (s === 451)                   return `<span class="badge b451" title="Unavailable For Legal Reasons">451 Legal</span>`;
+  if (s >= 400 && s < 500)        return `<span class="badge b4xx">${s}</span>`;
+  if (s >= 500)                   return `<span class="badge b5xx">${s} Error</span>`;
+  return `<span class="badge berr">${s || 'ERR'}</span>`;
+}
+function catBadge(cat) {
+  if (cat === 'ai')     return `<span class="badge bcat-ai">AI</span>`;
+  if (cat === 'search') return `<span class="badge bcat-search">Search</span>`;
+  if (cat === 'seo')    return `<span class="badge bcat-seo">SEO</span>`;
+  return '';
+}
+function matrixCls(r) {
+  if (!r) return 'mcpend';
+  if (r.error) return 'mcerr';
+  if (r.status >= 200 && r.status < 300) return 'mc200';
+  if (r.status >= 300 && r.status < 400) return 'mc3xx';
+  if (r.status >= 400 && r.status < 500) return 'mc4xx';
+  if (r.status >= 500) return 'mc5xx';
+  return 'mcerr';
+}
+
+// ─── FILTER / SORT ─────────────────────────────────────────────────────────
+function getFiltered() {
+  return allResults.filter(r => {
+    if (currentFilter === 'ai')      return r.category === 'ai';
+    if (currentFilter === 'search')  return r.category === 'search';
+    if (currentFilter === 'seo')     return r.category === 'seo';
+    if (currentFilter === 'blocked') return r.status >= 400 && r.status < 500;
+    if (currentFilter === 'allowed') return r.status >= 200 && r.status < 300;
+    return true;
+  });
+}
+function getSorted(rows) {
+  return [...rows].sort((a, b) => {
+    const dir = sortAsc ? 1 : -1;
+    let va, vb;
+    if (currentSort === 'url')      { va = a.url;      vb = b.url; }
+    else if (currentSort === 'bot') { va = a.bot;      vb = b.bot; }
+    else if (currentSort === 'category') { va = a.category; vb = b.category; }
+    else if (currentSort === 'status')   { va = a.status || 9999; vb = b.status || 9999; }
+    else if (currentSort === 'time')     { va = a.time || 99999; vb = b.time || 99999; }
+    else                            { va = a.index;    vb = b.index; }
+    return dir * (typeof va === 'string' ? va.localeCompare(vb) : va - vb);
+  });
+}
+function setFilter(f, el) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter = f;
+  currentView === 'table' ? renderTable() : renderMatrix();
+}
+function sortBy(col) {
+  if (currentSort === col) sortAsc = !sortAsc;
+  else { currentSort = col; sortAsc = true; }
+  document.querySelectorAll('th').forEach(th => th.classList.remove('sorted'));
+  const ths = document.querySelectorAll('th');
+  ths.forEach(th => { if (th.getAttribute('onclick') && th.getAttribute('onclick').includes(`'${col}'`)) th.classList.add('sorted'); });
+  renderTable();
+}
+function setView(v) {
+  currentView = v;
+  document.getElementById('vbtn-table').classList.toggle('active', v === 'table');
+  document.getElementById('vbtn-matrix').classList.toggle('active', v === 'matrix');
+  document.getElementById('view-table').style.display   = v === 'table'  ? '' : 'none';
+  document.getElementById('view-matrix').style.display  = v === 'matrix' ? '' : 'none';
+  v === 'table' ? renderTable() : renderMatrix();
+}
+
+// ─── TABLE RENDER ──────────────────────────────────────────────────────────
+function renderTable() {
+  const tbody = document.getElementById('results-body');
+  const noRes = document.getElementById('no-results');
+  const rows  = getSorted(getFiltered());
+  if (!rows.length) {
+    tbody.innerHTML = '';
+    noRes.style.display = allResults.length ? 'block' : 'none';
+    return;
+  }
+  noRes.style.display = 'none';
+  tbody.innerHTML = rows.map((r, i) => {
+    const origin  = getOrigin(r.url);
+    const rtxt    = robotsCache[origin];
+    const hasR    = rtxt !== undefined;
+    const rid     = `rb-${i}`;
+    return `<tr>
+      <td style="color:#555">${r.index}</td>
+      <td>
+        <span class="url-text">${getDomain(r.url)}</span>
+        ${hasR ? `<button class="robots-btn" onclick="toggleRobots('${rid}')" title="Show robots.txt rules">📋</button>
+        <div class="robots-box" id="${rid}">${hasR ? escHtml(formatRobots(parseRobots(rtxt))) : 'N/A'}</div>` : ''}
+      </td>
+      <td style="color:#ccc;white-space:nowrap">${r.bot}</td>
+      <td>${catBadge(r.category)}</td>
+      <td>${statusBadge(r)}</td>
+      <td style="color:#888;font-size:0.8rem;white-space:nowrap">${r.time ? r.time + 'ms' : '—'}</td>
+    </tr>`;
+  }).join('');
+}
+function toggleRobots(id) { document.getElementById(id)?.classList.toggle('open'); }
+
+// ─── MATRIX RENDER ─────────────────────────────────────────────────────────
+function renderMatrix() {
+  const filtered = getFiltered();
+  const inner = document.getElementById('matrix-inner');
+  if (!filtered.length) { inner.innerHTML = '<div class="empty">No results yet.</div>'; return; }
+
+  const urls = [...new Set(filtered.map(r => r.url))];
+  const bots = [...new Set(filtered.map(r => r.bot))];
+  const lkp  = {};
+  filtered.forEach(r => { lkp[r.url + '|' + r.bot] = r; });
+
+  inner.innerHTML = `<table class="matrix-table">
+    <thead><tr>
+      <th class="corner">URL</th>
+      ${bots.map(b => `<th title="${escHtml(b)}">${escHtml(b.length > 11 ? b.slice(0,10)+'…' : b)}</th>`).join('')}
+    </tr></thead>
+    <tbody>${urls.map(url => `<tr>
+      <td class="row-lbl" title="${escHtml(url)}">${escHtml(getDomain(url))}</td>
+      ${bots.map(bot => {
+        const r   = lkp[url + '|' + bot];
+        const cls = matrixCls(r);
+        const lbl = r ? (r.error ? (r.error === 'TIMEOUT' ? 'T/O' : 'ERR') : r.status) : '…';
+        const tip = r ? escHtml(r.error || String(r.status) + (r.time ? ' · ' + r.time + 'ms' : '')) : 'Pending';
+        return `<td class="${cls}" title="${tip}">${lbl}</td>`;
+      }).join('')}
+    </tr>`).join('')}
+    </tbody></table>`;
+}
+
+// ─── EXPORT ────────────────────────────────────────────────────────────────
+function exportCSV() {
+  if (!allResults.length) return;
+  const rows = [['#','URL','Bot','Category','Status','Time (ms)','Error']];
+  allResults.forEach(r => rows.push([r.index, r.url, r.bot, r.category, r.status, r.time, r.error || '']));
+  const csv = rows.map(r => r.map(c => '"' + String(c ?? '').replace(/"/g, '""') + '"').join(',')).join('\n');
+  dlBlob(csv, 'ua-check-results.csv', 'text/csv');
+}
+function exportJSON() {
+  if (!allResults.length) return;
+  dlBlob(JSON.stringify(allResults, null, 2), 'ua-check-results.json', 'application/json');
+}
+function dlBlob(content, name, mime) {
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([content], { type: mime })), download: name });
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ─── SHARE LINK ────────────────────────────────────────────────────────────
+function copyShareLink() {
+  const urls = parseUrls();
+  if (!urls.length) { showToast('Enter URLs first.'); return; }
+  try {
+    const link = location.origin + location.pathname + '?urls=' + encodeURIComponent(btoa(unescape(encodeURIComponent(urls.join('\n')))));
+    navigator.clipboard.writeText(link).then(() => showToast('Share link copied!'));
+  } catch { showToast('Could not copy link.'); }
+}
+function loadFromQuery() {
+  const p = new URLSearchParams(location.search);
+  if (p.has('urls')) {
+    try { document.getElementById('url-input').value = decodeURIComponent(escape(atob(decodeURIComponent(p.get('urls'))))); } catch {}
+  }
+}
+
+// ─── HISTORY ───────────────────────────────────────────────────────────────
+function saveHistory(urls, bots, results) {
+  let h = [];
+  try { h = JSON.parse(localStorage.getItem('ua-checker-history') || '[]'); } catch {}
+  h.unshift({ ts: Date.now(), urls: urls.map(getDomain), botCount: bots.length, total: results.length, ok: results.filter(r => r.status >= 200 && r.status < 300).length, blocked: results.filter(r => r.status >= 400 && r.status < 500).length, data: results });
+  if (h.length > 5) h = h.slice(0, 5);
+  localStorage.setItem('ua-checker-history', JSON.stringify(h));
+}
+function renderHistory() {
+  let h = [];
+  try { h = JSON.parse(localStorage.getItem('ua-checker-history') || '[]'); } catch {}
+  const sec  = document.getElementById('history-section');
+  const list = document.getElementById('history-list');
+  if (!h.length) { sec.style.display = 'none'; return; }
+  sec.style.display = '';
+  list.innerHTML = h.map((e, i) => `<div class="history-item" onclick="loadHistory(${i})">
+    <div>
+      <div style="color:#ccc;font-size:0.85rem">${escHtml(e.urls.slice(0,3).join(', ') + (e.urls.length > 3 ? ` +${e.urls.length-3} more` : ''))}</div>
+      <div class="history-meta">${new Date(e.ts).toLocaleString()} · ${e.total} checks · <span style="color:#4ade80">${e.ok} allowed</span> · <span style="color:#f87171">${e.blocked} blocked</span></div>
+    </div>
+    <button class="history-load" onclick="event.stopPropagation();loadHistory(${i})">Load</button>
+  </div>`).join('');
+}
+function loadHistory(i) {
+  let h = [];
+  try { h = JSON.parse(localStorage.getItem('ua-checker-history') || '[]'); } catch {}
+  if (!h[i]?.data) return;
+  allResults = h[i].data.map((r, idx) => ({ ...r, index: idx + 1 }));
+  document.getElementById('results').style.display = '';
+  document.getElementById('share-btn').style.display = '';
+  document.getElementById('retry-btn').style.display = allResults.some(r => r.error) ? '' : 'none';
+  updateStats();
+  renderTable();
+  showToast('History entry loaded.');
+}
+
+// ─── CLEAR ─────────────────────────────────────────────────────────────────
+function clearAll() {
+  if (running) return;
+  document.getElementById('url-input').value = '';
+  allResults = []; robotsCache = {};
+  document.getElementById('results').style.display      = 'none';
+  document.getElementById('retry-btn').style.display    = 'none';
+  document.getElementById('share-btn').style.display    = 'none';
+}
+
+// ─── TOAST ─────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ─── UTILS ─────────────────────────────────────────────────────────────────
+function escHtml(s) { const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; }
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadFromQuery();
+  renderHistory();
+  const saved = localStorage.getItem('ua-checker-worker');
+  if (saved) document.getElementById('s-worker').value = saved;
+  document.getElementById('s-worker').addEventListener('change', e => localStorage.setItem('ua-checker-worker', e.target.value));
+});
+</script>
+</body>
+</html>
