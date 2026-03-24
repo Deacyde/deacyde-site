@@ -139,6 +139,38 @@
     /* Hidden by default */
     #retry-btn, #share-btn { display:none; }
 
+    /* Guide tab */
+    .main-tabs { display:flex; gap:0; border-bottom:1px solid #222; margin-bottom:1.5rem; margin-top:0.5rem; }
+    .main-tab { padding:0.6rem 1.25rem; background:none; border:none; color:#666; font-size:0.88rem; font-weight:500; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .15s; }
+    .main-tab:hover { color:#aaa; }
+    .main-tab.active { color:#fff; border-bottom-color:#4285f4; }
+
+    /* Guide styles */
+    .guide-wrap { display:none; }
+    .guide-section { margin-bottom:2rem; }
+    .guide-section h3 { font-size:0.8rem; text-transform:uppercase; letter-spacing:0.08em; color:#555; margin-bottom:0.85rem; padding-bottom:0.5rem; border-bottom:1px solid #1a1a1a; }
+    .guide-table { width:100%; border-collapse:collapse; font-size:0.84rem; }
+    .guide-table th { text-align:left; padding:0.55rem 0.85rem; font-size:0.72rem; color:#555; border-bottom:1px solid #1e1e1e; text-transform:uppercase; letter-spacing:0.04em; background:#0d0d0d; }
+    .guide-table td { padding:0.65rem 0.85rem; border-bottom:1px solid #111; vertical-align:top; line-height:1.55; }
+    .guide-table tr:hover td { background:#111; }
+    .guide-table td:first-child { white-space:nowrap; }
+    .guide-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1rem; }
+    .guide-card { background:#111; border:1px solid #1e1e1e; border-radius:8px; padding:1rem 1.1rem; }
+    .guide-card-title { font-size:0.82rem; font-weight:600; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem; }
+    .guide-card ul { padding-left:1.1rem; font-size:0.81rem; color:#888; line-height:1.7; }
+    .guide-card li { margin-bottom:0.2rem; }
+    .guide-card code { background:#1a1a1a; border:1px solid #2a2a2a; border-radius:3px; padding:1px 5px; font-size:0.77rem; color:#93c5fd; font-family:monospace; }
+    .gtag { display:inline-block; font-size:0.7rem; padding:1px 7px; border-radius:4px; font-weight:700; margin-right:4px; }
+    .gtag-ok  { background:#14532d; color:#4ade80; }
+    .gtag-warn{ background:#3a2a00; color:#fbbf24; }
+    .gtag-bad { background:#3b1111; color:#f87171; }
+    .gtag-err { background:#1a1a1a; color:#888; }
+    .severity { display:inline-block; font-size:0.68rem; padding:1px 6px; border-radius:3px; font-weight:600; margin-left:4px; vertical-align:middle; }
+    .sev-crit  { background:#4c0519; color:#fca5a5; }
+    .sev-high  { background:#431407; color:#fdba74; }
+    .sev-med   { background:#3a2a00; color:#fbbf24; }
+    .sev-low   { background:#1a1a1a; color:#888; }
+
     /* Responsive */
     @media (max-width:640px) {
       body { padding:1rem 0.75rem; }
@@ -219,6 +251,12 @@
   <div class="progress-text" id="progress-text">Starting…</div>
 </div>
 
+<!-- ── MAIN TABS ──────────────────────────────────── -->
+<div class="main-tabs">
+  <button class="main-tab active" id="tab-results" onclick="switchTab('results')">📊 Results</button>
+  <button class="main-tab" id="tab-guide" onclick="switchTab('guide')">📖 What To Do</button>
+</div>
+
 <!-- ── RESULTS ────────────────────────────────────── -->
 <div id="results" style="display:none">
   <!-- Stats row -->
@@ -272,6 +310,205 @@
   </div>
 </div>
 
+<!-- ── GUIDE ──────────────────────────────────────── -->
+<div class="guide-wrap" id="guide-wrap">
+
+  <div class="guide-section">
+    <h3>Status Code Reference</h3>
+    <div class="table-wrap">
+    <table class="guide-table">
+      <thead><tr><th>Code</th><th>Meaning</th><th>Severity</th><th>What to Check / What to Do</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="gtag gtag-ok">200</span></td>
+          <td>Allowed</td>
+          <td><span class="severity sev-low">✅ Good</span></td>
+          <td>Bot can access this URL normally. No action needed.</td>
+        </tr>
+        <tr>
+          <td><span class="gtag gtag-warn">301 / 302</span></td>
+          <td>Redirect</td>
+          <td><span class="severity sev-low">ℹ Info</span></td>
+          <td>URL redirects elsewhere. Common for HTTP→HTTPS or www→non-www. Most bots follow redirects — check the destination URL still returns 200. Excessive redirect chains slow crawling.</td>
+        </tr>
+        <tr>
+          <td><span class="gtag gtag-bad">403</span></td>
+          <td>Forbidden / Blocked</td>
+          <td><span class="severity sev-high">⚠ High</span></td>
+          <td>Server is actively rejecting this bot's User-Agent. Check: (1) robots.txt Disallow rules, (2) Cloudflare WAF/Bot Management settings, (3) .htaccess or nginx UA blocking rules, (4) CDN security configs. If blocking a search engine bot this is a critical SEO issue.</td>
+        </tr>
+        <tr>
+          <td><span class="gtag gtag-bad">404</span></td>
+          <td>Not Found</td>
+          <td><span class="severity sev-med">⚠ Medium</span></td>
+          <td>URL doesn't exist. Verify the URL is correct. If it existed before, check for redirects or content removal. Bots will deindex 404 pages over time.</td>
+        </tr>
+        <tr>
+          <td><span class="gtag gtag-bad">429</span></td>
+          <td>Rate Limited</td>
+          <td><span class="severity sev-med">⚠ Medium</span></td>
+          <td>Too many requests too fast. Increase the delay setting in this tool. For the real bot, review crawl rate settings in Google Search Console or the bot's dashboard.</td>
+        </tr>
+        <tr>
+          <td><span class="gtag gtag-bad">451</span></td>
+          <td>Legal Block</td>
+          <td><span class="severity sev-med">⚠ Medium</span></td>
+          <td>Content blocked for legal reasons (GDPR, CCPA, court order). Usually geo-restricted. Check if this is intentional — if not, review your geo-blocking rules or CDN configuration.</td>
+        </tr>
+        <tr>
+          <td><span class="gtag gtag-bad">500 / 502 / 503</span></td>
+          <td>Server Error</td>
+          <td><span class="severity sev-high">⚠ High</span></td>
+          <td>Server-side failure not specific to the bot. Check server health, error logs, memory/CPU usage. Bots may back off and retry later. Persistent 5xx causes deindexing.</td>
+        </tr>
+        <tr>
+          <td><span class="gtag gtag-err">TIMEOUT</span></td>
+          <td>No Response</td>
+          <td><span class="severity sev-high">⚠ High</span></td>
+          <td>Connection opened but no response within 10s. Could be: geo/IP blocking at network level, DDoS protection dropping the connection, very slow server, or firewall silently dropping bot traffic.</td>
+        </tr>
+        <tr>
+          <td><span class="gtag gtag-err">ERR</span></td>
+          <td>Network Error</td>
+          <td><span class="severity sev-crit">🚨 Check</span></td>
+          <td>Complete connection failure — DNS didn't resolve, server unreachable, or deep firewall block. Verify the domain is live and DNS is propagated. This tool uses a proxy so some networks may cause false positives.</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="guide-section">
+    <h3>By Bot — What a Block Means &amp; What to Do</h3>
+    <div class="guide-cards">
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="badge bcat-search">Search</span> Googlebot / Googlebot-Mobile <span class="severity sev-crit">🚨 Critical</span></div>
+        <ul>
+          <li>If blocked — site <strong>will not be indexed</strong> in Google Search</li>
+          <li>Check Cloudflare → Security → Bots — disable "Block AI Scrapers" (can catch Googlebot)</li>
+          <li>Check <code>robots.txt</code> for <code>Disallow: /</code> under <code>User-agent: *</code> or <code>User-agent: Googlebot</code></li>
+          <li>Check server firewall / .htaccess for UA string blocks</li>
+          <li>Verify in Google Search Console → Crawl Stats</li>
+        </ul>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="badge bcat-search">Search</span> Bingbot / DuckDuckBot <span class="severity sev-high">⚠ High</span></div>
+        <ul>
+          <li>If blocked — site won't appear in Bing, DuckDuckGo, or Yahoo results</li>
+          <li>Check <code>robots.txt</code> for <code>User-agent: bingbot</code> or <code>User-agent: DuckDuckBot</code> Disallow rules</li>
+          <li>Check Bing Webmaster Tools for crawl errors</li>
+        </ul>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="badge bcat-ai">AI</span> GPTBot / ChatGPT-User <span class="severity sev-low">ℹ Your choice</span></div>
+        <ul>
+          <li>Blocked = opted out of OpenAI training data — intentional for many sites</li>
+          <li>To block: add to <code>robots.txt</code>:<br><code>User-agent: GPTBot</code><br><code>Disallow: /</code></li>
+          <li>ChatGPT-User is the browsing bot (real-time answers) — blocking this means ChatGPT won't cite your site</li>
+          <li>Also check for <code>&lt;meta name="robots" content="noai"&gt;</code></li>
+        </ul>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="badge bcat-ai">AI</span> Google-Extended <span class="severity sev-low">ℹ Your choice</span></div>
+        <ul>
+          <li>Blocks Gemini/Bard AI training — does <strong>NOT</strong> affect regular Google Search crawling</li>
+          <li>Safe to block if you want to opt out of AI training without risking SEO</li>
+          <li>Block via: <code>User-agent: Google-Extended</code> + <code>Disallow: /</code> in robots.txt</li>
+        </ul>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="badge bcat-ai">AI</span> ClaudeBot <span class="severity sev-low">ℹ Your choice</span></div>
+        <ul>
+          <li>Anthropic's training crawler — blocking opts out of Claude training data</li>
+          <li>Block: <code>User-agent: ClaudeBot</code> + <code>Disallow: /</code></li>
+          <li>Anthropic states it respects robots.txt opt-outs</li>
+        </ul>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="badge bcat-ai">AI</span> Bytespider (TikTok) <span class="severity sev-med">⚠ Consider blocking</span></div>
+        <ul>
+          <li>Operated by ByteDance (TikTok's parent company)</li>
+          <li>Many sites block it due to privacy/data sovereignty concerns</li>
+          <li>Does not always respect robots.txt — firewall-level blocking recommended</li>
+          <li>Block via Cloudflare WAF: User-Agent contains <code>Bytespider</code></li>
+        </ul>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="badge bcat-ai">AI</span> CCBot (Common Crawl) <span class="severity sev-low">ℹ Your choice</span></div>
+        <ul>
+          <li>Powers training data for many AI models (GPT-3, LLaMA, etc.)</li>
+          <li>Blocking CCBot indirectly blocks multiple AI training pipelines</li>
+          <li>Block: <code>User-agent: CCBot</code> + <code>Disallow: /</code></li>
+        </ul>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="badge bcat-seo">SEO</span> AhrefsBot / SemrushBot / MJ12bot <span class="severity sev-low">ℹ Often intentional</span></div>
+        <ul>
+          <li>Blocked = competitors can't see your backlink profile in Ahrefs/Semrush — common intentional choice</li>
+          <li>Downside: you can't use these tools to audit your own site's links</li>
+          <li>If blocking your own SEO audits, temporarily allow via IP or UA whitelist</li>
+        </ul>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-card-title"><span class="badge bcat-seo">SEO</span> ScreamingFrog / Sitebulb <span class="severity sev-med">⚠ Self-audit issue</span></div>
+        <ul>
+          <li>These only crawl when you manually run them — blocking means you can't audit your own site</li>
+          <li>If 403: check if your server or Cloudflare is blocking their UA strings</li>
+          <li>Fix: whitelist your own IP when running crawls, or temporarily disable UA blocking</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="guide-section">
+    <h3>Quick Fix Recipes</h3>
+    <div class="guide-cards">
+      <div class="guide-card">
+        <div class="guide-card-title">🚨 Googlebot is blocked — fix it</div>
+        <ul>
+          <li>Cloudflare dashboard → Security → Bots → check settings</li>
+          <li>Check <code>robots.txt</code> — must NOT have <code>Disallow: /</code> under <code>User-agent: *</code> or <code>User-agent: Googlebot</code></li>
+          <li>Check .htaccess / nginx for <code>BotBlocker</code> or UA-based deny rules</li>
+          <li>Test in Google Search Console → URL Inspection → "Test Live URL"</li>
+        </ul>
+      </div>
+      <div class="guide-card">
+        <div class="guide-card-title">🛡 Block all AI training bots</div>
+        <ul>
+          <li>Add to <code>robots.txt</code>:</li>
+          <li><code>User-agent: GPTBot</code> <code>Disallow: /</code></li>
+          <li><code>User-agent: ChatGPT-User</code> <code>Disallow: /</code></li>
+          <li><code>User-agent: Google-Extended</code> <code>Disallow: /</code></li>
+          <li><code>User-agent: ClaudeBot</code> <code>Disallow: /</code></li>
+          <li><code>User-agent: CCBot</code> <code>Disallow: /</code></li>
+          <li>Also add: <code>&lt;meta name="robots" content="noai, noimageai"&gt;</code></li>
+        </ul>
+      </div>
+      <div class="guide-card">
+        <div class="guide-card-title">📋 Reading robots.txt results</div>
+        <ul>
+          <li>Click the 📋 icon next to any URL in the table to see its parsed robots.txt rules</li>
+          <li><code>Disallow: /</code> = entire site blocked for that bot</li>
+          <li><code>Disallow: /wp-admin/</code> = only that path blocked</li>
+          <li><code>Allow: /</code> overrides a broader Disallow</li>
+          <li>Missing User-agent entry = bot uses <code>*</code> (wildcard) rules</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <!-- ── HISTORY ────────────────────────────────────── -->
 <div class="history-section" id="history-section" style="display:none">
   <div class="section-head">Recent Checks</div>
@@ -286,6 +523,15 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ─── TABS ──────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById('tab-results').classList.toggle('active', tab === 'results');
+  document.getElementById('tab-guide').classList.toggle('active',   tab === 'guide');
+  document.getElementById('results').style.display      = tab === 'results' ? (allResults.length ? 'block' : 'none') : 'none';
+  document.getElementById('guide-wrap').style.display   = tab === 'guide'   ? 'block' : 'none';
+  document.getElementById('history-section').style.display = tab === 'results' ? '' : 'none';
+}
+
 // ─── BOT DEFINITIONS ───────────────────────────────────────────────────────
 const BOTS = {
   ai: [
