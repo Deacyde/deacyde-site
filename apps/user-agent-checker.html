@@ -671,7 +671,7 @@ function renderMatrix() {
       ${bots.map(b => `<th title="${escHtml(b)}">${escHtml(b.length > 11 ? b.slice(0,10)+'…' : b)}</th>`).join('')}
     </tr></thead>
     <tbody>${urls.map(url => `<tr>
-      <td class="row-lbl" title="${escHtml(url)}">${escHtml(getDomain(url))}</td>
+      <td class="row-lbl" title="${escHtml(url)}">${escHtml(url)}</td>
       ${bots.map(bot => {
         const r   = lkp[url + '|' + bot];
         const cls = matrixCls(r);
