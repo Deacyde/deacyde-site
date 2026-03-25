@@ -184,7 +184,21 @@
     .sev-med   { background:#3a2a00; color:#fbbf24; }
     .sev-low   { background:#1a1a1a; color:#888; }
 
-    /* Responsive */
+    /* Pi proxy toggle */
+    .pi-toggle-row { display:flex; align-items:center; gap:0.75rem; margin-top:0.85rem; padding-top:0.85rem; border-top:1px solid #1e1e1e; }
+    .pi-toggle-label { font-size:0.82rem; color:#aaa; display:flex; align-items:center; gap:0.5rem; cursor:pointer; user-select:none; }
+    .pi-switch { position:relative; width:38px; height:20px; flex-shrink:0; }
+    .pi-switch input { opacity:0; width:0; height:0; }
+    .pi-slider { position:absolute; inset:0; background:#333; border-radius:999px; cursor:pointer; transition:background .2s; }
+    .pi-slider::before { content:''; position:absolute; width:14px; height:14px; left:3px; top:3px; background:#888; border-radius:50%; transition:transform .2s,background .2s; }
+    .pi-switch input:checked + .pi-slider { background:#14532d; }
+    .pi-switch input:checked + .pi-slider::before { transform:translateX(18px); background:#4ade80; }
+    .pi-status { font-size:0.72rem; color:#555; margin-left:0.25rem; }
+    .pi-status.ok   { color:#4ade80; }
+    .pi-status.fail { color:#f87171; }
+    .pi-test-btn { padding:0.28rem 0.65rem; background:#1a1a1a; border:1px solid #333; border-radius:5px; color:#888; font-size:0.72rem; cursor:pointer; transition:color .15s; white-space:nowrap; }
+    .pi-test-btn:hover { color:#fff; border-color:#666; }
+    .proxy-badge { display:none; padding:0.28rem 0.65rem; background:#14532d; color:#4ade80; border-radius:5px; font-size:0.72rem; font-weight:600; white-space:nowrap; }
     @media (max-width:640px) {
       body { padding:1rem 0.75rem; }
       h1 { font-size:1.4rem; }
@@ -224,6 +238,7 @@
 
   <div class="action-row">
     <button class="btn" id="run-btn" onclick="startChecks()">🚀 Check All</button>
+    <span class="proxy-badge" id="pi-badge">🍓 Pi Proxy Active</span>
     <button class="btn-ghost" id="stop-btn" style="display:none" onclick="stopChecks()">⏹ Stop</button>
     <button class="btn-ghost" id="retry-btn" onclick="retryFailed()">🔄 Retry Failed</button>
     <button class="btn-ghost" onclick="clearAll()">Clear</button>
@@ -252,6 +267,17 @@
         <input type="number" id="s-delay" value="200" min="0" max="5000" />
         <div class="setting-note">200ms default — increase to avoid rate limiting</div>
       </div>
+    </div>
+    <div class="pi-toggle-row">
+      <label class="pi-toggle-label">
+        <span class="pi-switch">
+          <input type="checkbox" id="pi-toggle" onchange="onPiToggle(this.checked)">
+          <span class="pi-slider"></span>
+        </span>
+        🍓 Pi Proxy
+      </label>
+      <span class="pi-status" id="pi-status">Use residential IP instead of Cloudflare Worker datacenter IP</span>
+      <button class="pi-test-btn" onclick="testPiProxy()">Test connection</button>
     </div>
   </div>
 </div>
@@ -738,6 +764,70 @@ let running       = false;
 let abortFlag     = false;
 let robotsCache   = {};
 
+// ─── PI PROXY ──────────────────────────────────────────────────────────────
+const PI_PROXY_BASE = 'https://pi.deacyde.com';
+
+function isPiMode() { return document.getElementById('pi-toggle')?.checked || false; }
+
+async function testPiProxy() {
+  const st = document.getElementById('pi-status');
+  st.className = 'pi-status'; st.textContent = '⏳ Testing…';
+  try {
+    const ctrl = new AbortController();
+    const tid  = setTimeout(() => ctrl.abort(), 10000);
+    const res  = await fetch(`${PI_PROXY_BASE}/check?url=${encodeURIComponent('https://www.google.com')}`, { signal: ctrl.signal });
+    clearTimeout(tid);
+    const data = await res.json();
+    if (data.status && data.status >= 200 && data.status < 400) {
+      st.className = 'pi-status ok'; st.textContent = `✅ Pi reachable — got ${data.status} from google.com`;
+    } else {
+      st.className = 'pi-status fail'; st.textContent = `⚠ Pi responded but got status ${data.status}`;
+    }
+  } catch(e) {
+    const msg = e.name === 'AbortError' ? 'Timed out' : 'Unreachable';
+    document.getElementById('pi-status').className = 'pi-status fail';
+    document.getElementById('pi-status').textContent = `❌ Pi proxy ${msg} — switch back to Cloudflare Worker`;
+    if (document.getElementById('pi-toggle').checked) {
+      document.getElementById('pi-toggle').checked = false;
+      localStorage.setItem('ua-checker-pi', 'false');
+      document.getElementById('pi-badge').style.display = 'none';
+      showToast('⚠ Pi proxy unreachable — switched back to Cloudflare Worker.');
+    }
+  }
+}
+
+async function onPiToggle(on) {
+  localStorage.setItem('ua-checker-pi', on ? 'true' : 'false');
+  document.getElementById('pi-badge').style.display = on ? '' : 'none';
+  if (on) {
+    await testPiProxy();
+  } else {
+    const st = document.getElementById('pi-status');
+    st.className = 'pi-status'; st.textContent = 'Use residential IP instead of Cloudflare Worker datacenter IP';
+  }
+}
+
+async function checkOnePi(url, bot) {
+  const start = Date.now();
+  try {
+    const ctrl = new AbortController();
+    const tid  = setTimeout(() => ctrl.abort(), 13000);
+    // Future-proof: easy to add auth header later
+    const headers = {};
+    // headers['x-api-key'] = PI_PROXY_API_KEY;
+    const res  = await fetch(`${PI_PROXY_BASE}/check?url=${encodeURIComponent(url)}&ua=${encodeURIComponent(bot.ua)}`, { headers, signal: ctrl.signal });
+    clearTimeout(tid);
+    const data = await res.json();
+    // Pi returns full headers object — extract diagnostic ones
+    const diagKeys = ['server','cf-ray','x-cache','x-amzn-waf-action','x-powered-by','via'];
+    const diag = {};
+    if (data.headers) diagKeys.forEach(k => { if (data.headers[k]) diag[k] = data.headers[k]; });
+    return { url, bot: bot.name, category: bot.category, ua: bot.ua, status: data.status || 0, time: data.time || (Date.now() - start), error: data.error || null, diag, via: 'pi' };
+  } catch(e) {
+    return { url, bot: bot.name, category: bot.category, ua: bot.ua, status: 0, time: Date.now() - start, error: e.name === 'AbortError' ? 'TIMEOUT' : 'NETWORK_ERROR', diag: {}, via: 'pi' };
+  }
+}
+
 // ─── SETTINGS ──────────────────────────────────────────────────────────────
 function getSettings() {
   return {
@@ -875,7 +965,7 @@ async function startChecks() {
   let done = 0;
   const tasks = urls.flatMap(url => bots.map(bot => async () => {
     if (abortFlag) return null;
-    return checkOne(url, bot, s.workerUrl);
+    return isPiMode() ? checkOnePi(url, bot) : checkOne(url, bot, s.workerUrl);
   }));
 
   await runQueue(tasks, s.concurrency, s.delay, result => {
@@ -918,7 +1008,7 @@ async function retryFailed() {
   for (const item of failed) {
     if (abortFlag) break;
     const botDef = [...BOTS.ai, ...BOTS.search, ...BOTS.seo].find(b => b.name === item.bot) || { name: item.bot, ua: item.ua };
-    const r = await checkOne(item.url, botDef, s.workerUrl);
+    const r = await (isPiMode() ? checkOnePi(item.url, botDef) : checkOne(item.url, botDef, s.workerUrl));
     const idx = allResults.findIndex(x => x.url === item.url && x.bot === item.bot);
     if (idx !== -1) allResults[idx] = { ...r, index: allResults[idx].index };
     done++;
@@ -1230,6 +1320,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const saved = localStorage.getItem('ua-checker-worker');
   if (saved) document.getElementById('s-worker').value = saved;
   document.getElementById('s-worker').addEventListener('change', e => localStorage.setItem('ua-checker-worker', e.target.value));
+  // Restore Pi proxy toggle
+  const piOn = localStorage.getItem('ua-checker-pi') === 'true';
+  if (piOn) {
+    document.getElementById('pi-toggle').checked = true;
+    document.getElementById('pi-badge').style.display = '';
+  }
 });
 </script>
 </body>
