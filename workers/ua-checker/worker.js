@@ -61,7 +61,10 @@ export default {
           signal: ctrl.signal,
         });
         clearTimeout(tid);
-        return json({ status: res.status, time: Date.now() - start });
+        const diagHeaders = ['server','cf-ray','x-cache','x-amzn-waf-action','x-powered-by','via'];
+        const diag = {};
+        diagHeaders.forEach(h => { const v = res.headers.get(h); if (v) diag[h] = v; });
+        return json({ status: res.status, time: Date.now() - start, diag });
       }
 
       // ── ROBOTS.TXT MODE ──

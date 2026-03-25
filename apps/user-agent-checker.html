@@ -132,7 +132,17 @@
     /* Disclaimer */
     .disclaimer { margin-top:2.5rem; padding:1rem 1.25rem; background:#111; border:1px solid #1e1e1e; border-radius:8px; font-size:0.77rem; color:#555; line-height:1.6; }
 
-    /* Toast */
+    /* Diagnostic panel */
+    .diag-toggle { background:none; border:none; color:#555; font-size:0.72rem; cursor:pointer; padding:0 0 0 6px; vertical-align:middle; transition:color .15s; white-space:nowrap; }
+    .diag-toggle:hover { color:#fbbf24; }
+    .diag-box { background:#0a0a0a; border:1px solid #1e1e1e; border-radius:6px; padding:0.65rem 0.85rem; margin-top:0.45rem; font-size:0.75rem; display:none; }
+    .diag-box.open { display:block; }
+    .diag-row { display:flex; gap:0.5rem; padding:0.2rem 0; border-bottom:1px solid #111; align-items:baseline; }
+    .diag-row:last-child { border-bottom:none; }
+    .diag-key { color:#555; font-family:monospace; font-size:0.72rem; min-width:160px; flex-shrink:0; }
+    .diag-val { color:#93c5fd; font-family:monospace; font-size:0.72rem; word-break:break-all; }
+    .diag-interp { margin-top:0.55rem; padding-top:0.5rem; border-top:1px solid #1e1e1e; font-size:0.75rem; color:#888; line-height:1.5; }
+    .diag-interp strong { color:#fbbf24; }
     .toast { position:fixed; bottom:2rem; right:2rem; background:#1a1a1a; border:1px solid #333; border-radius:8px; padding:0.7rem 1.25rem; font-size:0.85rem; color:#fff; z-index:9999; transform:translateY(16px); opacity:0; transition:all .25s; pointer-events:none; max-width:320px; }
     .toast.show { transform:translateY(0); opacity:1; }
 
@@ -772,7 +782,7 @@ async function checkOne(url, bot, workerUrl) {
     const res  = await fetch(endpoint, { signal: ctrl.signal });
     clearTimeout(tid);
     const data = await res.json();
-    return { url, bot: bot.name, category: bot.category, ua: bot.ua, status: data.status || 0, time: data.time || (Date.now() - start), error: data.error || null };
+    return { url, bot: bot.name, category: bot.category, ua: bot.ua, status: data.status || 0, time: data.time || (Date.now() - start), error: data.error || null, diag: data.diag || {} };
   } catch (e) {
     return { url, bot: bot.name, category: bot.category, ua: bot.ua, status: 0, time: Date.now() - start, error: e.name === 'AbortError' ? 'TIMEOUT' : 'NETWORK_ERROR' };
   }
@@ -1037,6 +1047,7 @@ function renderTable() {
     const rtxt    = robotsCache[origin];
     const hasR    = rtxt !== undefined;
     const rid     = `rb-${i}`;
+    const did     = `dg-${i}`;
     return `<tr>
       <td style="color:#555">${r.index}</td>
       <td>
@@ -1046,7 +1057,7 @@ function renderTable() {
       </td>
       <td style="color:#ccc;white-space:nowrap">${r.bot}</td>
       <td>${catBadge(r.category)}</td>
-      <td>${statusBadge(r)}</td>
+      <td>${statusBadge(r)}${diagPanel(r, did)}</td>
       <td style="color:#888;font-size:0.8rem;white-space:nowrap">${r.time ? r.time + 'ms' : '—'}</td>
     </tr>`;
   }).join('');
@@ -1168,6 +1179,45 @@ function showToast(msg) {
   t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ─── DIAGNOSTIC PANEL ──────────────────────────────────────────────────────
+function diagPanel(r, id) {
+  const isNon200 = r.error || r.status === 0 || r.status < 200 || r.status >= 300;
+  if (!isNon200) return '';
+  const diag = r.diag || {};
+  const keys  = Object.keys(diag);
+
+  let rows = '';
+  if (keys.length) {
+    rows = keys.map(k => `<div class="diag-row"><span class="diag-key">${escHtml(k)}</span><span class="diag-val">${escHtml(diag[k])}</span></div>`).join('');
+  } else {
+    rows = `<div style="color:#555;font-size:0.73rem;font-style:italic">No diagnostic headers returned — block may be occurring at IP or origin level before headers are set.</div>`;
+  }
+
+  // Plain-English interpretation
+  let interp = '';
+  if (r.error === 'TIMEOUT' || r.error === 'NETWORK_ERROR') {
+    interp = '<strong>Possible IP-level block or connection refused</strong> — request never received a response. Could be a firewall dropping traffic, geo-block, or DDoS protection silently rejecting the bot IP.';
+  } else if (diag['x-amzn-waf-action']) {
+    interp = `<strong>AWS WAF triggered</strong> — action: <code>${escHtml(diag['x-amzn-waf-action'])}</code>. Check your AWS WAF rules for User-Agent conditions blocking this bot.`;
+  } else if (diag['cf-ray']) {
+    interp = `<strong>Cloudflare detected</strong> (CF-Ray: ${escHtml(diag['cf-ray'])}). Check Cloudflare → Security → WAF → Overview for blocked requests, and Cloudflare → Security → Bots settings.`;
+  } else if (diag['x-cache']) {
+    interp = `<strong>CDN caching layer present</strong> (${escHtml(diag['x-cache'])}). The block may be enforced at the CDN edge — check CDN security/WAF rules, not just origin server config.`;
+  } else if (diag['server'] && !keys.includes('cf-ray')) {
+    interp = `<strong>Block likely at origin/web server level</strong> — server: <code>${escHtml(diag['server'])}</code>. Check server config (nginx/Apache), .htaccess UA-blocking rules, or application-level firewalls.`;
+  } else if (!keys.length) {
+    interp = '<strong>No headers returned</strong> — possible IP-level block or connection refused before the server set any response headers. Check network-level firewall rules or CDN security settings.';
+  } else {
+    interp = 'Block source unclear — check the headers above for clues, then review WAF, CDN, and server-level bot rules.';
+  }
+
+  return `<button class="diag-toggle" onclick="document.getElementById('${id}').classList.toggle('open')">🔍 Diagnose ▾</button>
+    <div class="diag-box" id="${id}">
+      ${rows}
+      <div class="diag-interp">${interp}</div>
+    </div>`;
 }
 
 // ─── UTILS ─────────────────────────────────────────────────────────────────
