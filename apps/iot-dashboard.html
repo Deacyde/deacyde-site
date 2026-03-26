@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📡 Device Dashboard | Deacyde</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#0d0d0d; color:#fff; padding:2rem 1rem; max-width:1100px; margin:0 auto; }
+    a.back { color:#888; text-decoration:none; font-size:0.9rem; display:inline-block; margin-bottom:1.5rem; }
+    a.back:hover { color:#fff; }
+    h1 { font-size:1.8rem; margin-bottom:0.4rem; }
+    .subtitle { color:#888; margin-bottom:2rem; font-size:0.95rem; }
+
+    /* Toolbar */
+    .toolbar { display:flex; align-items:center; gap:0.75rem; margin-bottom:1.75rem; flex-wrap:wrap; }
+    .btn-ghost { padding:0.5rem 1rem; background:#1a1a1a; border:1px solid #333; border-radius:8px; color:#888; font-size:0.85rem; cursor:pointer; transition:color .2s,border-color .2s; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; }
+    .btn-ghost:hover { color:#fff; border-color:#666; }
+    .btn-primary { padding:0.5rem 1rem; background:#4285f4; border:none; border-radius:8px; color:#fff; font-size:0.85rem; cursor:pointer; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; }
+    .btn-primary:hover { background:#3367d6; }
+    .updated { font-size:0.78rem; color:#444; margin-left:auto; }
+
+    /* Service status bar */
+    .service-bar { display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1.75rem; }
+    .svc { display:flex; align-items:center; gap:0.5rem; background:#111; border:1px solid #222; border-radius:8px; padding:0.5rem 0.85rem; font-size:0.82rem; }
+    .svc-dot { width:8px; height:8px; border-radius:50%; background:#333; flex-shrink:0; }
+    .svc-dot.online { background:#4ade80; }
+    .svc-dot.offline { background:#f87171; animation:none; }
+    .svc-dot.checking { background:#facc15; animation:pulse 1.2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .svc-name { color:#aaa; }
+    .svc-val  { color:#fff; font-weight:600; margin-left:0.25rem; }
+
+    /* Section title */
+    .sec-title { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.07em; color:#444; margin-bottom:0.85rem; }
+
+    /* Device grid */
+    .device-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1rem; margin-bottom:2rem; }
+    .device-card { background:#111; border:1px solid #222; border-radius:10px; padding:1.25rem; transition:border-color .2s; }
+    .device-card.online  { border-color:#14532d; }
+    .device-card.offline { border-color:#3b0a0a; opacity:0.7; }
+    .device-card.unknown { border-color:#222; }
+    .device-header { display:flex; align-items:center; gap:0.65rem; margin-bottom:0.85rem; }
+    .device-icon { font-size:1.5rem; line-height:1; }
+    .device-name { font-weight:600; font-size:0.95rem; }
+    .device-type { font-size:0.72rem; color:#555; }
+    .device-status { margin-left:auto; font-size:0.72rem; font-weight:600; padding:0.18rem 0.5rem; border-radius:999px; }
+    .device-status.online  { background:#14532d; color:#4ade80; }
+    .device-status.offline { background:#450a0a; color:#f87171; }
+    .device-status.unknown { background:#1c1c1c; color:#555; }
+    .sensor-list { display:flex; flex-direction:column; gap:0.45rem; }
+    .sensor-row { display:flex; justify-content:space-between; align-items:center; }
+    .sensor-label { font-size:0.78rem; color:#666; }
+    .sensor-val   { font-size:0.82rem; font-weight:600; color:#ccc; font-variant-numeric:tabular-nums; }
+    .sensor-val.fresh { color:#4ade80; }
+    .sensor-val.stale { color:#facc15; }
+    .no-data { font-size:0.78rem; color:#333; font-style:italic; margin-top:0.35rem; }
+    .device-ago { font-size:0.7rem; color:#333; margin-top:0.65rem; }
+
+    /* Node-RED info card */
+    .info-card { background:#111; border:1px solid #222; border-radius:10px; padding:1.25rem; margin-bottom:2rem; }
+    .info-card h3 { font-size:1rem; margin-bottom:0.75rem; }
+    .info-card p { font-size:0.85rem; color:#888; line-height:1.6; margin-bottom:0.75rem; }
+    .code { font-family:monospace; font-size:0.8rem; background:#0d0d0d; border:1px solid #222; border-radius:6px; padding:0.85rem 1rem; color:#4ade80; overflow-x:auto; margin-bottom:0.75rem; white-space:pre; }
+    .tag-row { display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem; }
+    .tag { font-size:0.72rem; padding:0.2rem 0.55rem; background:#1a1a1a; border:1px solid #333; border-radius:999px; color:#888; }
+  </style>
+</head>
+<body>
+  <a class="back" href="../index.html">← Back</a>
+  <h1>📡 Device Dashboard</h1>
+  <p class="subtitle">Live status of home lab devices — powered by Node-RED & MQTT on the Pi 5</p>
+
+  <div class="toolbar">
+    <button class="btn-ghost" onclick="load()">↻ Refresh</button>
+    <label style="font-size:0.8rem;color:#555;display:flex;align-items:center;gap:0.4rem;">
+      <input type="checkbox" id="auto" onchange="toggleAuto(this.checked)" style="accent-color:#4285f4"> Auto-refresh 30s
+    </label>
+    <a class="btn-primary" href="https://pi.deacyde.com:1880" target="_blank">⚙ Open Node-RED →</a>
+    <span class="updated" id="updated"></span>
+  </div>
+
+  <!-- Service status bar -->
+  <div class="service-bar">
+    <div class="svc"><span class="svc-dot checking" id="dot-pi"></span><span class="svc-name">Pi Server</span><span class="svc-val" id="svc-pi">…</span></div>
+    <div class="svc"><span class="svc-dot checking" id="dot-nr"></span><span class="svc-name">Node-RED</span><span class="svc-val" id="svc-nr">…</span></div>
+    <div class="svc"><span class="svc-dot checking" id="dot-mq"></span><span class="svc-name">MQTT</span><span class="svc-val" id="svc-mq">…</span></div>
+  </div>
+
+  <!-- Device grid -->
+  <div class="sec-title">Registered Devices</div>
+  <div class="device-grid" id="device-grid"></div>
+
+  <!-- Setup guide -->
+  <div class="info-card">
+    <h3>🔌 Connecting a Device</h3>
+    <p>Any device on your home network can send sensor data to the Pi's MQTT broker. Publish to a topic like <code style="color:#4285f4">devices/your-device-name/sensors</code> with a JSON payload:</p>
+    <div class="code">// Arduino / M5Stack (PubSubClient)
+client.publish("devices/m5stick-1/sensors",
+  "{\"temp\":22.4,\"humidity\":58,\"battery\":87}"
+);</div>
+    <p>Node-RED listens, processes, and makes it available to this dashboard via the Pi proxy. Device cards appear automatically once data is received.</p>
+    <div class="tag-row">
+      <span class="tag">M5StickC Plus</span>
+      <span class="tag">M5Stack Core S3</span>
+      <span class="tag">Arduino Uno WiFi</span>
+      <span class="tag">Flipper Zero</span>
+      <span class="tag">Any MQTT device</span>
+    </div>
+  </div>
+
+  <script>
+    // Registered devices — will be populated from MQTT once devices are set up
+    // For now shows expected devices with offline state
+    const KNOWN_DEVICES = [
+      { id:'m5stick-1',   name:'M5StickC Plus #1', icon:'📟', type:'M5StickC Plus (ESP32)' },
+      { id:'m5stick-2',   name:'M5StickC Plus #2', icon:'📟', type:'M5StickC Plus (ESP32)' },
+      { id:'m5stick-3',   name:'M5StickC Plus #3', icon:'📟', type:'M5StickC Plus (ESP32)' },
+      { id:'core-s3',     name:'Core S3',           icon:'🖥',  type:'M5Stack Core S3 (ESP32-S3)' },
+      { id:'llm-module',  name:'LLM Module',        icon:'🧠', type:'M5Stack LLM Module' },
+      { id:'flipper',     name:'Flipper Zero',      icon:'🐬', type:'Flipper Zero' },
+      { id:'uno-wifi',    name:'Arduino Uno WiFi',  icon:'⚡', type:'Arduino Uno WiFi' },
+      { id:'uno-2',       name:'Arduino Uno #2',    icon:'⚡', type:'Arduino Uno (USB/Serial)' },
+    ];
+
+    let sensorData = {};
+    let autoTimer  = null;
+
+    function timeAgo(iso) {
+      if (!iso) return '';
+      const s = Math.floor((Date.now() - new Date(iso)) / 1000);
+      if (s < 60)   return `${s}s ago`;
+      if (s < 3600) return `${Math.floor(s/60)}m ago`;
+      return `${Math.floor(s/3600)}h ago`;
+    }
+
+    function freshClass(iso) {
+      if (!iso) return '';
+      const s = (Date.now() - new Date(iso)) / 1000;
+      return s < 60 ? 'fresh' : s < 300 ? '' : 'stale';
+    }
+
+    function renderDevices() {
+      const grid = document.getElementById('device-grid');
+      grid.innerHTML = KNOWN_DEVICES.map(d => {
+        const sd     = sensorData[d.id];
+        const online = sd && ((Date.now() - new Date(sd._ts)) / 1000) < 120;
+        const state  = sd ? (online ? 'online' : 'offline') : 'unknown';
+        const stateLabel = sd ? (online ? 'Online' : 'Offline') : 'No data';
+
+        let sensors = '';
+        if (sd) {
+          const skip = ['_ts','_device'];
+          const keys = Object.keys(sd).filter(k => !skip.includes(k));
+          sensors = keys.length
+            ? `<div class="sensor-list">${keys.map(k =>
+                `<div class="sensor-row">
+                  <span class="sensor-label">${k}</span>
+                  <span class="sensor-val ${freshClass(sd._ts)}">${sd[k]}</span>
+                </div>`).join('')}</div>`
+            : '<div class="no-data">No sensor readings</div>';
+        } else {
+          sensors = '<div class="no-data">Waiting for data — device not yet connected to MQTT</div>';
+        }
+
+        return `<div class="device-card ${state}">
+          <div class="device-header">
+            <span class="device-icon">${d.icon}</span>
+            <div><div class="device-name">${d.name}</div><div class="device-type">${d.type}</div></div>
+            <span class="device-status ${state}">${stateLabel}</span>
+          </div>
+          ${sensors}
+          ${sd ? `<div class="device-ago">Last seen ${timeAgo(sd._ts)}</div>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    async function checkService(url, dotId, svcId, label) {
+      const dot = document.getElementById(dotId);
+      const svc = document.getElementById(svcId);
+      dot.className = 'svc-dot checking';
+      try {
+        const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
+        if (r.ok || r.status < 500) {
+          dot.className = 'svc-dot online';
+          svc.textContent = label + ' ✓';
+        } else throw new Error();
+      } catch {
+        dot.className = 'svc-dot offline';
+        svc.textContent = 'Offline';
+      }
+    }
+
+    async function loadSensorData() {
+      try {
+        const r = await fetch('https://pi.deacyde.com/sensors', { signal: AbortSignal.timeout(5000) });
+        if (r.ok) {
+          const data = await r.json();
+          sensorData = data || {};
+        }
+      } catch { /* sensors endpoint not yet set up — devices show as offline */ }
+    }
+
+    async function load() {
+      document.getElementById('updated').textContent = 'Refreshing…';
+      await Promise.all([
+        checkService('https://pi.deacyde.com/status', 'dot-pi', 'svc-pi', 'Online'),
+        checkService('https://pi.deacyde.com/nodered', 'dot-nr', 'svc-nr', 'Running'),
+        checkService('https://pi.deacyde.com/mqtt', 'dot-mq', 'svc-mq', 'Active'),
+        loadSensorData(),
+      ]);
+      renderDevices();
+      document.getElementById('updated').textContent = `Updated ${new Date().toLocaleTimeString()}`;
+    }
+
+    function toggleAuto(on) {
+      clearInterval(autoTimer);
+      if (on) autoTimer = setInterval(load, 30000);
+    }
+
+    load();
+  </script>
+</body>
+</html>
