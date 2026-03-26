@@ -466,7 +466,8 @@
       font-family: inherit;
     }
     .schema-copy-btn:hover { color: var(--text); }
-    .schema-body { display: none; padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.7; overflow-x: auto; }
+    .schema-body { display: block; padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.7; overflow-x: auto; }
+    .schema-body.collapsed { display: none; }
     .sk { color: #93c5fd; }
     .sv { color: #86efac; }
     .sn { color: #fcd34d; }
@@ -565,6 +566,7 @@
     <div class="overview-header">
       <div style="flex:1;min-width:0">
         <div class="summary-bar" id="summary-bar"></div>
+        <div class="filter-pills" id="status-pills"></div>
         <div class="filter-pills" id="filter-pills"></div>
       </div>
       <div class="score-badge-wrap">
@@ -1126,6 +1128,24 @@ function renderOverview(checks, headings, links, images) {
     return arr.reduce((w,c) => STATUS_ORDER[c.status] < STATUS_ORDER[w] ? c.status : w, 'info');
   }
 
+  // Status filter pills
+  const failCount = checks.filter(c => c.status === 'fail').length;
+  const warnCount = checks.filter(c => c.status === 'warn').length;
+  const passCount = checks.filter(c => c.status === 'pass').length;
+  document.getElementById('status-pills').innerHTML = [
+    {key:'all',  label:'All',      color:'#8b949e', count: checks.length},
+    {key:'fail', label:'Errors',   color:'#ef4444', count: failCount},
+    {key:'warn', label:'Warnings', color:'#f59e0b', count: warnCount},
+    {key:'pass', label:'Pass',     color:'#10b981', count: passCount},
+  ].map(s =>
+    `<button class="pill${s.key==='all'?' active':''}" data-st="${s.key}"
+      onclick="filterByStatus('${s.key}', this)">
+      <span class="pill-dot" style="background:${s.color}"></span>${s.label}
+      <span style="margin-left:3px;opacity:0.6;font-size:11px">${s.count}</span>
+    </button>`
+  ).join('');
+
+  // Category filter pills
   const catStatus = {};
   cats.filter(c => c !== 'All').forEach(cat => {
     catStatus[cat] = worstStatus(checks.filter(c => c.category === cat));
@@ -1145,12 +1165,26 @@ function renderOverview(checks, headings, links, images) {
   checks.forEach(c => tab.appendChild(renderCheckCard(c)));
 }
 
-window.filterChecks = function(cat, btn) {
-  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
+function applyOverviewFilter() {
+  const activeCat = (document.querySelector('[data-cat].active') || {}).dataset?.cat || 'All';
+  const activeSt  = (document.querySelector('[data-st].active')  || {}).dataset?.st  || 'all';
   document.querySelectorAll('.check-card').forEach(card => {
-    card.style.display = (cat === 'All' || card.dataset.category === cat) ? '' : 'none';
+    const catOk = activeCat === 'All' || card.dataset.category === activeCat;
+    const stOk  = activeSt  === 'all' || card.dataset.status   === activeSt;
+    card.style.display = (catOk && stOk) ? '' : 'none';
   });
+}
+
+window.filterChecks = function(cat, btn) {
+  document.querySelectorAll('[data-cat]').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  applyOverviewFilter();
+};
+
+window.filterByStatus = function(st, btn) {
+  document.querySelectorAll('[data-st]').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  applyOverviewFilter();
 };
 
 // ═══════════════════════════════════════════════
@@ -1269,7 +1303,7 @@ window.exportLinksCsv = function() {
   const csv = ['Anchor Text,URL,Type,Generic'].concat(
     rows.map(l => `"${(l.text||'').replace(/"/g,'""')}","${(l.href||'').replace(/"/g,'""')}","${l.type}","${l.generic?'yes':'no'}"`)
   ).join('\n');
-  dlCsv(csv, 'links.csv');
+  dlCsv(csv, `links-${urlToSlug(window._pageUrl || '')}.csv`);
 };
 
 // ═══════════════════════════════════════════════
@@ -1317,7 +1351,7 @@ window.exportImagesCsv = function() {
   const csv = ['Alt Text,Title,Src'].concat(
     imgs.map(i => `"${(i.alt||'').replace(/"/g,'""')}","${(i.title||'').replace(/"/g,'""')}","${(i.src||'').replace(/"/g,'""')}"`)
   ).join('\n');
-  dlCsv(csv, 'images.csv');
+  dlCsv(csv, `images-${urlToSlug(window._pageUrl || '')}.csv`);
 };
 
 // ═══════════════════════════════════════════════
@@ -1358,23 +1392,29 @@ function renderSchema(blocks, hreflangs) {
   blocks.forEach((b, idx) => {
     let typeLabel = 'JSON-LD';
     if (b.parsed) {
-      const t = b.parsed['@type'];
-      typeLabel = Array.isArray(t) ? t.join(', ') : (t || 'JSON-LD');
+      if (b.parsed['@graph'] && Array.isArray(b.parsed['@graph'])) {
+        // @graph — collect all types from graph items
+        const graphTypes = b.parsed['@graph'].map(item => item['@type']).filter(Boolean);
+        typeLabel = graphTypes.length ? '@graph: ' + graphTypes.join(', ') : '@graph';
+      } else {
+        const t = b.parsed['@type'];
+        typeLabel = Array.isArray(t) ? t.join(', ') : (t || 'JSON-LD');
+      }
     } else {
-      typeLabel = 'Invalid JSON';
+      typeLabel = 'Invalid JSON — ' + (b.error || 'parse error');
     }
     html += `<div class="schema-block">
       <div class="schema-hdr" onclick="toggleSchema(${idx})">
         <span class="schema-type">${escH(typeLabel)}</span>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="schema-copy-btn" onclick="event.stopPropagation();copySchemaJson(${idx})">Copy JSON</button>
-          <span style="color:var(--muted);font-size:11px" id="schema-chev-${idx}">\u25bc</span>
+          <span style="color:var(--muted);font-size:11px" id="schema-chev-${idx}">\u25b2</span>
         </div>
       </div>
       <div id="schema-body-${idx}" class="schema-body">
         ${b.parsed
           ? `<div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7">${renderVal(b.parsed, 0)}</div>`
-          : `<span style="color:var(--fail)">Parse error: ${escH(b.error)}</span>`}
+          : `<span style="color:var(--fail)">Parse error: ${escH(b.error || 'unknown')}</span><pre style="color:var(--muted);font-size:11px;margin-top:8px;white-space:pre-wrap">${escH((b.rawText||'').slice(0,300))}</pre>`}
       </div>
     </div>`;
   });
@@ -1398,9 +1438,9 @@ function renderSchema(blocks, hreflangs) {
 window.toggleSchema = function(idx) {
   const body = document.getElementById('schema-body-' + idx);
   const chev = document.getElementById('schema-chev-' + idx);
-  const open = body.style.display === 'block';
-  body.style.display = open ? 'none' : 'block';
-  if (chev) chev.textContent = open ? '\u25bc' : '\u25b2';
+  const isCollapsed = body.classList.contains('collapsed');
+  body.classList.toggle('collapsed');
+  if (chev) chev.textContent = isCollapsed ? '\u25b2' : '\u25bc';
 };
 
 window.copySchemaJson = function(idx) {
@@ -1511,12 +1551,15 @@ function extractImages(doc, pageUrl) {
 
 function extractSchema(doc) {
   return Array.from(doc.querySelectorAll('script[type="application/ld+json"]')).map(s => {
-    const rawText = s.textContent;
+    let rawText = s.textContent.trim();
+    // Strip CDATA/comment wrappers some CMS systems add
+    rawText = rawText.replace(/^\/\/<!\[CDATA\[\s*/,'').replace(/\s*\/\/\]\]>$/,'');
+    rawText = rawText.replace(/^<!\[CDATA\[\s*/,'').replace(/\s*\]\]>$/,'');
     try {
       const parsed = JSON.parse(rawText);
-      return {parsed, raw: parsed, rawText};
+      return {parsed, rawText};
     } catch(e) {
-      return {parsed: null, raw: null, rawText, error: e.message};
+      return {parsed: null, rawText, error: e.message};
     }
   });
 }
@@ -1616,6 +1659,7 @@ async function runAnalysis() {
       const res = await fetchHTML(urlVal);
       html = res.html;
       pageUrl = res.finalUrl || urlVal;
+      window._pageUrl = pageUrl;
       respInfo = {statusCode: res.statusCode, headers: res.headers, finalUrl: res.finalUrl || urlVal};
       location.hash = '#url=' + encodeURIComponent(urlVal);
 
@@ -1705,6 +1749,15 @@ window.copyToClipboard = function(btn, text) {
     if (btn) { const orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = orig, 1500); }
   }).catch(() => {});
 };
+
+function urlToSlug(url) {
+  if (!url) return 'page';
+  try {
+    const u = new URL(url);
+    const slug = (u.hostname + u.pathname).replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase();
+    return slug.substring(0, 60) || 'page';
+  } catch(e) { return 'page'; }
+}
 
 function dlCsv(csv, filename) {
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
