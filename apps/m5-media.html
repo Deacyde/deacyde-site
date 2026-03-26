@@ -238,7 +238,11 @@
     const url = `${PI}/${type}/${DEVICE}?_=${Date.now()}`;
     try {
       const r = await fetch(url, { method: 'HEAD' });
-      if (r.ok) return { ok: true, url, size: r.headers.get('content-length') };
+      if (r.ok) return {
+        ok: true, url,
+        size: r.headers.get('content-length'),
+        modified: r.headers.get('last-modified')
+      };
       return { ok: false };
     } catch { return { ok: false }; }
   }
@@ -257,7 +261,7 @@
       img.style.display = 'block';
       if (ph) ph.style.display = 'none';
       meta.style.display = 'flex';
-      document.getElementById('photo-time').textContent = new Date().toLocaleTimeString();
+      document.getElementById('photo-time').textContent = res.modified ? new Date(res.modified).toLocaleTimeString() : new Date().toLocaleTimeString();
       document.getElementById('photo-size').textContent = res.size ? Math.round(res.size/1024) + ' KB' : '';
       dl.href = res.url;
       dl.style.display = 'inline';
@@ -284,7 +288,7 @@
       player.style.display = 'block';
       ph.style.display = 'none';
       meta.style.display = 'flex';
-      document.getElementById('audio-time').textContent = new Date().toLocaleTimeString();
+      document.getElementById('audio-time').textContent = res.modified ? new Date(res.modified).toLocaleTimeString() : new Date().toLocaleTimeString();
       document.getElementById('audio-size').textContent = res.size ? Math.round(res.size/1024) + ' KB' : '';
       dl.href = res.url;
       dl.style.display = 'inline';
