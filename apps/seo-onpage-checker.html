@@ -1,0 +1,1787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEO Onpage Checker — dev.deacyde.com</title>
+  <style>
+    :root {
+      --bg: #08080c;
+      --card: #0d0d14;
+      --border: #1a1a28;
+      --text: #e2e8f0;
+      --muted: #555;
+      --pass: #10b981;
+      --fail: #ef4444;
+      --warn: #f59e0b;
+      --info: #6366f1;
+      --blue: #3b82f6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+    }
+    header a { color: var(--muted); text-decoration: none; font-size: 13px; }
+    header a:hover { color: var(--text); }
+    header span { color: var(--muted); }
+    header h1 { font-size: 17px; font-weight: 700; color: var(--text); }
+    .container { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    /* Mode tabs */
+    .mode-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+    .mode-tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--muted);
+      font-size: 14px;
+      font-family: inherit;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.2s;
+    }
+    .mode-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+    .mode-tab:hover:not(.active) { color: var(--text); }
+    .input-pane { display: none; }
+    .input-pane.active { display: block; }
+    /* Worker settings */
+    .worker-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .worker-label { font-size: 12px; color: var(--muted); }
+    .worker-toggle { display: flex; gap: 6px; align-items: center; }
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .radio-label input { cursor: pointer; accent-color: var(--blue); }
+    .settings-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 4px;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .settings-btn:hover { color: var(--text); border-color: var(--muted); }
+    .settings-expand { display: none; margin-top: 10px; }
+    .settings-expand.open { display: block; }
+    /* Form elements */
+    input[type="url"],
+    input[type="text"],
+    textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="url"]:focus,
+    input[type="text"]:focus,
+    textarea:focus { border-color: var(--blue); }
+    textarea { resize: vertical; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+    .field-label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      margin-top: 16px;
+    }
+    /* Run button */
+    .run-btn {
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px;
+      background: #10b981;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .run-btn:hover { background: #0d9e6e; }
+    .run-btn:disabled { background: #1a3a2a; color: var(--muted); cursor: not-allowed; }
+    /* Loading */
+    #loading { display: none; text-align: center; padding: 48px; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* Error */
+    #error-state {
+      display: none;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 8px;
+      padding: 16px;
+      color: var(--fail);
+      margin-top: 16px;
+    }
+    /* Results */
+    #results { display: none; margin-top: 24px; }
+    /* Overview header */
+    .overview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 16px 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      gap: 16px;
+    }
+    /* Score badge */
+    .score-badge-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .score-badge { position: relative; width: 80px; height: 80px; }
+    .score-badge svg { transform: rotate(-90deg); }
+    .score-number {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 22px;
+      font-weight: 700;
+    }
+    /* Summary bar */
+    .summary-bar {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-top: none;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      gap: 0;
+    }
+    .summary-item {
+      padding: 2px 12px;
+      border-right: 1px solid var(--border);
+    }
+    .summary-item:first-child { padding-left: 0; }
+    .summary-item:last-child { border-right: none; }
+    .summary-num { font-weight: 700; color: var(--text); }
+    /* Filter pills */
+    .filter-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 12px 0 4px;
+    }
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .pill.active { border-color: var(--blue); color: var(--text); background: rgba(59,130,246,0.08); }
+    .pill:hover { color: var(--text); }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    /* Tab bar */
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      padding: 10px 18px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--muted);
+      font-size: 13px;
+      font-family: inherit;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      white-space: nowrap;
+      transition: color 0.2s;
+    }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--blue); }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    /* Check cards */
+    .check-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left-width: 3px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .check-card-pass { border-left-color: var(--pass); }
+    .check-card-fail { border-left-color: var(--fail); }
+    .check-card-warn { border-left-color: var(--warn); }
+    .check-card-info { border-left-color: var(--info); }
+    .check-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .check-header:hover { background: rgba(255,255,255,0.02); }
+    .check-icon { font-size: 15px; min-width: 18px; text-align: center; flex-shrink: 0; }
+    .check-icon-pass { color: var(--pass); }
+    .check-icon-fail { color: var(--fail); }
+    .check-icon-warn { color: var(--warn); }
+    .check-icon-info { color: var(--info); }
+    .check-name { font-weight: 600; flex-shrink: 0; }
+    .check-summary { font-size: 12px; color: var(--muted); flex: 1; padding: 0 8px; }
+    .check-cat {
+      font-size: 11px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+      padding: 2px 8px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .check-chevron { color: var(--muted); font-size: 10px; transition: transform 0.2s; flex-shrink: 0; }
+    .check-card.open .check-chevron { transform: rotate(180deg); }
+    .check-body { display: none; padding: 0 14px 12px 42px; }
+    .check-card.open .check-body { display: block; }
+    .check-detail {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      color: #94a3b8;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.7;
+    }
+    .show-more-btn {
+      background: none;
+      border: none;
+      color: var(--blue);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 4px 0;
+      display: block;
+      margin-top: 4px;
+    }
+    /* Tab section wrap */
+    .tab-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-top: none;
+    }
+    /* Tab summary bars */
+    .tab-summary-bar {
+      display: flex;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      flex-wrap: wrap;
+      gap: 0;
+    }
+    .tsb-item {
+      padding: 2px 14px;
+      border-right: 1px solid var(--border);
+    }
+    .tsb-item:first-child { padding-left: 0; }
+    .tsb-item:last-child { border-right: none; }
+    .tsb-num { font-weight: 700; }
+    /* Heading tree */
+    .heading-tree { padding: 16px; }
+    .heading-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 3px 0;
+    }
+    .heading-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      min-width: 28px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .heading-text { font-size: 13px; flex: 1; line-height: 1.5; }
+    .heading-copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 1px 7px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+    .heading-copy-btn:hover { color: var(--text); }
+    /* Tables */
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.015); }
+    .badge-int {
+      background: rgba(16,185,129,0.15);
+      color: var(--pass);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+    }
+    .badge-ext {
+      background: rgba(99,102,241,0.15);
+      color: var(--info);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+    }
+    .url-cell {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      word-break: break-all;
+      max-width: 280px;
+    }
+    .missing-alt { color: var(--fail); font-style: italic; font-size: 12px; }
+    .img-thumb {
+      max-width: 60px;
+      max-height: 50px;
+      object-fit: cover;
+      border-radius: 3px;
+      display: block;
+    }
+    /* Toolbar row above tables */
+    .toolbar { padding: 10px 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
+    .export-btn {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.25);
+      color: var(--blue);
+      padding: 5px 13px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: inherit;
+    }
+    .export-btn:hover { background: rgba(59,130,246,0.2); }
+    /* Schema */
+    .schema-block {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .schema-hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.02);
+      cursor: pointer;
+      user-select: none;
+    }
+    .schema-hdr:hover { background: rgba(255,255,255,0.04); }
+    .schema-type { font-weight: 600; color: var(--info); }
+    .schema-copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: inherit;
+    }
+    .schema-copy-btn:hover { color: var(--text); }
+    .schema-body { display: none; padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.7; overflow-x: auto; }
+    .sk { color: #93c5fd; }
+    .sv { color: #86efac; }
+    .sn { color: #fcd34d; }
+    .sb { color: #f9a8d4; }
+    .sl { color: var(--muted); }
+    .si { display: inline-block; margin-left: 16px; }
+    /* Social */
+    .og-img-preview { max-width: 200px; max-height: 110px; object-fit: cover; border-radius: 4px; margin-top: 8px; display: block; }
+    /* Advanced grid */
+    .adv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; padding: 16px; }
+    .adv-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+    .adv-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+    .adv-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; word-break: break-all; color: var(--text); }
+    /* Empty state */
+    .empty { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+    /* Section headers inside tabs */
+    .sec-hdr { font-size: 13px; font-weight: 600; color: var(--muted); padding: 14px 16px 6px; text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; }
+    /* Warn row highlight */
+    .row-warn td { background: rgba(245,158,11,0.04); }
+    /* Responsive */
+    @media (max-width: 640px) {
+      .overview-header { flex-direction: column-reverse; }
+      .tab-btn { padding: 8px 10px; font-size: 12px; }
+      .check-cat { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/">← dev.deacyde.com</a>
+  <span>/</span>
+  <h1>🔍 SEO Onpage Checker</h1>
+</header>
+
+<div class="container">
+
+  <!-- Input card -->
+  <div class="card" id="input-card">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="url">URL</button>
+      <button class="mode-tab" data-mode="paste">Paste HTML</button>
+      <button class="mode-tab" data-mode="text">Plain Text</button>
+    </div>
+
+    <!-- URL pane -->
+    <div class="input-pane active" id="pane-url">
+      <label class="field-label" style="margin-top:0">Page URL</label>
+      <input type="url" id="url-input" placeholder="https://example.com/page" autocomplete="off" />
+      <div class="worker-row">
+        <span class="worker-label">Worker:</span>
+        <div class="worker-toggle">
+          <label class="radio-label"><input type="radio" name="worker" value="cf" id="r-cf"> CF</label>
+          <label class="radio-label"><input type="radio" name="worker" value="pi" id="r-pi"> Pi</label>
+        </div>
+        <button class="settings-btn" id="settings-toggle" title="Configure worker URL">⚙</button>
+      </div>
+      <div class="settings-expand" id="settings-panel">
+        <label class="field-label">Cloudflare Worker URL</label>
+        <input type="url" id="cf-worker-url" placeholder="https://empty-bonus-280d.muddy-river-68bb.workers.dev" />
+      </div>
+    </div>
+
+    <!-- Paste pane -->
+    <div class="input-pane" id="pane-paste">
+      <label class="field-label" style="margin-top:0">Raw HTML</label>
+      <textarea id="paste-input" rows="12" placeholder="Paste raw HTML here..."></textarea>
+    </div>
+
+    <!-- Text pane -->
+    <div class="input-pane" id="pane-text">
+      <label class="field-label" style="margin-top:0">Plain Text Content</label>
+      <textarea id="text-input" rows="12" placeholder="Paste plain text content here..."></textarea>
+    </div>
+
+    <!-- Shared keyword -->
+    <label class="field-label">Target Keyword (optional)</label>
+    <input type="text" id="keyword-input" placeholder="e.g. seo onpage checker" />
+
+    <button class="run-btn" id="run-btn">Run Analysis</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <div style="color:var(--muted);font-size:13px">Fetching and analyzing...</div>
+  </div>
+
+  <!-- Error -->
+  <div id="error-state"></div>
+
+  <!-- Results -->
+  <div id="results">
+
+    <!-- Overview header: summary bar + score + filter pills -->
+    <div class="overview-header">
+      <div style="flex:1;min-width:0">
+        <div class="summary-bar" id="summary-bar"></div>
+        <div class="filter-pills" id="filter-pills"></div>
+      </div>
+      <div class="score-badge-wrap">
+        <div class="score-badge">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="var(--border)" stroke-width="6"/>
+            <circle id="score-arc" cx="40" cy="40" r="34" fill="none" stroke-width="6"
+              stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+          </svg>
+          <div class="score-number" id="score-number">—</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted)">SEO Score</div>
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="overview">Overview</button>
+      <button class="tab-btn" data-tab="headings">Headings</button>
+      <button class="tab-btn" data-tab="links">Links</button>
+      <button class="tab-btn" data-tab="images">Images</button>
+      <button class="tab-btn" data-tab="schema">Schema</button>
+      <button class="tab-btn" data-tab="social">Social</button>
+      <button class="tab-btn" data-tab="advanced">Advanced</button>
+    </div>
+
+    <!-- Tab contents -->
+    <div id="tab-overview" class="tab-content active tab-wrap" style="padding:16px"></div>
+    <div id="tab-headings" class="tab-content tab-wrap"></div>
+    <div id="tab-links" class="tab-content tab-wrap"></div>
+    <div id="tab-images" class="tab-content tab-wrap"></div>
+    <div id="tab-schema" class="tab-content tab-wrap" style="padding:16px"></div>
+    <div id="tab-social" class="tab-content tab-wrap" style="padding:16px"></div>
+    <div id="tab-advanced" class="tab-content tab-wrap"></div>
+
+  </div><!-- /results -->
+
+</div><!-- /container -->
+
+<script>
+// ═══════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════
+
+const AI_PHRASES = [
+  "it's important to note","it's worth noting","delve into","delve deeper",
+  "dive into","deep dive","let's explore","in this comprehensive",
+  "navigate the complexities","unlock the power","ever-evolving","cutting-edge",
+  "leverage the power","leverage","holistic approach","paradigm shift",
+  "in the realm of","furthermore,","moreover,","robust","seamlessly",
+  "multifaceted","tapestry","synergy","at the end of the day",
+  "it goes without saying","spearhead","in an era where","game-changer",
+  "game changer","revolutionize","in conclusion,","to summarize,","as we've seen,"
+];
+
+const GENERIC_MULTI = [
+  "read more","click here","learn more","see more","view more",
+  "find out more","check it out","go here","continue reading","read on"
+];
+const GENERIC_SINGLE = ["here","this","link","more","read","go"];
+
+// ═══════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════
+
+function getWorkerMode() { return localStorage.getItem('seo-worker-mode') || 'cf'; }
+function getCfUrl() {
+  return localStorage.getItem('seo-cf-worker-url') ||
+         'https://empty-bonus-280d.muddy-river-68bb.workers.dev';
+}
+
+// ═══════════════════════════════════════════════
+// FETCH
+// ═══════════════════════════════════════════════
+
+async function fetchHTML(url) {
+  const mode = getWorkerMode();
+  const cfUrl = getCfUrl();
+  const piUrl = 'https://pi.deacyde.com';
+  const endpoint = mode === 'pi'
+    ? `${piUrl}/fetch?url=${encodeURIComponent(url)}`
+    : `${cfUrl}?url=${encodeURIComponent(url)}`;
+  const r = await fetch(endpoint);
+  if (!r.ok) throw new Error(`Worker HTTP ${r.status}`);
+  const d = await r.json();
+  if (d.error) throw new Error(d.error);
+  return {
+    html: d.contents,
+    statusCode: d.status,
+    headers: d.headers || {},
+    finalUrl: d.finalUrl || url
+  };
+}
+
+// ═══════════════════════════════════════════════
+// DOM UTILITIES
+// ═══════════════════════════════════════════════
+
+function parseHTML(html) {
+  return new DOMParser().parseFromString(html, 'text/html');
+}
+
+function getContentContainer(doc) {
+  const selectors = [
+    'article','main','.entry-content','.post-content',
+    '.blog-content','[role="main"]'
+  ];
+  for (const sel of selectors) {
+    const el = doc.querySelector(sel);
+    if (el) return el;
+  }
+  const clone = doc.body.cloneNode(true);
+  clone.querySelectorAll('nav,header,footer,aside,script,style').forEach(e => e.remove());
+  return clone;
+}
+
+function countWords(el) {
+  const txt = (el.textContent || '').trim();
+  if (!txt) return 0;
+  return txt.split(/\s+/).filter(w => w.length > 0).length;
+}
+
+function getBodyText(doc) {
+  const clone = doc.body.cloneNode(true);
+  clone.querySelectorAll('script,style,nav,header,footer,aside').forEach(e => e.remove());
+  return clone.textContent || '';
+}
+
+function getPageDomain(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ''); }
+  catch { return ''; }
+}
+
+function classifyHref(href, pageUrl) {
+  // Returns 'internal', 'external', or null (skip)
+  if (!href) return null;
+  const h = href.trim();
+  if (!h || h.startsWith('#') || h.startsWith('javascript:') ||
+      h.startsWith('mailto:') || h.startsWith('tel:')) return null;
+  if (h.startsWith('/') || h.startsWith('./') || h.startsWith('../')) return 'internal';
+  try {
+    const hUrl = new URL(h);
+    if (!pageUrl) return 'external';
+    const pageDomain = getPageDomain(pageUrl);
+    const hDomain = hUrl.hostname.replace(/^www\./, '');
+    return hDomain === pageDomain ? 'internal' : 'external';
+  } catch {
+    // relative URL without leading /
+    return 'internal';
+  }
+}
+
+function isGenericAnchor(text) {
+  const t = (text || '').trim().toLowerCase();
+  return GENERIC_MULTI.includes(t) || GENERIC_SINGLE.includes(t);
+}
+
+function escH(s) {
+  if (!s && s !== 0) return '';
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function escA(s) {
+  return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ═══════════════════════════════════════════════
+// CHECK FUNCTIONS
+// ═══════════════════════════════════════════════
+
+function checkH1(doc) {
+  const h1s = Array.from(doc.querySelectorAll('h1'));
+  if (h1s.length === 0) {
+    return {
+      status:'fail', name:'H1 Tag', category:'Headings',
+      summary:'No H1 tag found',
+      detail:'Every page should have exactly one H1 tag.'
+    };
+  }
+  if (h1s.length > 1) {
+    const list = h1s.map(h => `"${h.textContent.trim()}" (${h.textContent.trim().length} chars)`).join('\n');
+    return {
+      status:'warn', name:'H1 Tag', category:'Headings',
+      summary:`${h1s.length} H1 tags found — should be exactly 1`,
+      detail: list
+    };
+  }
+  const text = h1s[0].textContent.trim();
+  const len = text.length;
+  if (len < 10) return {
+    status:'warn', name:'H1 Tag', category:'Headings',
+    summary:`H1 too short (${len} chars, min 10)`,
+    detail:`"${text}"`
+  };
+  if (len > 70) return {
+    status:'warn', name:'H1 Tag', category:'Headings',
+    summary:`H1 too long (${len} chars, max 70)`,
+    detail:`"${text}"`
+  };
+  return {
+    status:'pass', name:'H1 Tag', category:'Headings',
+    summary:`1 H1 found (${len} chars)`,
+    detail:`"${text}"`
+  };
+}
+
+function checkHeadingHierarchy(doc) {
+  const hs = Array.from(doc.querySelectorAll('h1,h2,h3,h4,h5,h6'));
+  const counts = {H1:0,H2:0,H3:0,H4:0,H5:0,H6:0};
+  const skips = [];
+  let prev = 0;
+  hs.forEach(h => {
+    const lv = parseInt(h.tagName[1]);
+    counts['H'+lv]++;
+    if (prev > 0 && lv > prev + 1) {
+      const skipped = [];
+      for (let i = prev+1; i < lv; i++) skipped.push('H'+i);
+      skips.push({
+        from: prev, to: lv,
+        skipped: skipped.join(', '),
+        text: h.textContent.trim().substring(0, 60)
+      });
+    }
+    prev = lv;
+  });
+  const inv = Object.entries(counts).map(([k,v]) => `${k}: ${v}`).join(', ');
+  if (skips.length === 0) return {
+    status:'pass', name:'Heading Hierarchy', category:'Headings',
+    summary:'No hierarchy skips found',
+    detail: inv
+  };
+  const skipLines = skips.map(s =>
+    `H${s.from} \u2192 H${s.to} (skipped ${s.skipped}) near "${s.text}"`
+  );
+  return {
+    status:'warn', name:'Heading Hierarchy', category:'Headings',
+    summary:`${skips.length} hierarchy skip(s) found`,
+    detail: inv + '\n\n' + skipLines.join('\n')
+  };
+}
+
+function checkAI(doc) {
+  const text = getBodyText(doc);
+  const lower = text.toLowerCase();
+  const emDashes = (text.match(/\u2014/g) || []).length;
+  const found = AI_PHRASES.filter(p => lower.includes(p));
+  let status = 'pass';
+  if (emDashes >= 6 || found.length >= 3) status = 'fail';
+  else if (emDashes >= 3 || found.length >= 1) status = 'warn';
+  const lines = [`Em dashes (\u2014): ${emDashes}`];
+  if (found.length > 0) {
+    lines.push(`AI phrases (${found.length}):`);
+    found.forEach(p => lines.push(`  \u2022 "${p}"`));
+  } else {
+    lines.push('No AI phrases detected');
+  }
+  const parts = [];
+  if (emDashes > 0) parts.push(`${emDashes} em dash${emDashes>1?'es':''}`);
+  if (found.length > 0) parts.push(`${found.length} AI phrase${found.length>1?'s':''}`);
+  return {
+    status, name:'AI/LLM Signals', category:'AI Detection',
+    summary: parts.length ? parts.join(', ') + ' detected' : 'No AI signals detected',
+    detail: lines.join('\n')
+  };
+}
+
+function checkInternalLinks(doc, pageUrl) {
+  const anchors = Array.from(doc.querySelectorAll('a[href]'));
+  const internal = [], external = [], generic = [];
+  anchors.forEach(a => {
+    const href = a.getAttribute('href');
+    const text = a.textContent.trim();
+    const type = classifyHref(href, pageUrl);
+    if (!type) return;
+    const obj = {href, text, type};
+    if (type === 'internal') {
+      internal.push(obj);
+      if (isGenericAnchor(text)) generic.push(obj);
+    } else {
+      external.push(obj);
+    }
+  });
+  let status = internal.length >= 3 ? 'pass' : internal.length >= 1 ? 'warn' : 'fail';
+  const lines = [];
+  if (generic.length > 0) {
+    lines.push(`Generic anchor texts (${generic.length}):`);
+    generic.slice(0,10).forEach(l => lines.push(`  \u2022 "${l.text}" \u2192 ${l.href}`));
+    if (generic.length > 10) lines.push(`  ... and ${generic.length-10} more`);
+  }
+  if (internal.length > 0) {
+    lines.push(`\nInternal links (${internal.length}):`);
+    internal.slice(0,10).forEach(l => lines.push(`  \u2022 "${l.text}" \u2192 ${l.href}`));
+    if (internal.length > 10) lines.push(`  ... and ${internal.length-10} more`);
+  }
+  const genNote = generic.length > 0 ? `, ${generic.length} generic anchor${generic.length>1?'s':''}` : '';
+  return {
+    status, name:'Internal Links', category:'Links',
+    summary: `${internal.length} internal link${internal.length!==1?'s':''}${genNote}`,
+    detail: lines.join('\n') || 'No internal links found'
+  };
+}
+
+function checkContentDepth(doc) {
+  const container = getContentContainer(doc);
+  const wc = countWords(container);
+  let status, label;
+  if (wc < 300)       { status='fail'; label='thin content'; }
+  else if (wc < 600)  { status='warn'; label='below optimal'; }
+  else if (wc < 1000) { status='pass'; label='decent length'; }
+  else                { status='pass'; label='strong depth'; }
+  return {
+    status, name:'Content Depth', category:'Content',
+    summary:`${wc.toLocaleString()} words \u2014 ${label}`,
+    detail:`Word count: ${wc.toLocaleString()}`
+  };
+}
+
+function checkStructure(doc) {
+  const subheadings = doc.querySelectorAll('h2,h3,h4,h5,h6').length;
+  const lists = doc.querySelectorAll('ul,ol').length;
+  const images = doc.querySelectorAll('img').length;
+  const longParas = Array.from(doc.querySelectorAll('p')).filter(p => {
+    const w = p.textContent.trim().split(/\s+/).filter(x => x.length>0).length;
+    return w >= 150;
+  }).length;
+  const chks = [
+    {label:`Subheadings (3+)`, pass: subheadings >= 3, val: subheadings},
+    {label:`Lists (\u22651 ul/ol)`, pass: lists >= 1, val: lists},
+    {label:`No paragraphs \u2265150 words`, pass: longParas === 0, val: longParas===0?'OK':longParas+' found'},
+    {label:`Images (\u22651)`, pass: images >= 1, val: images}
+  ];
+  const passing = chks.filter(c=>c.pass).length;
+  const status = passing >= 3 ? 'pass' : passing >= 2 ? 'warn' : 'fail';
+  const detail = chks.map(c => `${c.pass?'\u2713':'\u2717'} ${c.label}: ${c.val}`).join('\n');
+  return {
+    status, name:'Structure & Scannability', category:'Content',
+    summary:`${passing}/4 structure checks pass`,
+    detail
+  };
+}
+
+function checkKeyword(doc, keyword) {
+  if (!keyword) return null;
+  const kw = keyword.toLowerCase().trim();
+  const container = getContentContainer(doc);
+  const fullText = container.textContent || '';
+  const lower = fullText.toLowerCase();
+  const totalWords = countWords(container);
+  const h1 = doc.querySelector('h1');
+  const inH1 = h1 ? h1.textContent.toLowerCase().includes(kw) : false;
+  const inH2 = Array.from(doc.querySelectorAll('h2')).some(h => h.textContent.toLowerCase().includes(kw));
+  const kwWordCount = kw.split(/\s+/).length;
+  let occ = 0, idx = 0;
+  while ((idx = lower.indexOf(kw, idx)) !== -1) { occ++; idx++; }
+  const density = totalWords > 0 ? (occ * kwWordCount / totalWords * 100) : 0;
+  const first100 = lower.split(/\s+/).slice(0,100).join(' ');
+  const inFirst100 = first100.includes(kw);
+  const matches = [inH1, inH2, inFirst100, occ > 0].filter(Boolean).length;
+  let status = matches >= 3 ? 'pass' : matches >= 1 ? 'warn' : 'fail';
+  if (density > 3 && status === 'pass') status = 'warn';
+  const lines = [
+    `${inH1?'\u2713':'\u2717'} In H1`,
+    `${inH2?'\u2713':'\u2717'} In any H2`,
+    `${inFirst100?'\u2713':'\u2717'} In first 100 words`,
+    `Occurrences: ${occ}`,
+    `Density: ${density.toFixed(2)}%${density>3?' \u26a0 (>3%, possible over-optimization)':''}`
+  ];
+  return {
+    status, name:'Target Keyword', category:'Keyword',
+    summary:`"${keyword}" — ${matches}/4 checks pass, density ${density.toFixed(2)}%`,
+    detail: lines.join('\n')
+  };
+}
+
+function checkMeta(doc) {
+  const titleEl = doc.querySelector('title');
+  const descEl = doc.querySelector('meta[name="description"]');
+  const lines = [];
+  let issues = 0, warns = 0;
+  if (!titleEl) {
+    lines.push('\u2717 Title: MISSING'); issues++;
+  } else {
+    const t = titleEl.textContent.trim();
+    const tl = t.length;
+    if (tl > 60) { lines.push(`\u26a0 Title (${tl} chars, >60): "${t}"`); warns++; }
+    else { lines.push(`\u2713 Title (${tl} chars): "${t}"`); }
+  }
+  if (!descEl || !descEl.getAttribute('content')) {
+    lines.push('\u2717 Meta Description: MISSING'); issues++;
+  } else {
+    const d = descEl.getAttribute('content').trim();
+    const dl = d.length;
+    if (dl < 50) { lines.push(`\u26a0 Description (${dl} chars, <50): "${d}"`); warns++; }
+    else if (dl > 160) { lines.push(`\u26a0 Description (${dl} chars, >160): "${d.substring(0,100)}..."`); warns++; }
+    else { lines.push(`\u2713 Description (${dl} chars): "${d.substring(0,100)}${dl>100?'...':''}"`); }
+  }
+  const status = issues > 0 ? 'fail' : warns > 0 ? 'warn' : 'pass';
+  return {
+    status, name:'Meta Tags', category:'Meta',
+    summary: issues > 0 ? `${issues} missing tag(s)` : warns > 0 ? `${warns} warning(s)` : 'Title and description look good',
+    detail: lines.join('\n')
+  };
+}
+
+function checkImageAlt(doc) {
+  const imgs = Array.from(doc.querySelectorAll('img'));
+  if (imgs.length === 0) return {
+    status:'info', name:'Image Alt Text', category:'Content',
+    summary:'No images found', detail:'No <img> elements found on this page.'
+  };
+  const missing = imgs.filter(img => {
+    const a = img.getAttribute('alt');
+    return a === null || a.trim() === '';
+  });
+  let status = 'pass';
+  if (missing.length === imgs.length) status = 'fail';
+  else if (missing.length > 0) status = 'warn';
+  const detail = missing.length > 0
+    ? missing.slice(0,10).map(i => `Missing: ${(i.getAttribute('src')||'').substring(0,80)}`).join('\n')
+      + (missing.length > 10 ? `\n... and ${missing.length-10} more` : '')
+    : 'All images have alt text \u2713';
+  return {
+    status, name:'Image Alt Text', category:'Content',
+    summary:`${missing.length} of ${imgs.length} images missing alt text`,
+    detail
+  };
+}
+
+function checkUrl(url) {
+  if (!url) return null;
+  let pathname;
+  try { pathname = new URL(url).pathname; }
+  catch { return null; }
+  const issues = [];
+  if (pathname !== pathname.toLowerCase()) issues.push('Contains uppercase letters in path');
+  if (pathname.includes('_')) issues.push('Uses underscores (hyphens preferred)');
+  if (pathname.length > 90) issues.push(`Path too long (${pathname.length} chars, max 90)`);
+  if (/\/(ai|gpt|chatgpt|llm|generated)\//i.test(pathname)) issues.push('Contains AI reference in path');
+  const status = issues.length >= 2 ? 'fail' : issues.length === 1 ? 'warn' : 'pass';
+  return {
+    status, name:'URL / Slug', category:'Meta',
+    summary: issues.length === 0 ? 'URL looks clean' : issues[0],
+    detail: issues.length > 0 ? issues.join('\n') : `Path: ${pathname}`
+  };
+}
+
+// ═══════════════════════════════════════════════
+// SCORE
+// ═══════════════════════════════════════════════
+
+function calcScore(checks) {
+  const scorable = checks.filter(c => c.status !== 'info');
+  if (!scorable.length) return 0;
+  const pass = scorable.filter(c => c.status === 'pass').length;
+  const warn = scorable.filter(c => c.status === 'warn').length;
+  return Math.round((pass + warn * 0.5) / scorable.length * 100);
+}
+
+// ═══════════════════════════════════════════════
+// RENDER SCORE BADGE
+// ═══════════════════════════════════════════════
+
+function renderScore(score) {
+  const arc = document.getElementById('score-arc');
+  const num = document.getElementById('score-number');
+  const color = score >= 80 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444';
+  const circ = 213.6;
+  num.textContent = score;
+  num.style.color = color;
+  arc.style.stroke = color;
+  // Reset then animate
+  arc.style.transition = 'none';
+  arc.style.strokeDashoffset = circ;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    arc.style.transition = 'stroke-dashoffset 1s ease';
+    arc.style.strokeDashoffset = circ - (score / 100) * circ;
+  }));
+}
+
+// ═══════════════════════════════════════════════
+// RENDER CHECK CARD
+// ═══════════════════════════════════════════════
+
+function renderCheckCard(check) {
+  const ICONS = {pass:'✓', fail:'✕', warn:'⚠', info:'ℹ'};
+  const icon = ICONS[check.status] || 'ℹ';
+  const lines = (check.detail || '').split('\n');
+  const collapseAt = 10;
+  const showN = 5;
+  const needsCollapse = lines.length > collapseAt;
+  const visibleLines = needsCollapse ? lines.slice(0, showN) : lines;
+  const hiddenLines = needsCollapse ? lines.slice(showN) : [];
+  const safeId = 'chk-' + check.name.replace(/[^a-z0-9]/gi, '');
+
+  let detailHtml = `<div class="check-detail" id="cd-${safeId}">`;
+  detailHtml += visibleLines.map(l => escH(l)).join('\n');
+  if (needsCollapse) {
+    detailHtml += `<span id="cm-${safeId}" style="display:none">\n` +
+      hiddenLines.map(l => escH(l)).join('\n') + '</span>';
+    detailHtml += `\n<button class="show-more-btn" id="cb-${safeId}" onclick="toggleMoreCheck('${safeId}',${hiddenLines.length})">Show ${hiddenLines.length} more...</button>`;
+  }
+  detailHtml += '</div>';
+
+  const div = document.createElement('div');
+  div.className = `check-card check-card-${check.status}`;
+  div.dataset.category = check.category;
+  div.dataset.status = check.status;
+  div.innerHTML = `
+    <div class="check-header" onclick="this.parentElement.classList.toggle('open')">
+      <span class="check-icon check-icon-${check.status}">${icon}</span>
+      <span class="check-name">${escH(check.name)}</span>
+      <span class="check-summary">${escH(check.summary)}</span>
+      <span class="check-cat">${escH(check.category)}</span>
+      <span class="check-chevron">▼</span>
+    </div>
+    <div class="check-body">${detailHtml}</div>`;
+
+  // Auto-open fail cards
+  if (check.status === 'fail') div.classList.add('open');
+  return div;
+}
+
+window.toggleMoreCheck = function(id, count) {
+  const el = document.getElementById('cm-' + id);
+  const btn = document.getElementById('cb-' + id);
+  if (el.style.display === 'none') {
+    el.style.display = 'inline';
+    btn.textContent = 'Show less';
+  } else {
+    el.style.display = 'none';
+    btn.textContent = `Show ${count} more...`;
+  }
+};
+
+// ═══════════════════════════════════════════════
+// OVERVIEW TAB
+// ═══════════════════════════════════════════════
+
+function renderOverview(checks, headings, links, images) {
+  const counts = {H1:0,H2:0,H3:0,H4:0,H5:0,H6:0};
+  headings.forEach(h => counts['H'+h.level]++);
+
+  document.getElementById('summary-bar').innerHTML =
+    ['H1','H2','H3','H4','H5','H6'].map(k =>
+      `<div class="summary-item">${k}: <span class="summary-num">${counts[k]}</span></div>`
+    ).join('') +
+    `<div class="summary-item">Images: <span class="summary-num">${images.length}</span></div>` +
+    `<div class="summary-item">Links: <span class="summary-num">${links.length}</span></div>`;
+
+  const cats = ['All','Headings','AI Detection','Links','Content','Keyword','Meta'];
+  const STATUS_ORDER = {fail:0, warn:1, pass:2, info:3};
+  const STATUS_COLORS = {pass:'#10b981', fail:'#ef4444', warn:'#f59e0b', info:'#6366f1'};
+
+  function worstStatus(arr) {
+    return arr.reduce((w,c) => STATUS_ORDER[c.status] < STATUS_ORDER[w] ? c.status : w, 'info');
+  }
+
+  const catStatus = {};
+  cats.filter(c => c !== 'All').forEach(cat => {
+    catStatus[cat] = worstStatus(checks.filter(c => c.category === cat));
+  });
+  const allWorst = worstStatus(checks);
+
+  document.getElementById('filter-pills').innerHTML = cats.map(cat => {
+    const st = cat === 'All' ? allWorst : (catStatus[cat] || 'info');
+    return `<button class="pill${cat==='All'?' active':''}" data-cat="${escA(cat)}"
+      onclick="filterChecks('${escA(cat)}', this)">
+      <span class="pill-dot" style="background:${STATUS_COLORS[st]}"></span>${escH(cat)}
+    </button>`;
+  }).join('');
+
+  const tab = document.getElementById('tab-overview');
+  tab.innerHTML = '';
+  checks.forEach(c => tab.appendChild(renderCheckCard(c)));
+}
+
+window.filterChecks = function(cat, btn) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.check-card').forEach(card => {
+    card.style.display = (cat === 'All' || card.dataset.category === cat) ? '' : 'none';
+  });
+};
+
+// ═══════════════════════════════════════════════
+// HEADINGS TAB
+// ═══════════════════════════════════════════════
+
+function renderHeadings(headings) {
+  const tab = document.getElementById('tab-headings');
+  const counts = {H1:0,H2:0,H3:0,H4:0,H5:0,H6:0};
+  headings.forEach(h => counts['H'+h.level]++);
+
+  // Find skips
+  const skipSet = new Set();
+  let prev = 0;
+  headings.forEach((h, i) => {
+    if (prev > 0 && h.level > prev + 1) skipSet.add(i);
+    prev = h.level;
+  });
+
+  const BADGE_COLORS = {1:'#8b5cf6',2:'#3b82f6',3:'#14b8a6',4:'#6b7280',5:'#4b5563',6:'#374151'};
+  const INDENTS = {1:0,2:24,3:48,4:72,5:96,6:120};
+
+  const summaryHtml = Object.entries(counts).map(([k,v]) =>
+    `<span style="margin-right:16px">${k}: <strong>${v}</strong></span>`
+  ).join('');
+
+  const treeHtml = headings.length === 0
+    ? '<div class="empty">No headings found on this page</div>'
+    : headings.map((h, i) => {
+        const c = BADGE_COLORS[h.level];
+        const ind = INDENTS[h.level];
+        const isSkip = skipSet.has(i);
+        const skipStyle = isSkip
+          ? 'border-left:2px solid var(--fail);padding-left:8px;margin-left:' + (ind-2) + 'px;'
+          : 'margin-left:' + ind + 'px;';
+        return `<div class="heading-item" style="${skipStyle}">
+          <span class="heading-badge" style="background:${c}22;color:${c};border:1px solid ${c}44">H${h.level}</span>
+          <span class="heading-text">${escH(h.text)}${isSkip ? ' <span style="color:var(--fail);font-size:11px">\u26a0 skip</span>' : ''}</span>
+          ${h.level === 1 ? `<button class="heading-copy-btn" onclick="copyToClipboard(this,'${escA(h.text)}')">Copy</button>` : ''}
+        </div>`;
+      }).join('');
+
+  tab.innerHTML = `
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px">${summaryHtml}</div>
+    <div class="heading-tree">${treeHtml}</div>`;
+}
+
+// ═══════════════════════════════════════════════
+// LINKS TAB
+// ═══════════════════════════════════════════════
+
+function renderLinks(links) {
+  const tab = document.getElementById('tab-links');
+  window._linksAll = links;
+  window._linksFilter = 'all';
+
+  const internal = links.filter(l => l.type === 'internal').length;
+  const external = links.filter(l => l.type === 'external').length;
+  const unique = new Set(links.map(l => l.href)).size;
+  const noAnchor = links.filter(l => !l.text || l.text.trim() === '').length;
+
+  function buildTable(rows) {
+    if (!rows.length) return '<div class="empty">No links match this filter</div>';
+    return `<div class="table-container"><table>
+      <thead><tr><th>Anchor Text</th><th>URL</th><th>Type</th></tr></thead>
+      <tbody>${rows.map(l => `<tr${l.generic ? ' class="row-warn"' : ''}>
+        <td>${escH(l.text || '')}${l.generic ? ' <span style="color:var(--warn);font-size:11px">\u26a0 generic</span>' : ''}</td>
+        <td class="url-cell">${escH(l.href)}</td>
+        <td><span class="badge-${l.type === 'internal' ? 'int' : 'ext'}">${l.type}</span></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+
+  function applyFilter(f) {
+    let rows = links;
+    if (f === 'internal') rows = links.filter(l => l.type === 'internal');
+    else if (f === 'external') rows = links.filter(l => l.type === 'external');
+    else if (f === 'missing') rows = links.filter(l => !l.text || l.text.trim() === '');
+    window._linksFilter = f;
+    document.getElementById('links-table-body').innerHTML = buildTable(rows);
+  }
+
+  tab.innerHTML = `
+    <div class="tab-summary-bar">
+      <div class="tsb-item">Total: <span class="tsb-num">${links.length}</span></div>
+      <div class="tsb-item">Unique: <span class="tsb-num">${unique}</span></div>
+      <div class="tsb-item">Internal: <span class="tsb-num">${internal}</span></div>
+      <div class="tsb-item">External: <span class="tsb-num">${external}</span></div>
+      <div class="tsb-item">No Anchor: <span class="tsb-num">${noAnchor}</span></div>
+    </div>
+    <div class="toolbar">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${['All','Internal','External','Missing Anchor'].map(f => {
+          const key = f === 'Missing Anchor' ? 'missing' : f.toLowerCase();
+          return `<button class="pill${f==='All'?' active':''}" data-lf="${key}"
+            onclick="lnkFilter('${key}',this)">${f}</button>`;
+        }).join('')}
+      </div>
+      <button class="export-btn" style="margin-left:auto" onclick="exportLinksCsv()">\u2b07 Export CSV</button>
+    </div>
+    <div id="links-table-body">${buildTable(links)}</div>`;
+
+  window.lnkFilter = function(f, btn) {
+    document.querySelectorAll('[data-lf]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilter(f);
+  };
+}
+
+window.exportLinksCsv = function() {
+  const filter = window._linksFilter || 'all';
+  let rows = window._linksAll || [];
+  if (filter === 'internal') rows = rows.filter(l => l.type === 'internal');
+  else if (filter === 'external') rows = rows.filter(l => l.type === 'external');
+  else if (filter === 'missing') rows = rows.filter(l => !l.text || l.text.trim() === '');
+  const csv = ['Anchor Text,URL,Type,Generic'].concat(
+    rows.map(l => `"${(l.text||'').replace(/"/g,'""')}","${(l.href||'').replace(/"/g,'""')}","${l.type}","${l.generic?'yes':'no'}"`)
+  ).join('\n');
+  dlCsv(csv, 'links.csv');
+};
+
+// ═══════════════════════════════════════════════
+// IMAGES TAB
+// ═══════════════════════════════════════════════
+
+function renderImages(images) {
+  const tab = document.getElementById('tab-images');
+  window._imagesAll = images;
+  const missingAlt = images.filter(i => i.alt === null || i.alt === undefined).length;
+  const emptyAlt = images.filter(i => i.alt !== null && i.alt !== undefined && i.alt.trim() === '').length;
+  const noTitle = images.filter(i => !i.title || i.title.trim() === '').length;
+
+  const rows = images.map(img => {
+    const hasAlt = img.alt !== null && img.alt !== undefined;
+    const altEmpty = hasAlt && img.alt.trim() === '';
+    const altMissing = !hasAlt;
+    const badAlt = altMissing || altEmpty;
+    return `<tr${badAlt ? ' style="border-left:3px solid var(--warn)"' : ''}>
+      <td><img class="img-thumb" src="${escA(img.src)}" alt="" loading="lazy" onerror="this.style.display='none'"></td>
+      <td>${altMissing ? '<span class="missing-alt">attr missing</span>' : altEmpty ? '<span class="missing-alt">empty</span>' : escH(img.alt)}</td>
+      <td>${escH(img.title || '')}</td>
+      <td class="url-cell">${escH((img.src||'').substring(0,80))}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="4" class="empty">No images found</td></tr>';
+
+  tab.innerHTML = `
+    <div class="tab-summary-bar">
+      <div class="tsb-item">Images: <span class="tsb-num">${images.length}</span></div>
+      <div class="tsb-item">Missing Alt: <span class="tsb-num" style="${missingAlt>0?'color:var(--fail)':''}">${missingAlt}</span></div>
+      <div class="tsb-item">Empty Alt: <span class="tsb-num" style="${emptyAlt>0?'color:var(--warn)':''}">${emptyAlt}</span></div>
+      <div class="tsb-item">No Title: <span class="tsb-num">${noTitle}</span></div>
+    </div>
+    <div class="toolbar">
+      <button class="export-btn" onclick="exportImagesCsv()">\u2b07 Export CSV</button>
+    </div>
+    <div class="table-container"><table>
+      <thead><tr><th>Thumb</th><th>Alt Text</th><th>Title</th><th>Src</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+
+window.exportImagesCsv = function() {
+  const imgs = window._imagesAll || [];
+  const csv = ['Alt Text,Title,Src'].concat(
+    imgs.map(i => `"${(i.alt||'').replace(/"/g,'""')}","${(i.title||'').replace(/"/g,'""')}","${(i.src||'').replace(/"/g,'""')}"`)
+  ).join('\n');
+  dlCsv(csv, 'images.csv');
+};
+
+// ═══════════════════════════════════════════════
+// SCHEMA TAB
+// ═══════════════════════════════════════════════
+
+window._schemaData = [];
+
+function renderSchema(blocks, hreflangs) {
+  window._schemaData = blocks;
+  const tab = document.getElementById('tab-schema');
+
+  function renderVal(val, depth) {
+    if (val === null) return '<span class="sl">null</span>';
+    if (val === undefined) return '<span class="sl">undefined</span>';
+    if (typeof val === 'boolean') return `<span class="sb">${val}</span>`;
+    if (typeof val === 'number') return `<span class="sn">${val}</span>`;
+    if (typeof val === 'string') return `<span class="sv">"${escH(val)}"</span>`;
+    if (Array.isArray(val)) {
+      if (!val.length) return '[]';
+      return `[<div class="si">${val.map(v => renderVal(v, depth+1)).join(',<br>')}</div>]`;
+    }
+    if (typeof val === 'object') {
+      const ents = Object.entries(val);
+      if (!ents.length) return '{}';
+      return `{<div class="si">${ents.map(([k,v]) =>
+        `<span class="sk">"${escH(k)}"</span>: ${renderVal(v, depth+1)}`
+      ).join(',<br>')}</div>}`;
+    }
+    return escH(String(val));
+  }
+
+  let html = '';
+  if (blocks.length === 0 && hreflangs.length === 0) {
+    html = '<div class="empty">No JSON-LD schema or hreflang tags found</div>';
+  }
+
+  blocks.forEach((b, idx) => {
+    let typeLabel = 'JSON-LD';
+    if (b.parsed) {
+      const t = b.parsed['@type'];
+      typeLabel = Array.isArray(t) ? t.join(', ') : (t || 'JSON-LD');
+    } else {
+      typeLabel = 'Invalid JSON';
+    }
+    html += `<div class="schema-block">
+      <div class="schema-hdr" onclick="toggleSchema(${idx})">
+        <span class="schema-type">${escH(typeLabel)}</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="schema-copy-btn" onclick="event.stopPropagation();copySchemaJson(${idx})">Copy JSON</button>
+          <span style="color:var(--muted);font-size:11px" id="schema-chev-${idx}">\u25bc</span>
+        </div>
+      </div>
+      <div id="schema-body-${idx}" class="schema-body">
+        ${b.parsed
+          ? `<div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7">${renderVal(b.parsed, 0)}</div>`
+          : `<span style="color:var(--fail)">Parse error: ${escH(b.error)}</span>`}
+      </div>
+    </div>`;
+  });
+
+  if (hreflangs.length > 0) {
+    html += `<div style="margin-top:20px">
+      <div class="sec-hdr">Hreflang Tags</div>
+      <div class="table-container"><table>
+        <thead><tr><th>Language</th><th>URL</th></tr></thead>
+        <tbody>${hreflangs.map(h => `<tr>
+          <td>${escH(h.lang)}</td>
+          <td class="url-cell">${escH(h.href)}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+  }
+
+  tab.innerHTML = html;
+}
+
+window.toggleSchema = function(idx) {
+  const body = document.getElementById('schema-body-' + idx);
+  const chev = document.getElementById('schema-chev-' + idx);
+  const open = body.style.display === 'block';
+  body.style.display = open ? 'none' : 'block';
+  if (chev) chev.textContent = open ? '\u25bc' : '\u25b2';
+};
+
+window.copySchemaJson = function(idx) {
+  const b = window._schemaData[idx];
+  if (b && b.parsed) copyToClipboard(null, JSON.stringify(b.parsed, null, 2));
+  else if (b && b.rawText) copyToClipboard(null, b.rawText);
+};
+
+// ═══════════════════════════════════════════════
+// SOCIAL TAB
+// ═══════════════════════════════════════════════
+
+function renderSocial(og, tw) {
+  const tab = document.getElementById('tab-social');
+
+  function tagTable(tags, imgKey) {
+    if (!tags.length) return '<div style="color:var(--muted);font-size:13px;padding:8px 0">No tags found</div>';
+    let html = `<div class="table-container"><table>
+      <thead><tr><th>Property</th><th>Content</th></tr></thead>
+      <tbody>${tags.map(t => `<tr>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:12px;white-space:nowrap">${escH(t.name)}</td>
+        <td style="word-break:break-all">${escH(t.content)}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+    const imgTag = tags.find(t => t.name === imgKey);
+    if (imgTag && imgTag.content) {
+      html += `<div style="margin-top:10px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Image Preview:</div>
+        <img class="og-img-preview" src="${escA(imgTag.content)}" alt="Social image preview"
+          loading="lazy" onerror="this.parentElement.remove()">
+      </div>`;
+    }
+    return html;
+  }
+
+  tab.innerHTML = `
+    <div style="margin-bottom:24px">
+      <div class="sec-hdr">Open Graph</div>
+      <div style="padding:0 16px 16px">${tagTable(og, 'og:image')}</div>
+    </div>
+    <div>
+      <div class="sec-hdr">Twitter Card</div>
+      <div style="padding:0 16px 16px">${tagTable(tw, 'twitter:image')}</div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// ADVANCED TAB
+// ═══════════════════════════════════════════════
+
+function renderAdvanced(data) {
+  const tab = document.getElementById('tab-advanced');
+  function card(label, val) {
+    return `<div class="adv-card">
+      <div class="adv-label">${escH(label)}</div>
+      <div class="adv-val">${escH(val || '\u2014')}</div>
+    </div>`;
+  }
+  tab.innerHTML = `<div class="adv-grid">
+    ${card('Robots', data.robots)}
+    ${card('Canonical', data.canonical)}
+    ${card('Meta Keywords', data.keywords)}
+    ${card('Language', data.lang)}
+    ${card('Word Count', data.wordCount ? data.wordCount.toLocaleString() : null)}
+    ${card('Author', data.author)}
+    ${card('Viewport', data.viewport)}
+    ${card('Sitemap', data.sitemap)}
+    ${card('Status Code', data.statusCode ? String(data.statusCode) : null)}
+    ${card('Content-Type', data.contentType)}
+    ${card('Final URL', data.finalUrl)}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// DATA EXTRACTION
+// ═══════════════════════════════════════════════
+
+function extractHeadings(doc) {
+  return Array.from(doc.querySelectorAll('h1,h2,h3,h4,h5,h6')).map(h => ({
+    level: parseInt(h.tagName[1]),
+    text: h.textContent.trim()
+  }));
+}
+
+function extractLinks(doc, pageUrl) {
+  return Array.from(doc.querySelectorAll('a[href]')).map(a => {
+    const href = a.getAttribute('href');
+    const text = a.textContent.trim();
+    const type = classifyHref(href, pageUrl);
+    if (!type) return null;
+    return {href, text, type, generic: (type === 'internal' && isGenericAnchor(text))};
+  }).filter(Boolean);
+}
+
+function extractImages(doc, pageUrl) {
+  return Array.from(doc.querySelectorAll('img')).map(img => {
+    let src = img.getAttribute('src') || '';
+    if (src && src.startsWith('/') && pageUrl) {
+      try { src = new URL(src, pageUrl).href; } catch {}
+    }
+    return {
+      src,
+      alt: img.getAttribute('alt'),
+      title: img.getAttribute('title') || ''
+    };
+  });
+}
+
+function extractSchema(doc) {
+  return Array.from(doc.querySelectorAll('script[type="application/ld+json"]')).map(s => {
+    const rawText = s.textContent;
+    try {
+      const parsed = JSON.parse(rawText);
+      return {parsed, raw: parsed, rawText};
+    } catch(e) {
+      return {parsed: null, raw: null, rawText, error: e.message};
+    }
+  });
+}
+
+function extractHreflangs(doc) {
+  return Array.from(doc.querySelectorAll('link[rel="alternate"][hreflang]')).map(l => ({
+    lang: l.getAttribute('hreflang') || '',
+    href: l.getAttribute('href') || ''
+  }));
+}
+
+function extractOg(doc) {
+  const tags = [];
+  doc.querySelectorAll('meta[property^="og:"],meta[name^="og:"]').forEach(m => {
+    const name = m.getAttribute('property') || m.getAttribute('name');
+    const content = m.getAttribute('content') || '';
+    if (name) tags.push({name, content});
+  });
+  return tags;
+}
+
+function extractTwitter(doc) {
+  const tags = [];
+  doc.querySelectorAll('meta[name^="twitter:"],meta[property^="twitter:"]').forEach(m => {
+    const name = m.getAttribute('name') || m.getAttribute('property');
+    const content = m.getAttribute('content') || '';
+    if (name) tags.push({name, content});
+  });
+  return tags;
+}
+
+function extractAdvanced(doc, respInfo) {
+  const robotsMeta = doc.querySelector('meta[name="robots"]');
+  const canonical = doc.querySelector('link[rel="canonical"]');
+  const keywords = doc.querySelector('meta[name="keywords"]');
+  const author = doc.querySelector('meta[name="author"]');
+  const viewport = doc.querySelector('meta[name="viewport"]');
+  const sitemap = doc.querySelector('link[rel="sitemap"]');
+
+  let robotsVal = robotsMeta ? (robotsMeta.getAttribute('content') || '') : '';
+  const xRobots = respInfo.headers &&
+    (respInfo.headers['x-robots-tag'] || respInfo.headers['X-Robots-Tag']);
+  if (xRobots) robotsVal = (robotsVal ? robotsVal + ' | ' : '') + 'X-Robots: ' + xRobots;
+
+  const canonicalHref = canonical ? canonical.getAttribute('href') : '';
+  let canonicalLabel = canonicalHref || 'Not found';
+  if (canonicalHref && respInfo.finalUrl) {
+    try {
+      const cu = new URL(canonicalHref, respInfo.finalUrl);
+      const fu = new URL(respInfo.finalUrl);
+      canonicalLabel += cu.href === fu.href ? ' \u2713 self-referencing' : ' \u2717 not self-referencing';
+    } catch {}
+  }
+
+  let sitemapVal = sitemap ? (sitemap.getAttribute('href') || '') : '';
+  if (!sitemapVal) {
+    try {
+      const b = new URL(respInfo.finalUrl || '');
+      sitemapVal = `Not specified (try ${b.origin}/sitemap.xml)`;
+    } catch { sitemapVal = 'Not specified'; }
+  }
+
+  const container = getContentContainer(doc);
+  const wc = countWords(container);
+  const ct = respInfo.headers &&
+    (respInfo.headers['content-type'] || respInfo.headers['Content-Type']);
+
+  return {
+    robots: robotsVal || 'Not specified',
+    canonical: canonicalLabel,
+    keywords: keywords ? (keywords.getAttribute('content') || 'Present (empty)') : 'Missing',
+    lang: doc.documentElement.getAttribute('lang') || 'Missing',
+    wordCount: wc,
+    author: author ? author.getAttribute('content') : 'Not found',
+    viewport: viewport ? viewport.getAttribute('content') : 'Missing',
+    sitemap: sitemapVal,
+    statusCode: respInfo.statusCode,
+    contentType: ct || 'Unknown',
+    finalUrl: respInfo.finalUrl || '—'
+  };
+}
+
+// ═══════════════════════════════════════════════
+// MAIN ANALYSIS
+// ═══════════════════════════════════════════════
+
+async function runAnalysis() {
+  const inputMode = document.querySelector('.mode-tab.active').dataset.mode;
+  const keyword = document.getElementById('keyword-input').value.trim();
+  let html, pageUrl = '', respInfo = {statusCode: null, headers: {}, finalUrl: ''};
+
+  try {
+    if (inputMode === 'url') {
+      const urlVal = document.getElementById('url-input').value.trim();
+      if (!urlVal) { showError('Please enter a URL'); return; }
+      setLoading(true);
+      const res = await fetchHTML(urlVal);
+      html = res.html;
+      pageUrl = res.finalUrl || urlVal;
+      respInfo = {statusCode: res.statusCode, headers: res.headers, finalUrl: res.finalUrl || urlVal};
+      location.hash = '#url=' + encodeURIComponent(urlVal);
+
+    } else if (inputMode === 'paste') {
+      html = document.getElementById('paste-input').value;
+      if (!html.trim()) { showError('Please paste some HTML'); return; }
+      setLoading(true);
+
+    } else {
+      const rawText = document.getElementById('text-input').value;
+      if (!rawText.trim()) { showError('Please paste some text'); return; }
+      setLoading(true);
+      const paras = rawText.split(/\n\n+/).filter(p => p.trim());
+      html = '<html><body>' + paras.map(p =>
+        `<p>${p.replace(/\n/g, '<br>')}</p>`
+      ).join('\n') + '</body></html>';
+    }
+
+    const doc = parseHTML(html);
+
+    // Extract data
+    const headings = extractHeadings(doc);
+    const links = extractLinks(doc, pageUrl);
+    const images = extractImages(doc, pageUrl);
+    const schema = extractSchema(doc);
+    const hreflangs = extractHreflangs(doc);
+    const og = extractOg(doc);
+    const tw = extractTwitter(doc);
+    const adv = extractAdvanced(doc, respInfo);
+
+    // Run checks
+    const checks = [
+      checkH1(doc),
+      checkHeadingHierarchy(doc),
+      checkAI(doc),
+      checkInternalLinks(doc, pageUrl),
+      checkContentDepth(doc),
+      checkStructure(doc),
+      checkKeyword(doc, keyword),
+      checkMeta(doc),
+      checkImageAlt(doc),
+      inputMode === 'url' ? checkUrl(pageUrl) : null
+    ].filter(Boolean);
+
+    const score = calcScore(checks);
+
+    // Render
+    setLoading(false);
+    document.getElementById('results').style.display = 'block';
+    renderScore(score);
+    renderOverview(checks, headings, links, images);
+    renderHeadings(headings);
+    renderLinks(links);
+    renderImages(images);
+    renderSchema(schema, hreflangs);
+    renderSocial(og, tw);
+    renderAdvanced(adv);
+
+    document.getElementById('results').scrollIntoView({behavior:'smooth'});
+
+  } catch (err) {
+    setLoading(false);
+    showError(err.message || String(err));
+  }
+}
+
+// ═══════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════
+
+function setLoading(on) {
+  document.getElementById('loading').style.display = on ? 'block' : 'none';
+  document.getElementById('error-state').style.display = 'none';
+  document.getElementById('run-btn').disabled = on;
+  if (on) document.getElementById('results').style.display = 'none';
+}
+
+function showError(msg) {
+  document.getElementById('error-state').innerHTML = '\u26a0\ufe0f <strong>Error:</strong> ' + escH(msg);
+  document.getElementById('error-state').style.display = 'block';
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('run-btn').disabled = false;
+}
+
+window.copyToClipboard = function(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    if (btn) { const orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = orig, 1500); }
+  }).catch(() => {});
+};
+
+function dlCsv(csv, filename) {
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════
+// EVENT LISTENERS
+// ═══════════════════════════════════════════════
+
+// Mode tabs
+document.querySelectorAll('.mode-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.input-pane').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('pane-' + tab.dataset.mode).classList.add('active');
+  });
+});
+
+// Result tabs
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// Run button & Enter key
+document.getElementById('run-btn').addEventListener('click', runAnalysis);
+document.getElementById('url-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runAnalysis();
+});
+
+// Worker mode
+document.querySelectorAll('input[name="worker"]').forEach(r => {
+  r.addEventListener('change', () => localStorage.setItem('seo-worker-mode', r.value));
+});
+
+// Settings toggle
+document.getElementById('settings-toggle').addEventListener('click', () => {
+  document.getElementById('settings-panel').classList.toggle('open');
+});
+
+// CF worker URL persistence
+document.getElementById('cf-worker-url').addEventListener('input', e => {
+  localStorage.setItem('seo-cf-worker-url', e.target.value);
+});
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+
+(function init() {
+  // Restore worker mode
+  const mode = getWorkerMode();
+  document.getElementById(mode === 'pi' ? 'r-pi' : 'r-cf').checked = true;
+
+  // Restore CF URL
+  document.getElementById('cf-worker-url').value = getCfUrl();
+
+  // Handle hash URL
+  const m = location.hash.match(/^#url=(.+)/);
+  if (m) {
+    try {
+      const url = decodeURIComponent(m[1]);
+      document.getElementById('url-input').value = url;
+      runAnalysis();
+    } catch {}
+  }
+})();
+
+</script>
+</body>
+</html>
