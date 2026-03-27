@@ -10,6 +10,7 @@ const path = require("path");
 const crypto = require("crypto");
 const { router: authRouter, requireAuth } = require("./auth");
 const settingsRouter = require("./settings");
+const chatRouter = require("./chat");
 
 const app = express();
 const PORT = process.env.PORT || 3100;
@@ -46,6 +47,7 @@ app.use(requireAuth);
 // API routes
 app.use(authRouter);
 app.use(settingsRouter);
+app.use(chatRouter);
 
 // Static files
 app.use(express.static(path.join(__dirname, "..", "public")));
