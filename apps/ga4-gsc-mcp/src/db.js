@@ -64,13 +64,29 @@ function initDb() {
     CREATE TABLE IF NOT EXISTS chat_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       client_id INTEGER,
+      session_id TEXT DEFAULT 'active',
       role TEXT NOT NULL,
       content TEXT NOT NULL,
       metadata TEXT,
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL
     );
+
+    CREATE TABLE IF NOT EXISTS chat_sessions (
+      id TEXT PRIMARY KEY,
+      client_id INTEGER,
+      title TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL
+    );
   `);
+
+  // Migration: add session_id column if it doesn't exist
+  try {
+    getDb().prepare("SELECT session_id FROM chat_history LIMIT 1").get();
+  } catch {
+    getDb().exec("ALTER TABLE chat_history ADD COLUMN session_id TEXT DEFAULT 'active'");
+  }
 
   return db;
 }
@@ -155,19 +171,52 @@ function deleteClient(id) {
 // Chat history
 function saveChatMessage(clientId, role, content, metadata = null) {
   getDb()
-    .prepare("INSERT INTO chat_history (client_id, role, content, metadata) VALUES (?, ?, ?, ?)")
+    .prepare("INSERT INTO chat_history (client_id, session_id, role, content, metadata) VALUES (?, 'active', ?, ?, ?)")
     .run(clientId, role, content, metadata ? JSON.stringify(metadata) : null);
 }
 
 function getChatHistory(clientId, limit = 50) {
   return getDb()
-    .prepare("SELECT * FROM chat_history WHERE client_id = ? ORDER BY created_at DESC LIMIT ?")
+    .prepare("SELECT * FROM chat_history WHERE client_id = ? AND session_id = 'active' ORDER BY created_at DESC LIMIT ?")
     .all(clientId, limit)
     .reverse();
 }
 
 function clearChatHistory(clientId) {
-  getDb().prepare("DELETE FROM chat_history WHERE client_id = ?").run(clientId);
+  getDb().prepare("DELETE FROM chat_history WHERE client_id = ? AND session_id = 'active'").run(clientId);
+}
+
+function archiveChat(clientId) {
+  const db = getDb();
+  const firstMsg = db.prepare("SELECT content FROM chat_history WHERE client_id = ? AND session_id = 'active' AND role = 'user' ORDER BY created_at ASC LIMIT 1").get(clientId);
+  if (!firstMsg) return null;
+
+  const sessionId = crypto.randomBytes(8).toString("hex");
+  const title = firstMsg.content.substring(0, 80) + (firstMsg.content.length > 80 ? "..." : "");
+
+  db.prepare("UPDATE chat_history SET session_id = ? WHERE client_id = ? AND session_id = 'active'").run(sessionId, clientId);
+  db.prepare("INSERT INTO chat_sessions (id, client_id, title) VALUES (?, ?, ?)").run(sessionId, clientId, title);
+
+  // Keep only last 20 sessions per client
+  const old = db.prepare("SELECT id FROM chat_sessions WHERE client_id = ? ORDER BY created_at DESC LIMIT -1 OFFSET 20").all(clientId);
+  for (const s of old) {
+    db.prepare("DELETE FROM chat_history WHERE session_id = ?").run(s.id);
+    db.prepare("DELETE FROM chat_sessions WHERE id = ?").run(s.id);
+  }
+
+  return { id: sessionId, title };
+}
+
+function getChatSessions(clientId) {
+  return getDb()
+    .prepare("SELECT id, title, created_at FROM chat_sessions WHERE client_id = ? ORDER BY created_at DESC LIMIT 20")
+    .all(clientId);
+}
+
+function getSessionMessages(sessionId) {
+  return getDb()
+    .prepare("SELECT role, content, created_at FROM chat_history WHERE session_id = ? ORDER BY created_at ASC")
+    .all(sessionId);
 }
 
 module.exports = {
@@ -184,6 +233,9 @@ module.exports = {
   saveChatMessage,
   getChatHistory,
   clearChatHistory,
+  archiveChat,
+  getChatSessions,
+  getSessionMessages,
   encrypt,
   decrypt,
 };

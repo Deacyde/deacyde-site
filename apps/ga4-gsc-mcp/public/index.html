@@ -58,10 +58,25 @@
 </div>
 
 <!-- ═══ MAIN APP ═══ -->
-<div id="app-screen" class="hidden h-full flex flex-col">
+<div id="app-screen" class="hidden h-full flex">
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="hidden w-72 bg-gray-950 border-r border-gray-800 flex flex-col shrink-0 h-full">
+    <div class="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
+      <span class="text-sm font-semibold text-white">Chat History</span>
+      <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg">&times;</button>
+    </div>
+    <div id="sidebar-sessions" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
+  </div>
+
+  <!-- Main content -->
+  <div class="flex-1 flex flex-col min-w-0">
   <!-- Header -->
   <header class="bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center justify-between shrink-0">
     <div class="flex items-center gap-3">
+      <button onclick="toggleSidebar()" class="p-1.5 text-gray-400 hover:text-white transition rounded-lg hover:bg-gray-800" title="Chat History">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
       <h1 class="text-lg font-bold text-white">🔗 GA4 & GSC Custom MCP</h1>
       <select id="client-select" onchange="onClientChange()" class="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
         <option value="">Select client...</option>
@@ -73,6 +88,7 @@
       <span id="model-cost" class="text-[10px] text-white hidden max-w-[200px]"></span>
     </div>
     <div class="flex items-center gap-2">
+      <button onclick="newChat()" class="px-3 py-1.5 text-xs bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg transition" title="New Chat">+ New Chat</button>
       <button onclick="showSettings()" class="p-2 text-gray-400 hover:text-white transition" title="Settings">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
       </button>
@@ -104,6 +120,11 @@
       </button>
     </div>
   </div>
+  <!-- Read-only notice for past chats -->
+  <div id="readonly-bar" class="hidden bg-yellow-900/50 border-t border-yellow-700 px-4 py-2 text-center text-yellow-300 text-sm shrink-0">
+    📜 Viewing past chat (read-only) — <button onclick="backToActiveChat()" class="underline hover:text-white">Back to active chat</button>
+  </div>
+  </div> <!-- end main content wrapper -->
 </div>
 
 <!-- ═══ SETTINGS MODAL ═══ -->
@@ -378,6 +399,7 @@
   let chatLoading = false;
 
   async function sendMessage() {
+    if (viewingPastChat) return;
     const input = document.getElementById("chat-input");
     const msg = input.value.trim();
     if (!msg || chatLoading) return;
@@ -529,6 +551,78 @@
         addChatMessage(msg.role, content);
       }
     } catch {}
+  }
+
+  async function newChat() {
+    const clientId = document.getElementById("client-select").value;
+    if (!clientId) return;
+    try {
+      await api(`/api/chat/history/${clientId}`, { method: "DELETE" });
+    } catch {}
+    const container = document.getElementById("chat-messages");
+    container.innerHTML = '<div class="text-center text-gray-500 mt-20"><p class="text-4xl mb-4">💬</p><p class="text-lg font-medium">Start a conversation</p><p class="text-sm mt-2">Ask about your GA4 or GSC data.</p></div>';
+    document.getElementById("chat-input").classList.remove("hidden");
+    document.querySelector('[onclick="sendMessage()"]').closest(".bg-gray-900").classList.remove("hidden");
+    document.getElementById("readonly-bar").classList.add("hidden");
+    viewingPastChat = false;
+  }
+
+  // ── Sidebar ──
+  let viewingPastChat = false;
+
+  function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    sidebar.classList.toggle("hidden");
+    if (!sidebar.classList.contains("hidden")) loadSidebarSessions();
+  }
+
+  async function loadSidebarSessions() {
+    const clientId = document.getElementById("client-select").value;
+    const container = document.getElementById("sidebar-sessions");
+    if (!clientId) {
+      container.innerHTML = '<p class="text-gray-500 text-xs text-center mt-4">Select a client first</p>';
+      return;
+    }
+    try {
+      const sessions = await api(`/api/chat/sessions/${clientId}`);
+      if (sessions.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-xs text-center mt-4">No past chats yet</p>';
+        return;
+      }
+      container.innerHTML = "";
+      for (const s of sessions) {
+        const btn = document.createElement("button");
+        btn.className = "w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-gray-800 transition truncate";
+        const date = new Date(s.created_at + "Z").toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+        btn.innerHTML = `<div class="text-gray-200 truncate">${s.title}</div><div class="text-[10px] text-gray-500">${date}</div>`;
+        btn.onclick = () => viewPastChat(s.id);
+        container.appendChild(btn);
+      }
+    } catch {
+      container.innerHTML = '<p class="text-red-400 text-xs text-center mt-4">Failed to load</p>';
+    }
+  }
+
+  async function viewPastChat(sessionId) {
+    try {
+      const messages = await api(`/api/chat/session/${sessionId}`);
+      const container = document.getElementById("chat-messages");
+      container.innerHTML = "";
+      for (const msg of messages) {
+        const content = msg.role === "assistant" ? formatAssistantMessage(msg.content) : msg.content;
+        addChatMessage(msg.role, content);
+      }
+      // Hide input, show readonly bar
+      document.getElementById("readonly-bar").classList.remove("hidden");
+      viewingPastChat = true;
+      toggleSidebar();
+    } catch {}
+  }
+
+  function backToActiveChat() {
+    document.getElementById("readonly-bar").classList.add("hidden");
+    viewingPastChat = false;
+    onClientChange();
   }
 
   // ── Settings Modal ──

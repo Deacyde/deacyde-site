@@ -71,10 +71,22 @@ router.get("/api/chat/history/:clientId", (req, res) => {
   res.json(history);
 });
 
-// DELETE /api/chat/history/:clientId
+// DELETE /api/chat/history/:clientId — archive current chat, start fresh
 router.delete("/api/chat/history/:clientId", (req, res) => {
-  db.clearChatHistory(req.params.clientId);
+  db.archiveChat(req.params.clientId);
   res.json({ ok: true });
+});
+
+// GET /api/chat/sessions/:clientId — list past chat sessions
+router.get("/api/chat/sessions/:clientId", (req, res) => {
+  const sessions = db.getChatSessions(req.params.clientId);
+  res.json(sessions);
+});
+
+// GET /api/chat/session/:sessionId — get messages from a past session
+router.get("/api/chat/session/:sessionId", (req, res) => {
+  const messages = db.getSessionMessages(req.params.sessionId);
+  res.json(messages);
 });
 
 // POST /api/chat/export — generate CSV from data
