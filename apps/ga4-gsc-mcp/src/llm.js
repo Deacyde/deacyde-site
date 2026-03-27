@@ -169,6 +169,8 @@ async function executeTool(toolName, args, clientConfig) {
         serviceAccountJson: service_account_json,
         propertyId: ga4_property_id,
         ...args,
+        startDate: resolveDate(args.startDate),
+        endDate: resolveDate(args.endDate),
       });
     }
     case "query_gsc": {
@@ -176,9 +178,9 @@ async function executeTool(toolName, args, clientConfig) {
       return await queryGSC({
         serviceAccountJson: service_account_json,
         siteUrl: gsc_site_url,
+        ...args,
         startDate: resolveDate(args.startDate),
         endDate: resolveDate(args.endDate),
-        ...args,
       });
     }
     case "inspect_url": {
