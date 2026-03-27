@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐬 Flipper Zero Scanner — Deacyde Dev</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d1117; color: #e6edf3; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+    /* ── Header ── */
+    header { background: #161b22; border-bottom: 1px solid #30363d; padding: 14px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    header a { color: #58a6ff; text-decoration: none; font-size: 14px; }
+    header a:hover { text-decoration: underline; }
+    header h1 { font-size: 20px; font-weight: 600; flex: 1; }
+    header .sep { color: #484f58; }
+    .key-status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #8b949e; }
+    .key-status .lock-icon { font-size: 15px; }
+    .key-status button { background: none; border: 1px solid #30363d; color: #58a6ff; border-radius: 5px; padding: 3px 10px; font-size: 12px; cursor: pointer; }
+    .key-status button:hover { background: #21262d; }
+
+    /* ── Container ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+
+    /* ── API Key Gate ── */
+    .key-gate { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 40px 32px; text-align: center; max-width: 480px; margin: 60px auto; }
+    .key-gate .gate-icon { font-size: 48px; margin-bottom: 16px; }
+    .key-gate h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .key-gate p { color: #8b949e; font-size: 13px; margin-bottom: 20px; line-height: 1.5; }
+    .key-gate .key-row { display: flex; gap: 8px; }
+    .key-gate input { flex: 1; background: #0d1117; border: 1px solid #30363d; color: #e6edf3; border-radius: 6px; padding: 9px 12px; font-size: 14px; outline: none; font-family: monospace; }
+    .key-gate input:focus { border-color: #58a6ff; }
+    .key-gate .btn-unlock { background: #1158b0; border: 1px solid #388bfd; color: #fff; border-radius: 6px; padding: 9px 20px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .key-gate .btn-unlock:hover { background: #1a6fd4; }
+    .key-gate .security-note { font-size: 11px; color: #484f58; margin-top: 14px; }
+
+    /* ── Status Bar ── */
+    .status-bar { display: flex; align-items: center; justify-content: space-between; background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 10px 16px; margin-bottom: 20px; flex-wrap: wrap; gap: 8px; }
+    .status-indicator { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; }
+    .status-indicator .dot { width: 9px; height: 9px; border-radius: 50%; background: #484f58; }
+    .status-indicator .dot.online { background: #3fb950; animation: pulse 2s infinite; }
+    .status-indicator .dot.offline { background: #f85149; }
+    .status-port { font-size: 12px; color: #8b949e; background: #21262d; border-radius: 4px; padding: 2px 8px; font-family: monospace; }
+    .status-meta { font-size: 12px; color: #484f58; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* ── Tabs ── */
+    .tab-bar { display: flex; gap: 4px; background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 5px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab-btn { flex: 1; min-width: 80px; background: none; border: none; color: #8b949e; padding: 8px 12px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; white-space: nowrap; text-align: center; }
+    .tab-btn:hover { background: #21262d; color: #e6edf3; }
+    .tab-btn.active { background: #21262d; color: #58a6ff; border: 1px solid #30363d; }
+
+    /* ── Tab Pane ── */
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── Card ── */
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+    .card-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .card-title .count { font-size: 12px; color: #8b949e; background: #21262d; border-radius: 10px; padding: 2px 8px; font-weight: 400; }
+
+    /* ── Buttons ── */
+    .btn { background: #21262d; border: 1px solid #30363d; color: #e6edf3; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all .15s; font-weight: 500; }
+    .btn:hover:not(:disabled) { background: #30363d; }
+    .btn:disabled { opacity: .45; cursor: default; }
+    .btn-green { background: #1a4731; border-color: #2ea043; color: #3fb950; }
+    .btn-green:hover:not(:disabled) { background: #1f5c3a; }
+    .btn-red { background: #3d1a1a; border-color: #b91c1c; color: #f87171; }
+    .btn-red:hover:not(:disabled) { background: #4d2020; }
+    .btn-blue { background: #0c2d6b; border-color: #388bfd; color: #58a6ff; }
+    .btn-blue:hover:not(:disabled) { background: #1158b0; }
+    .btn-purple { background: #2d1b4e; border-color: #8b5cf6; color: #a78bfa; }
+    .btn-purple:hover:not(:disabled) { background: #3d2a6e; }
+    .btn-orange { background: #3d2a0a; border-color: #d97706; color: #fbbf24; }
+    .btn-orange:hover:not(:disabled) { background: #4d380f; }
+    .btn-lg { padding: 12px 28px; font-size: 15px; border-radius: 8px; }
+    .btn-sm { padding: 5px 11px; font-size: 12px; border-radius: 5px; }
+
+    /* ── Scan Area ── */
+    .scan-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .scan-spinner { display: inline-flex; align-items: center; gap: 8px; color: #8b949e; font-size: 13px; }
+    .spinner { width: 16px; height: 16px; border: 2px solid #30363d; border-top-color: #58a6ff; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Result Card ── */
+    .result-card { background: #0d1117; border: 1px solid #388bfd; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+    .result-card .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+    .result-card .result-title { font-size: 13px; font-weight: 600; color: #58a6ff; }
+    .result-card .result-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── Data Grid ── */
+    .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .data-field { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 8px 12px; }
+    .data-field .label { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: #8b949e; margin-bottom: 3px; }
+    .data-field .value { font-size: 14px; font-weight: 600; font-family: monospace; color: #e6edf3; word-break: break-all; }
+    .data-field .value.green { color: #3fb950; }
+    .data-field .value.blue { color: #58a6ff; }
+    .data-field .value.yellow { color: #e3b341; }
+    .data-field .value.red { color: #f85149; }
+
+    /* ── Table ── */
+    .scan-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px; }
+    .scan-table th { text-align: left; color: #8b949e; font-weight: 500; padding: 6px 10px; border-bottom: 1px solid #30363d; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+    .scan-table td { padding: 7px 10px; border-bottom: 1px solid #21262d; font-family: monospace; font-size: 12px; }
+    .scan-table tr:last-child td { border-bottom: none; }
+    .scan-table tr:hover td { background: #1c2128; }
+    .rssi-bar { display: inline-flex; align-items: center; gap: 6px; }
+    .rssi-val { font-family: monospace; min-width: 46px; }
+    .rssi-pip { display: inline-block; height: 8px; border-radius: 2px; background: #3fb950; }
+
+    /* ── Raw Output ── */
+    details.raw-block { margin-top: 10px; }
+    details.raw-block summary { font-size: 12px; color: #8b949e; cursor: pointer; user-select: none; padding: 4px 0; }
+    details.raw-block summary:hover { color: #58a6ff; }
+    details.raw-block pre { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 12px; font-size: 11px; font-family: monospace; color: #8b949e; overflow-x: auto; margin-top: 6px; white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; }
+
+    /* ── History ── */
+    .history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+    .history-list { display: flex; flex-direction: column; gap: 10px; }
+    .history-item { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 14px; }
+    .history-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 6px; }
+    .history-ts { font-size: 11px; color: #8b949e; }
+    .history-id { font-size: 10px; color: #484f58; font-family: monospace; }
+
+    /* ── Empty / Error States ── */
+    .placeholder { text-align: center; padding: 30px; color: #484f58; font-size: 13px; background: #0d1117; border: 1px dashed #30363d; border-radius: 8px; }
+    .error-msg { color: #f85149; font-size: 13px; padding: 8px 12px; background: #3d1a1a; border: 1px solid #b91c1c; border-radius: 6px; margin-top: 8px; }
+    .success-msg { color: #3fb950; font-size: 13px; padding: 8px 12px; background: #1a4731; border: 1px solid #2ea043; border-radius: 6px; margin-top: 8px; }
+    .info-note { font-size: 11px; color: #484f58; margin-top: 10px; display: flex; align-items: center; gap: 5px; }
+
+    /* ── Toast ── */
+    #toast { position: fixed; bottom: 24px; right: 24px; background: #21262d; border: 1px solid #30363d; color: #e6edf3; border-radius: 8px; padding: 12px 18px; font-size: 13px; box-shadow: 0 4px 20px rgba(0,0,0,.5); z-index: 200; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 320px; }
+    #toast.show { opacity: 1; }
+    #toast.toast-ok { border-color: #2ea043; color: #3fb950; }
+    #toast.toast-err { border-color: #b91c1c; color: #f87171; }
+
+    /* ── Change-Key Modal ── */
+    #key-modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 150; align-items: center; justify-content: center; }
+    #key-modal-bg.open { display: flex; }
+    #key-modal { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 28px; width: 100%; max-width: 420px; margin: 16px; }
+    #key-modal h3 { font-size: 16px; margin-bottom: 12px; }
+    #key-modal .key-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    #key-modal input { flex: 1; background: #0d1117; border: 1px solid #30363d; color: #e6edf3; border-radius: 6px; padding: 9px 12px; font-size: 14px; outline: none; font-family: monospace; }
+    #key-modal input:focus { border-color: #58a6ff; }
+    #key-modal .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    footer { text-align: center; padding: 20px; color: #484f58; font-size: 13px; border-top: 1px solid #21262d; }
+    footer a { color: #58a6ff; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      .data-grid { grid-template-columns: 1fr 1fr; }
+      .tab-btn { font-size: 12px; padding: 7px 8px; }
+      .btn-lg { padding: 10px 20px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ Header ══ -->
+<header>
+  <a href="/">&#8592; dev.deacyde.com</a>
+  <span class="sep">/</span>
+  <h1>🐬 Flipper Zero Scanner</h1>
+  <div class="key-status" id="header-key-status" style="display:none">
+    <span class="lock-icon">🔒</span>
+    <span>API key set</span>
+    <button onclick="openKeyModal()">Change Key</button>
+  </div>
+</header>
+
+<!-- ══ API Key Gate ══ -->
+<div id="key-gate-wrap">
+  <div class="key-gate">
+    <div class="gate-icon">🔐</div>
+    <h2>API Key Required</h2>
+    <p>Enter your Flipper Zero bridge API key to access the scanner dashboard. Your key is stored locally in this browser only.</p>
+    <div class="key-row">
+      <input type="password" id="gate-key-input" placeholder="Enter API key…" autocomplete="off" onkeydown="if(event.key==='Enter') unlockGate()">
+      <button class="btn-unlock" onclick="unlockGate()">🔓 Unlock</button>
+    </div>
+    <div id="gate-error" style="display:none" class="error-msg"></div>
+    <p class="security-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
+  </div>
+</div>
+
+<!-- ══ Main App ══ -->
+<div id="app-wrap" style="display:none">
+  <div class="container">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <div class="status-indicator">
+        <span class="dot" id="status-dot"></span>
+        <span id="status-text">Checking…</span>
+        <span class="status-port" id="status-port" style="display:none"></span>
+      </div>
+      <div class="status-meta" id="status-meta"></div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('subghz',this)">📡 Sub-GHz</button>
+      <button class="tab-btn" onclick="switchTab('nfc',this)">💳 NFC</button>
+      <button class="tab-btn" onclick="switchTab('rfid',this)">🏷 RFID</button>
+      <button class="tab-btn" onclick="switchTab('ble',this)">🔵 BLE</button>
+      <button class="tab-btn" onclick="switchTab('ir',this)">🔆 IR</button>
+      <button class="tab-btn" onclick="switchTab('wifi',this)">📶 WiFi</button>
+    </div>
+
+    <!-- ══ Sub-GHz Tab ══ -->
+    <div class="tab-pane active" id="tab-subghz">
+      <div class="card">
+        <div class="card-title">📡 Sub-GHz Scan</div>
+        <div class="scan-actions">
+          <button class="btn btn-green btn-lg" id="scan-btn-subghz" onclick="startScan('subghz')">▶ Scan</button>
+          <div class="scan-spinner" id="spinner-subghz" style="display:none">
+            <span class="spinner"></span> Scanning… (up to 30s)
+          </div>
+        </div>
+        <div id="result-subghz"></div>
+        <p class="info-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
+      </div>
+      <div class="card">
+        <div class="history-header">
+          <div class="card-title" style="margin:0">Saved Sub-GHz Scans <span class="count" id="count-subghz">—</span></div>
+          <button class="btn btn-red btn-sm" id="delall-subghz" style="display:none" onclick="deleteAll('subghz')">🗑 Delete All</button>
+        </div>
+        <div id="history-subghz"><div class="placeholder">No saved scans yet.</div></div>
+      </div>
+    </div>
+
+    <!-- ══ NFC Tab ══ -->
+    <div class="tab-pane" id="tab-nfc">
+      <div class="card">
+        <div class="card-title">💳 NFC Scan</div>
+        <div class="scan-actions">
+          <button class="btn btn-green btn-lg" id="scan-btn-nfc" onclick="startScan('nfc')">▶ Scan</button>
+          <div class="scan-spinner" id="spinner-nfc" style="display:none">
+            <span class="spinner"></span> Scanning… (up to 30s)
+          </div>
+        </div>
+        <div id="result-nfc"></div>
+        <p class="info-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
+      </div>
+      <div class="card">
+        <div class="history-header">
+          <div class="card-title" style="margin:0">Saved NFC Scans <span class="count" id="count-nfc">—</span></div>
+          <button class="btn btn-red btn-sm" id="delall-nfc" style="display:none" onclick="deleteAll('nfc')">🗑 Delete All</button>
+        </div>
+        <div id="history-nfc"><div class="placeholder">No saved scans yet.</div></div>
+      </div>
+    </div>
+
+    <!-- ══ RFID Tab ══ -->
+    <div class="tab-pane" id="tab-rfid">
+      <div class="card">
+        <div class="card-title">🏷 RFID Scan</div>
+        <div class="scan-actions">
+          <button class="btn btn-green btn-lg" id="scan-btn-rfid" onclick="startScan('rfid')">▶ Scan</button>
+          <div class="scan-spinner" id="spinner-rfid" style="display:none">
+            <span class="spinner"></span> Scanning… (up to 30s)
+          </div>
+        </div>
+        <div id="result-rfid"></div>
+        <p class="info-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
+      </div>
+      <div class="card">
+        <div class="history-header">
+          <div class="card-title" style="margin:0">Saved RFID Scans <span class="count" id="count-rfid">—</span></div>
+          <button class="btn btn-red btn-sm" id="delall-rfid" style="display:none" onclick="deleteAll('rfid')">🗑 Delete All</button>
+        </div>
+        <div id="history-rfid"><div class="placeholder">No saved scans yet.</div></div>
+      </div>
+    </div>
+
+    <!-- ══ BLE Tab ══ -->
+    <div class="tab-pane" id="tab-ble">
+      <div class="card">
+        <div class="card-title">🔵 BLE Scan</div>
+        <div class="scan-actions">
+          <button class="btn btn-green btn-lg" id="scan-btn-ble" onclick="startScan('ble')">▶ Scan</button>
+          <div class="scan-spinner" id="spinner-ble" style="display:none">
+            <span class="spinner"></span> Scanning… (up to 30s)
+          </div>
+        </div>
+        <div id="result-ble"></div>
+        <p class="info-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
+      </div>
+      <div class="card">
+        <div class="history-header">
+          <div class="card-title" style="margin:0">Saved BLE Scans <span class="count" id="count-ble">—</span></div>
+          <button class="btn btn-red btn-sm" id="delall-ble" style="display:none" onclick="deleteAll('ble')">🗑 Delete All</button>
+        </div>
+        <div id="history-ble"><div class="placeholder">No saved scans yet.</div></div>
+      </div>
+    </div>
+
+    <!-- ══ IR Tab ══ -->
+    <div class="tab-pane" id="tab-ir">
+      <div class="card">
+        <div class="card-title">🔆 IR Scan</div>
+        <div class="scan-actions">
+          <button class="btn btn-green btn-lg" id="scan-btn-ir" onclick="startScan('ir')">▶ Scan</button>
+          <div class="scan-spinner" id="spinner-ir" style="display:none">
+            <span class="spinner"></span> Scanning… (up to 30s)
+          </div>
+        </div>
+        <div id="result-ir"></div>
+        <p class="info-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
+      </div>
+      <div class="card">
+        <div class="history-header">
+          <div class="card-title" style="margin:0">Saved IR Scans <span class="count" id="count-ir">—</span></div>
+          <button class="btn btn-red btn-sm" id="delall-ir" style="display:none" onclick="deleteAll('ir')">🗑 Delete All</button>
+        </div>
+        <div id="history-ir"><div class="placeholder">No saved scans yet.</div></div>
+      </div>
+    </div>
+
+    <!-- ══ WiFi Tab ══ -->
+    <div class="tab-pane" id="tab-wifi">
+      <div class="card">
+        <div class="card-title">📶 WiFi Scan</div>
+        <div class="scan-actions">
+          <button class="btn btn-green btn-lg" id="scan-btn-wifi" onclick="startScan('wifi')">▶ Scan</button>
+          <div class="scan-spinner" id="spinner-wifi" style="display:none">
+            <span class="spinner"></span> Scanning… (up to 30s)
+          </div>
+        </div>
+        <div id="result-wifi"></div>
+        <p class="info-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
+      </div>
+      <div class="card">
+        <div class="history-header">
+          <div class="card-title" style="margin:0">Saved WiFi Scans <span class="count" id="count-wifi">—</span></div>
+          <button class="btn btn-red btn-sm" id="delall-wifi" style="display:none" onclick="deleteAll('wifi')">🗑 Delete All</button>
+        </div>
+        <div id="history-wifi"><div class="placeholder">No saved scans yet.</div></div>
+      </div>
+    </div>
+
+  </div><!-- /container -->
+</div><!-- /app-wrap -->
+
+<footer>
+  <a href="/">dev.deacyde.com</a> &nbsp;·&nbsp; bridge via <a href="https://pi.deacyde.com" target="_blank">pi.deacyde.com</a>
+</footer>
+
+<!-- ══ Change-Key Modal ══ -->
+<div id="key-modal-bg">
+  <div id="key-modal">
+    <h3>🔑 Change API Key</h3>
+    <div class="key-row">
+      <input type="password" id="modal-key-input" placeholder="New API key…" autocomplete="off" onkeydown="if(event.key==='Enter') saveModalKey()">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-red btn-sm" onclick="clearKey()">Clear Key</button>
+      <button class="btn btn-sm" onclick="closeKeyModal()">Cancel</button>
+      <button class="btn btn-blue btn-sm" onclick="saveModalKey()">Save Key</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Toast ══ -->
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+const PI = 'https://pi.deacyde.com';
+const SCAN_TIMEOUT = 35000;
+
+// ── Key helpers ──────────────────────────────────────────────────────────────
+function getKey() { return localStorage.getItem('flipper_api_key') || ''; }
+function setKey(k) { localStorage.setItem('flipper_api_key', k); }
+function removeKey() { localStorage.removeItem('flipper_api_key'); }
+
+function headers(extra) {
+  return Object.assign({ 'Content-Type': 'application/json', 'X-API-Key': getKey() }, extra || {});
+}
+
+async function apiFetch(url, opts) {
+  opts = opts || {};
+  opts.headers = headers(opts.headers);
+  let res;
+  try { res = await fetch(PI + url, opts); }
+  catch(e) { throw new Error('Network error: ' + e.message); }
+  if (res.status === 401) {
+    removeKey();
+    showApp(false);
+    showGate('Invalid API key — key cleared.');
+    throw new Error('Unauthorized');
+  }
+  return res;
+}
+
+// ── Gate / App visibility ────────────────────────────────────────────────────
+function showGate(errMsg) {
+  document.getElementById('key-gate-wrap').style.display = '';
+  document.getElementById('app-wrap').style.display = 'none';
+  document.getElementById('header-key-status').style.display = 'none';
+  if (errMsg) {
+    const el = document.getElementById('gate-error');
+    el.textContent = errMsg;
+    el.style.display = '';
+  }
+}
+
+function showApp(doInit) {
+  document.getElementById('key-gate-wrap').style.display = 'none';
+  document.getElementById('app-wrap').style.display = '';
+  document.getElementById('header-key-status').style.display = 'flex';
+  if (doInit) { initApp(); }
+}
+
+function unlockGate() {
+  const k = document.getElementById('gate-key-input').value.trim();
+  if (!k) { const e=document.getElementById('gate-error'); e.textContent='Please enter an API key.'; e.style.display=''; return; }
+  setKey(k);
+  document.getElementById('gate-key-input').value = '';
+  document.getElementById('gate-error').style.display = 'none';
+  showApp(true);
+}
+
+// ── Key modal ────────────────────────────────────────────────────────────────
+function openKeyModal() {
+  document.getElementById('modal-key-input').value = '';
+  document.getElementById('key-modal-bg').classList.add('open');
+  setTimeout(function(){ document.getElementById('modal-key-input').focus(); }, 50);
+}
+function closeKeyModal() { document.getElementById('key-modal-bg').classList.remove('open'); }
+function saveModalKey() {
+  const k = document.getElementById('modal-key-input').value.trim();
+  if (!k) return;
+  setKey(k);
+  closeKeyModal();
+  toast('API key updated.', 'ok');
+}
+function clearKey() {
+  if (!confirm('Clear the stored API key? You will be signed out.')) return;
+  removeKey();
+  closeKeyModal();
+  showGate('');
+}
+document.getElementById('key-modal-bg').addEventListener('click', function(e){ if(e.target===this) closeKeyModal(); });
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+let _toastTimer;
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (type === 'ok' ? ' toast-ok' : type === 'err' ? ' toast-err' : '');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function(){ el.className = ''; }, 3200);
+}
+
+// ── Status ───────────────────────────────────────────────────────────────────
+async function checkStatus() {
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  const port = document.getElementById('status-port');
+  const meta = document.getElementById('status-meta');
+  try {
+    const res = await apiFetch('/flipper/status');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.online) {
+      dot.className = 'dot online';
+      txt.textContent = '🟢 Flipper Connected';
+      if (data.port) { port.textContent = data.port; port.style.display = ''; }
+      else { port.style.display = 'none'; }
+    } else {
+      dot.className = 'dot offline';
+      txt.textContent = '🔴 Bridge Offline';
+      port.style.display = 'none';
+    }
+  } catch(e) {
+    if (e.message === 'Unauthorized') return;
+    dot.className = 'dot offline';
+    txt.textContent = '🔴 Bridge Offline';
+    port.style.display = 'none';
+  }
+  meta.textContent = 'Last checked ' + new Date().toLocaleTimeString();
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+let _activeTab = 'subghz';
+
+function switchTab(type, btn) {
+  document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('tab-' + type).classList.add('active');
+  btn.classList.add('active');
+  _activeTab = type;
+  loadHistory(type);
+}
+
+// ── Scan ─────────────────────────────────────────────────────────────────────
+const _latestResult = {};
+
+async function startScan(type) {
+  const scanBtn = document.getElementById('scan-btn-' + type);
+  const spinner = document.getElementById('spinner-' + type);
+  const resultEl = document.getElementById('result-' + type);
+
+  scanBtn.disabled = true;
+  spinner.style.display = 'flex';
+  resultEl.innerHTML = '';
+
+  const controller = new AbortController();
+  const timer = setTimeout(function(){ controller.abort(); }, SCAN_TIMEOUT);
+
+  try {
+    const res = await apiFetch('/flipper/command', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'scan', type: type }),
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    const data = await res.json();
+    if (data.error) { resultEl.innerHTML = '<div class="error-msg">⚠ ' + escHtml(data.error) + '</div>'; return; }
+    _latestResult[type] = data.result;
+    resultEl.appendChild(buildResultCard(type, data.result, null));
+  } catch(e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') {
+      resultEl.innerHTML = '<div class="error-msg">⏱ Scan timed out after 35 seconds.</div>';
+    } else if (e.message !== 'Unauthorized') {
+      resultEl.innerHTML = '<div class="error-msg">⚠ ' + escHtml(e.message) + '</div>';
+    }
+  } finally {
+    scanBtn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
+async function saveResult(type) {
+  const result = _latestResult[type];
+  if (!result) return;
+  try {
+    const res = await apiFetch('/flipper/' + type, {
+      method: 'POST',
+      body: JSON.stringify(result)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    toast('Saved!', 'ok');
+    loadHistory(type);
+  } catch(e) {
+    if (e.message !== 'Unauthorized') toast('Save failed: ' + e.message, 'err');
+  }
+}
+
+async function replaySignal(type, raw) {
+  try {
+    const res = await apiFetch('/flipper/command', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'replay', type: type, data: { raw: raw } })
+    });
+    const data = await res.json();
+    if (data.error) toast('Replay failed: ' + data.error, 'err');
+    else toast('Replay sent!', 'ok');
+  } catch(e) {
+    if (e.message !== 'Unauthorized') toast('Replay error: ' + e.message, 'err');
+  }
+}
+
+async function recordSignal(type) {
+  try {
+    const res = await apiFetch('/flipper/command', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'record', type: type })
+    });
+    const data = await res.json();
+    if (data.error) toast('Record failed: ' + data.error, 'err');
+    else toast('Recording started!', 'ok');
+  } catch(e) {
+    if (e.message !== 'Unauthorized') toast('Record error: ' + e.message, 'err');
+  }
+}
+
+// ── Result Cards ─────────────────────────────────────────────────────────────
+function buildResultCard(type, result, itemId) {
+  const wrap = document.createElement('div');
+  wrap.className = 'result-card';
+
+  const header = document.createElement('div');
+  header.className = 'result-header';
+
+  const title = document.createElement('div');
+  title.className = 'result-title';
+  title.textContent = typeLabel(type) + ' Result';
+  header.appendChild(title);
+
+  const actions = document.createElement('div');
+  actions.className = 'result-actions';
+
+  // Record / Replay for sub-ghz and ir
+  if (type === 'subghz' || type === 'ir') {
+    const raw = result && result.raw;
+    const recBtn = document.createElement('button');
+    recBtn.className = 'btn btn-orange btn-sm';
+    recBtn.textContent = '⏺ Record Signal';
+    recBtn.onclick = function(){ recordSignal(type); };
+    actions.appendChild(recBtn);
+
+    const repBtn = document.createElement('button');
+    repBtn.className = 'btn btn-purple btn-sm';
+    repBtn.textContent = '▶ Replay';
+    repBtn.onclick = function(){ replaySignal(type, raw); };
+    actions.appendChild(repBtn);
+  }
+
+  // Save button only shown for live scan results (no itemId)
+  if (!itemId) {
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn btn-blue btn-sm';
+    saveBtn.textContent = '💾 Save';
+    saveBtn.onclick = function(){ saveResult(type); };
+    actions.appendChild(saveBtn);
+  }
+
+  header.appendChild(actions);
+  wrap.appendChild(header);
+
+  // Parsed fields
+  const parsed = result && (result.parsed || result);
+  wrap.appendChild(buildParsedView(type, parsed));
+
+  // Raw collapsible
+  if (result && result.raw) {
+    const det = document.createElement('details');
+    det.className = 'raw-block';
+    const sum = document.createElement('summary');
+    sum.textContent = '📋 Raw CLI output';
+    const pre = document.createElement('pre');
+    pre.textContent = typeof result.raw === 'string' ? result.raw : JSON.stringify(result.raw, null, 2);
+    det.appendChild(sum);
+    det.appendChild(pre);
+    wrap.appendChild(det);
+  }
+
+  return wrap;
+}
+
+function buildParsedView(type, p) {
+  if (!p) { const d=document.createElement('div'); d.className='placeholder'; d.textContent='No data.'; return d; }
+  const frag = document.createDocumentFragment();
+  if (type === 'nfc') {
+    frag.appendChild(dataGrid([
+      { label: 'UID',       value: p.uid || '—',       cls: 'blue' },
+      { label: 'Card Type', value: p.card_type || p.type || '—' },
+      { label: 'ATQA',      value: p.atqa || '—',      cls: 'yellow' },
+      { label: 'SAK',       value: p.sak || '—',       cls: 'yellow' },
+    ]));
+  } else if (type === 'rfid') {
+    frag.appendChild(dataGrid([
+      { label: 'ID',        value: p.id || p.uid || '—',  cls: 'blue' },
+      { label: 'Card Type', value: p.card_type || p.type || '—' },
+    ]));
+  } else if (type === 'subghz') {
+    frag.appendChild(dataGrid([
+      { label: 'Frequency', value: p.frequency ? fmtFreq(p.frequency) : '—',    cls: 'green' },
+      { label: 'Protocol',  value: p.protocol || '—' },
+      { label: 'RSSI',      value: p.rssi != null ? p.rssi + ' dBm' : '—',      cls: rssiCls(p.rssi) },
+    ]));
+  } else if (type === 'ir') {
+    frag.appendChild(dataGrid([
+      { label: 'Protocol', value: p.protocol || '—' },
+      { label: 'Address',  value: p.address != null ? '0x' + toHex(p.address) : '—', cls: 'blue' },
+      { label: 'Command',  value: p.command != null ? '0x' + toHex(p.command) : '—',  cls: 'yellow' },
+    ]));
+  } else if (type === 'ble') {
+    const devices = Array.isArray(p) ? p : (p.devices || []);
+    if (!devices.length) { const d=document.createElement('div'); d.className='placeholder'; d.textContent='No BLE devices found.'; frag.appendChild(d); }
+    else frag.appendChild(bleTable(devices));
+  } else if (type === 'wifi') {
+    const networks = Array.isArray(p) ? p : (p.networks || []);
+    if (!networks.length) { const d=document.createElement('div'); d.className='placeholder'; d.textContent='No WiFi networks found.'; frag.appendChild(d); }
+    else frag.appendChild(wifiTable(networks));
+  } else {
+    const pre = document.createElement('pre');
+    pre.style.cssText = 'font-size:12px;color:#8b949e;';
+    pre.textContent = JSON.stringify(p, null, 2);
+    frag.appendChild(pre);
+  }
+  const wrap = document.createElement('div');
+  wrap.appendChild(frag);
+  return wrap;
+}
+
+function dataGrid(fields) {
+  const grid = document.createElement('div');
+  grid.className = 'data-grid';
+  fields.forEach(function(f) {
+    const cell = document.createElement('div'); cell.className = 'data-field';
+    const lbl = document.createElement('div'); lbl.className = 'label'; lbl.textContent = f.label;
+    const val = document.createElement('div'); val.className = 'value' + (f.cls ? ' ' + f.cls : ''); val.textContent = f.value;
+    cell.appendChild(lbl); cell.appendChild(val);
+    grid.appendChild(cell);
+  });
+  return grid;
+}
+
+function bleTable(devices) {
+  const wrap = document.createElement('div'); wrap.style.overflowX = 'auto';
+  const t = document.createElement('table'); t.className = 'scan-table';
+  t.innerHTML = '<thead><tr><th>MAC</th><th>Name</th><th>RSSI</th></tr></thead>';
+  const tb = document.createElement('tbody');
+  devices.forEach(function(d) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + escHtml(d.mac || d.address || '—') + '</td>'
+      + '<td>' + escHtml(d.name || d.local_name || '(unknown)') + '</td>'
+      + '<td>' + rssiCell(d.rssi) + '</td>';
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb); wrap.appendChild(t);
+  return wrap;
+}
+
+function wifiTable(networks) {
+  const wrap = document.createElement('div'); wrap.style.overflowX = 'auto';
+  const t = document.createElement('table'); t.className = 'scan-table';
+  t.innerHTML = '<thead><tr><th>SSID</th><th>BSSID</th><th>RSSI</th><th>Encryption</th></tr></thead>';
+  const tb = document.createElement('tbody');
+  networks.forEach(function(n) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + escHtml(n.ssid || n.SSID || '(hidden)') + '</td>'
+      + '<td>' + escHtml(n.bssid || n.BSSID || '—') + '</td>'
+      + '<td>' + rssiCell(n.rssi || n.RSSI) + '</td>'
+      + '<td>' + escHtml(n.encryption || n.auth || n.authmode || '—') + '</td>';
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb); wrap.appendChild(t);
+  return wrap;
+}
+
+function rssiCell(rssi) {
+  if (rssi == null) return '—';
+  const v = parseInt(rssi, 10);
+  const pct = Math.max(0, Math.min(100, (v + 100) * 2));
+  const color = v > -60 ? '#3fb950' : v > -75 ? '#e3b341' : '#f85149';
+  return '<span class="rssi-bar"><span class="rssi-val" style="color:' + color + '">' + v + ' dBm</span>'
+    + '<span class="rssi-pip" style="width:' + pct + 'px;background:' + color + '"></span></span>';
+}
+
+// ── History ──────────────────────────────────────────────────────────────────
+async function loadHistory(type) {
+  const el = document.getElementById('history-' + type);
+  const cnt = document.getElementById('count-' + type);
+  const delBtn = document.getElementById('delall-' + type);
+  el.innerHTML = '<div class="placeholder"><span class="spinner" style="margin:0 auto"></span></div>';
+  try {
+    const res = await apiFetch('/flipper/' + type + '/list');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const scans = data.scans || [];
+    cnt.textContent = scans.length;
+    delBtn.style.display = scans.length ? '' : 'none';
+    el.innerHTML = '';
+    if (!scans.length) { el.innerHTML = '<div class="placeholder">No saved scans yet.</div>'; return; }
+    const list = document.createElement('div'); list.className = 'history-list';
+    scans.forEach(function(s){ list.appendChild(buildHistoryItem(type, s)); });
+    el.appendChild(list);
+  } catch(e) {
+    if (e.message === 'Unauthorized') return;
+    el.innerHTML = '<div class="error-msg">⚠ Could not load history: ' + escHtml(e.message) + '</div>';
+    cnt.textContent = '!';
+  }
+}
+
+function buildHistoryItem(type, scan) {
+  const wrap = document.createElement('div'); wrap.className = 'history-item';
+
+  const hdr = document.createElement('div'); hdr.className = 'history-item-header';
+  const left = document.createElement('div');
+  const ts = document.createElement('div'); ts.className = 'history-ts'; ts.textContent = '🕐 ' + fmtTime(scan.ts);
+  const id = document.createElement('div'); id.className = 'history-id'; id.textContent = 'ID: ' + (scan.id || '—');
+  left.appendChild(ts); left.appendChild(id);
+
+  const delBtn = document.createElement('button'); delBtn.className = 'btn btn-red btn-sm'; delBtn.textContent = '🗑 Delete';
+  delBtn.onclick = function(){ deleteScan(type, scan.id, wrap); };
+
+  hdr.appendChild(left); hdr.appendChild(delBtn);
+  wrap.appendChild(hdr);
+
+  const parsed = scan.parsed || scan;
+  wrap.appendChild(buildParsedView(type, parsed));
+
+  if (scan.raw) {
+    const det = document.createElement('details'); det.className = 'raw-block';
+    const sum = document.createElement('summary'); sum.textContent = '📋 Raw CLI output';
+    const pre = document.createElement('pre');
+    pre.textContent = typeof scan.raw === 'string' ? scan.raw : JSON.stringify(scan.raw, null, 2);
+    det.appendChild(sum); det.appendChild(pre);
+    wrap.appendChild(det);
+  }
+  return wrap;
+}
+
+async function deleteScan(type, id, el) {
+  if (!confirm('Delete this scan?')) return;
+  try {
+    await apiFetch('/flipper/' + type + '/' + id, { method: 'DELETE' });
+    el.style.opacity = '0';
+    el.style.transition = 'opacity .2s';
+    setTimeout(function(){ loadHistory(type); }, 220);
+    toast('Deleted.', 'ok');
+  } catch(e) {
+    if (e.message !== 'Unauthorized') toast('Delete failed: ' + e.message, 'err');
+  }
+}
+
+async function deleteAll(type) {
+  if (!confirm('Delete ALL saved ' + typeLabel(type) + ' scans permanently?')) return;
+  try {
+    await apiFetch('/flipper/' + type + '/all', { method: 'DELETE' });
+    toast('All ' + typeLabel(type) + ' scans deleted.', 'ok');
+    loadHistory(type);
+  } catch(e) {
+    if (e.message !== 'Unauthorized') toast('Delete failed: ' + e.message, 'err');
+  }
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+function initApp() {
+  checkStatus();
+  loadHistory('subghz');
+  setInterval(checkStatus, 30000);
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function fmtTime(iso) {
+  try { return new Date(iso).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+  catch(e){ return iso || '—'; }
+}
+function fmtFreq(hz) {
+  const n = parseFloat(hz);
+  if (isNaN(n)) return String(hz);
+  if (n >= 1e9) return (n/1e9).toFixed(3) + ' GHz';
+  if (n >= 1e6) return (n/1e6).toFixed(3) + ' MHz';
+  if (n >= 1e3) return (n/1e3).toFixed(1) + ' kHz';
+  return n + ' Hz';
+}
+function toHex(v) { return parseInt(v,10).toString(16).toUpperCase().padStart(2,'0'); }
+function rssiCls(v) { if(v==null) return ''; const n=parseInt(v,10); return n>-60?'green':n>-75?'yellow':'red'; }
+function typeLabel(t) { return { subghz:'Sub-GHz', nfc:'NFC', rfid:'RFID', ble:'BLE', ir:'IR', wifi:'WiFi' }[t] || t; }
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+if (getKey()) { showApp(true); }
+else { showGate(''); }
+</script>
+</body>
+</html>
