@@ -55,6 +55,17 @@
     #lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 100; align-items: center; justify-content: center; cursor: zoom-out; }
     #lightbox.open { display: flex; }
     #lightbox img { max-width: 95vw; max-height: 95vh; object-fit: contain; border-radius: 6px; }
+    .btn-red { background: #3d1a1a; border-color: #b91c1c; color: #f87171; }
+    .btn-red:hover { background: #4d2020; }
+    .btn-red:disabled { opacity: .4; cursor: default; }
+    .delete-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; min-height: 32px; }
+    .select-check { width: 16px; height: 16px; cursor: pointer; accent-color: #58a6ff; }
+    .photo-item .cb-wrap { padding: 8px 10px 0; display: flex; align-items: center; gap: 6px; }
+    .photo-item .cb-wrap label { font-size: 12px; color: #8b949e; cursor: pointer; }
+    .audio-item .cb-wrap { display: flex; align-items: center; gap: 6px; }
+    .audio-item .cb-wrap label { font-size: 12px; color: #8b949e; cursor: pointer; }
+    .photo-item.selected { border-color: #f87171; }
+    .audio-item.selected { border-color: #f87171; }
   </style>
 </head>
 <body>
@@ -70,8 +81,16 @@
     <button class="btn btn-green" onclick="loadAll()">&#x27F3; Refresh</button>
   </div>
   <div class="section-title">&#128247; Photos <span class="count" id="photo-count">&#8212;</span></div>
+  <div class="delete-bar" id="photo-delete-bar" style="display:none">
+    <button class="btn btn-red" id="photo-del-sel" onclick="deleteSelected('camera')" disabled>&#128465; Delete Selected</button>
+    <button class="btn btn-red" onclick="deleteAll('camera')">&#128465; Delete All Photos</button>
+  </div>
   <div id="photo-gallery"></div>
   <div class="section-title">&#127908; Audio Recordings <span class="count" id="audio-count">&#8212;</span></div>
+  <div class="delete-bar" id="audio-delete-bar" style="display:none">
+    <button class="btn btn-red" id="audio-del-sel" onclick="deleteSelected('audio')" disabled>&#128465; Delete Selected</button>
+    <button class="btn btn-red" onclick="deleteAll('audio')">&#128465; Delete All Audio</button>
+  </div>
   <div id="audio-gallery"></div>
 </div>
 <footer><a href="/">dev.deacyde.com</a> &nbsp;&middot;&nbsp; media via <a href="https://pi.deacyde.com/status" target="_blank">pi.deacyde.com</a></footer>
@@ -90,6 +109,16 @@ function makePhotoItem(f) {
   const url = PI+'/camera/'+DEVICE+'/'+f.n+'?_='+Date.now();
   const wrap = document.createElement('div');
   wrap.className = 'photo-item'+(f.n===1?' latest':'');
+  wrap.dataset.n = f.n;
+
+  const cbWrap = document.createElement('div');
+  cbWrap.className = 'cb-wrap';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox'; cb.className = 'select-check'; cb.id = 'photo-cb-'+f.n;
+  cb.addEventListener('change', function(){ wrap.classList.toggle('selected', cb.checked); updateDelSelBtn('camera'); });
+  const lbl = document.createElement('label'); lbl.htmlFor = 'photo-cb-'+f.n; lbl.textContent = 'Select';
+  cbWrap.appendChild(cb); cbWrap.appendChild(lbl);
+  wrap.appendChild(cbWrap);
 
   const thumb = document.createElement('div');
   thumb.className = 'photo-thumb';
@@ -132,6 +161,16 @@ function makeAudioItem(f) {
   const url = PI+'/audio/'+DEVICE+'/'+f.n+'?_='+Date.now();
   const wrap = document.createElement('div');
   wrap.className = 'audio-item'+(f.n===1?' latest':'');
+  wrap.dataset.n = f.n;
+
+  const cbWrap = document.createElement('div');
+  cbWrap.className = 'cb-wrap';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox'; cb.className = 'select-check'; cb.id = 'audio-cb-'+f.n;
+  cb.addEventListener('change', function(){ wrap.classList.toggle('selected', cb.checked); updateDelSelBtn('audio'); });
+  const lbl = document.createElement('label'); lbl.htmlFor = 'audio-cb-'+f.n; lbl.textContent = 'Select';
+  cbWrap.appendChild(cb); cbWrap.appendChild(lbl);
+  wrap.appendChild(cbWrap);
 
   const num = document.createElement('div');
   num.className = 'audio-num';
@@ -165,6 +204,7 @@ async function loadPhotos() {
     const {files} = await r.json();
     cnt.textContent = files.length+' / 5';
     el.innerHTML = '';
+    document.getElementById('photo-delete-bar').style.display = files.length ? '' : 'none';
     if (!files.length) { el.innerHTML='<div class="placeholder-msg">No photos yet &mdash; tap CAM on the device</div>'; return; }
     const grid = document.createElement('div'); grid.className='photo-grid';
     files.forEach(function(f){ grid.appendChild(makePhotoItem(f)); });
@@ -184,6 +224,7 @@ async function loadAudios() {
     const {files} = await r.json();
     cnt.textContent = files.length+' / 5';
     el.innerHTML = '';
+    document.getElementById('audio-delete-bar').style.display = files.length ? '' : 'none';
     if (!files.length) { el.innerHTML='<div class="placeholder-msg">No audio yet &mdash; tap MIC on the device</div>'; return; }
     const list = document.createElement('div'); list.className='audio-list';
     files.forEach(function(f){ list.appendChild(makeAudioItem(f)); });
@@ -192,6 +233,29 @@ async function loadAudios() {
     cnt.textContent='error';
     el.innerHTML='<div class="placeholder-msg">Could not reach pi.deacyde.com &mdash; '+e.message+'</div>';
   }
+}
+
+function updateDelSelBtn(type) {
+  const sel = document.querySelectorAll('#'+(type==='camera'?'photo':'audio')+'-gallery .selected');
+  const btn = document.getElementById((type==='camera'?'photo':'audio')+'-del-sel');
+  if (btn) btn.disabled = sel.length === 0;
+}
+
+async function deleteSelected(type) {
+  const gallery = document.getElementById((type==='camera'?'photo':'audio')+'-gallery');
+  const selected = Array.from(gallery.querySelectorAll('.selected'));
+  if (!selected.length) return;
+  if (!confirm('Delete '+selected.length+' selected '+(type==='camera'?'photo':'audio')+(selected.length>1?'s':'')+' permanently?')) return;
+  const ns = selected.map(el => el.dataset.n);
+  await Promise.all(ns.map(n => fetch(PI+'/'+type+'/'+DEVICE+'/'+n, {method:'DELETE'})));
+  type === 'camera' ? loadPhotos() : loadAudios();
+}
+
+async function deleteAll(type) {
+  const label = type === 'camera' ? 'all photos' : 'all audio recordings';
+  if (!confirm('Delete '+label+' permanently?')) return;
+  await fetch(PI+'/'+type+'/'+DEVICE+'/all', {method:'DELETE'});
+  type === 'camera' ? loadPhotos() : loadAudios();
 }
 
 function loadAll() {
