@@ -190,8 +190,18 @@
   let currentView = null;
 
   // ── API helpers ──
+  // Compute base URL so the app works at any path (e.g., /mcp/)
+  const BASE = (() => {
+    const p = window.location.pathname;
+    // If served at /mcp/ or /mcp, strip trailing slash
+    if (p.includes("/mcp")) return p.substring(0, p.indexOf("/mcp") + 4);
+    // If served from /apps/ga4-gsc-mcp/
+    if (p.includes("/apps/ga4-gsc-mcp")) return p.substring(0, p.indexOf("/apps/ga4-gsc-mcp") + 17);
+    return "";
+  })();
+
   async function api(url, opts = {}) {
-    const res = await fetch(url, {
+    const res = await fetch(BASE + url, {
       headers: { "Content-Type": "application/json", ...opts.headers },
       ...opts,
       body: opts.body ? JSON.stringify(opts.body) : undefined,

@@ -22,13 +22,13 @@ function requireAuth(req, res, next) {
     if (req.path.startsWith("/api/")) {
       return res.status(401).json({ error: "setup_required" });
     }
-    return res.redirect("/auth/setup");
+    return res.status(401).json({ error: "setup_required" });
   }
   if (!req.session.authenticated) {
     if (req.path.startsWith("/api/")) {
       return res.status(401).json({ error: "not_authenticated" });
     }
-    return res.redirect("/auth/login");
+    return res.status(401).json({ error: "not_authenticated" });
   }
   next();
 }
