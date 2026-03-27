@@ -706,7 +706,17 @@ function buildParsedView(type, p) {
     }
   } else if (type === 'wifi') {
     const networks = Array.isArray(p) ? p : (p.networks || []);
-    if (networks.length) frag.appendChild(wifiTable(networks));
+    if (networks.length) {
+      const countEl = document.createElement('div');
+      countEl.style.cssText = 'font-size:12px;color:#8b949e;margin-bottom:8px;';
+      countEl.textContent = networks.length + ' network' + (networks.length !== 1 ? 's' : '') + ' found';
+      frag.appendChild(countEl);
+      frag.appendChild(wifiTable(networks));
+    } else if (!p.note) {
+      const d = document.createElement('div'); d.className = 'placeholder';
+      d.textContent = 'No networks found. On your Flipper: Apps → GPIO → ESP32 WiFi Marauder → Scan APs, then scan here to read results.';
+      frag.appendChild(d);
+    }
   } else {
     if (!p.note) {
       const pre = document.createElement('pre');
@@ -752,14 +762,19 @@ function bleTable(devices) {
 function wifiTable(networks) {
   const wrap = document.createElement('div'); wrap.style.overflowX = 'auto';
   const t = document.createElement('table'); t.className = 'scan-table';
-  t.innerHTML = '<thead><tr><th>SSID</th><th>BSSID</th><th>RSSI</th><th>Encryption</th></tr></thead>';
+  t.innerHTML = '<thead><tr><th>SSID</th><th>BSSID</th><th>Ch</th><th>RSSI</th><th>Security</th></tr></thead>';
   const tb = document.createElement('tbody');
   networks.forEach(function(n) {
+    const ssid = n.ssid || n.SSID || '';
+    const isHidden = !ssid || /^[0-9a-f:]{17}$/i.test(ssid.trim());
+    const sec = n.security || n.encryption || n.auth || n.authmode || '—';
+    const secColor = sec === 'Open' ? '#f85149' : '#3fb950';
     const tr = document.createElement('tr');
-    tr.innerHTML = '<td>' + escHtml(n.ssid || n.SSID || '(hidden)') + '</td>'
-      + '<td>' + escHtml(n.bssid || n.BSSID || '—') + '</td>'
-      + '<td>' + rssiCell(n.rssi || n.RSSI) + '</td>'
-      + '<td>' + escHtml(n.encryption || n.auth || n.authmode || '—') + '</td>';
+    tr.innerHTML = '<td>' + (isHidden ? '<em style="color:#8b949e">(hidden)</em>' : escHtml(ssid)) + '</td>'
+      + '<td style="font-family:monospace;font-size:11px">' + escHtml(n.bssid || n.BSSID || '—') + '</td>'
+      + '<td style="text-align:center">' + escHtml(String(n.channel || n.Channel || '—')) + '</td>'
+      + '<td>' + rssiCell(n.rssi != null ? n.rssi : n.RSSI) + '</td>'
+      + '<td><span style="color:' + secColor + '">' + escHtml(sec) + '</span></td>';
     tb.appendChild(tr);
   });
   t.appendChild(tb); wrap.appendChild(t);
