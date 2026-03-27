@@ -100,6 +100,29 @@
         <div class="mem-bar"><div class="mem-bar-fill" id="mem-fill" style="width:0%;background:#4285f4"></div></div>
       </div>
     </div>
+    <!-- CPU -->
+    <div class="card">
+      <div class="card-title">CPU</div>
+      <div class="metric"><span class="metric-label">Model</span><span class="metric-value" id="m-cpumodel">—</span></div>
+      <div class="metric"><span class="metric-label">Cores</span><span class="metric-value" id="m-cpucores">—</span></div>
+      <div class="metric"><span class="metric-label">Temperature</span><span class="metric-value" id="m-cputemp">—</span></div>
+      <div class="metric"><span class="metric-label">Load avg (1m/5m/15m)</span><span class="metric-value" id="m-loadavg">—</span></div>
+      <div class="mem-bar-wrap">
+        <div class="mem-bar-label"><span>CPU load</span><span id="m-cpupct">—</span></div>
+        <div class="mem-bar"><div class="mem-bar-fill" id="cpu-fill" style="width:0%;background:#4285f4"></div></div>
+      </div>
+    </div>
+    <!-- Disk -->
+    <div class="card">
+      <div class="card-title">Disk (root)</div>
+      <div class="metric"><span class="metric-label">Total</span><span class="metric-value" id="m-disktotal">—</span></div>
+      <div class="metric"><span class="metric-label">Used</span><span class="metric-value" id="m-diskused">—</span></div>
+      <div class="metric"><span class="metric-label">Free</span><span class="metric-value" id="m-diskfree">—</span></div>
+      <div class="mem-bar-wrap">
+        <div class="mem-bar-label"><span>Disk used</span><span id="m-diskpct">—</span></div>
+        <div class="mem-bar"><div class="mem-bar-fill" id="disk-fill" style="width:0%;background:#4285f4"></div></div>
+      </div>
+    </div>
     <!-- Requests -->
     <div class="card">
       <div class="card-title">Requests</div>
@@ -159,6 +182,30 @@
         const fill = document.getElementById('mem-fill');
         fill.style.width      = `${pct}%`;
         fill.style.background = memColor(pct);
+
+        // CPU card
+        if (data.cpu) {
+          document.getElementById('m-cpumodel').textContent = data.cpu.model || '—';
+          document.getElementById('m-cpucores').textContent = data.cpu.cores || '—';
+          document.getElementById('m-cputemp').textContent  = data.cpu.tempC != null ? `${data.cpu.tempC} °C` : '—';
+          document.getElementById('m-loadavg').textContent  = data.cpu.loadAvg ? data.cpu.loadAvg.join(' / ') : '—';
+          const cpuPct = Math.min(data.cpu.loadPct, 100);
+          document.getElementById('m-cpupct').textContent   = `${cpuPct}%`;
+          const cpuFill = document.getElementById('cpu-fill');
+          cpuFill.style.width      = `${cpuPct}%`;
+          cpuFill.style.background = memColor(cpuPct);
+        }
+
+        // Disk card
+        if (data.disk) {
+          document.getElementById('m-disktotal').textContent = `${data.disk.totalGB} GB`;
+          document.getElementById('m-diskused').textContent  = `${data.disk.usedGB} GB`;
+          document.getElementById('m-diskfree').textContent  = `${data.disk.freeGB} GB`;
+          document.getElementById('m-diskpct').textContent   = `${data.disk.usedPct}%`;
+          const diskFill = document.getElementById('disk-fill');
+          diskFill.style.width      = `${data.disk.usedPct}%`;
+          diskFill.style.background = memColor(data.disk.usedPct);
+        }
 
         // Requests card
         document.getElementById('m-reqtotal').textContent = data.requests.total.toLocaleString();
