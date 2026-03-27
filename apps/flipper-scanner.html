@@ -175,12 +175,13 @@
     <div class="gate-icon">🔐</div>
     <h2>API Key Required</h2>
     <p>Enter your Flipper Zero bridge API key to access the scanner dashboard. Your key is stored locally in this browser only.</p>
+    <div id="gate-auto-msg" style="display:none;margin-bottom:12px;color:#3fb950;font-size:13px">⏳ Trying to auto-detect key on local network…</div>
     <div class="key-row">
       <input type="password" id="gate-key-input" placeholder="Enter API key…" autocomplete="off" onkeydown="if(event.key==='Enter') unlockGate()">
       <button class="btn-unlock" onclick="unlockGate()">🔓 Unlock</button>
     </div>
     <div id="gate-error" style="display:none" class="error-msg"></div>
-    <p class="security-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
+    <p class="security-note">🛡 On your home network the key is fetched automatically. Key is stored locally in your browser only.</p>
   </div>
 </div>
 
@@ -851,8 +852,31 @@ function escHtml(s) {
 }
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
-if (getKey()) { showApp(true); }
-else { showGate(''); }
+async function tryAutoKey() {
+  // Try to fetch key directly from Pi's LAN IP — only works if on home network
+  const PI_LOCAL = 'http://192.168.1.86:3000';
+  try {
+    document.getElementById('gate-auto-msg').style.display = 'block';
+    const r = await fetch(PI_LOCAL + '/flipper/local-key', {signal: AbortSignal.timeout(3000)});
+    if (r.ok) {
+      const d = await r.json();
+      if (d.key) {
+        setKey(d.key);
+        showApp(true);
+        return true;
+      }
+    }
+  } catch(_) {}
+  document.getElementById('gate-auto-msg').style.display = 'none';
+  return false;
+}
+
+if (getKey()) {
+  showApp(true);
+} else {
+  showGate('');
+  tryAutoKey();
+}
 </script>
 </body>
 </html>
