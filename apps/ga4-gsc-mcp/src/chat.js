@@ -53,7 +53,6 @@ router.post("/api/chat", async (req, res) => {
     res.json({
       content: response.content,
       tableData,
-      sources: response.sources || [],
     });
   } catch (err) {
     console.error("Chat error:", err);
