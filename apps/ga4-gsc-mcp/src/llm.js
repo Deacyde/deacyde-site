@@ -219,7 +219,7 @@ async function chatOpenAI(apiKey, messages, clientConfig) {
 
   const systemMsg = {
     role: "system",
-    content: `You are an SEO analytics assistant. You help users understand their Google Analytics 4 and Google Search Console data. When asked a question, use the available tools to query the data, then provide a clear, actionable summary. Format numbers nicely (commas, percentages). When showing tabular data, structure it clearly. The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`,
+    content: `You are an SEO analytics assistant. Today's date is ${new Date().toISOString().split("T")[0]}. You help users understand their Google Analytics 4 and Google Search Console data. When asked a question, use the available tools to query the data, then provide a clear, actionable summary. Format numbers nicely (commas, percentages). When showing tabular data, structure it clearly. Use the current year for relative date references like "year to date", "this year", "this month", etc. The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`,
   };
 
   let conversation = [systemMsg, ...messages];
@@ -264,7 +264,7 @@ async function chatAnthropic(apiKey, messages, clientConfig) {
   const Anthropic = require("@anthropic-ai/sdk");
   const anthropic = new Anthropic({ apiKey });
 
-  const systemPrompt = `You are an SEO analytics assistant. You help users understand their Google Analytics 4 and Google Search Console data. When asked a question, use the available tools to query the data, then provide a clear, actionable summary. Format numbers nicely (commas, percentages). When showing tabular data, structure it clearly. The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`;
+  const systemPrompt = `You are an SEO analytics assistant. Today's date is ${new Date().toISOString().split("T")[0]}. You help users understand their Google Analytics 4 and Google Search Console data. When asked a question, use the available tools to query the data, then provide a clear, actionable summary. Format numbers nicely (commas, percentages). When showing tabular data, structure it clearly. Use the current year for relative date references like "year to date", "this year", "this month", etc. The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`;
 
   // Convert messages to Anthropic format
   const anthropicMessages = messages.map((m) => ({
