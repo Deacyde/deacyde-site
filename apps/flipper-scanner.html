@@ -213,14 +213,14 @@
     <div class="tab-pane active" id="tab-subghz">
       <div class="card">
         <div class="card-title">📡 Sub-GHz Scan</div>
+        <p class="info-note">📻 Listens on 433.92 MHz for up to 30 seconds. Point a garage door remote, gate fob, car key, or 433 MHz sensor at the <strong>top</strong> of the Flipper, then click Scan. Captured signals can be replayed.</p>
         <div class="scan-actions">
-          <button class="btn btn-green btn-lg" id="scan-btn-subghz" onclick="startScan('subghz')">▶ Scan</button>
+          <button class="btn btn-green btn-lg" id="scan-btn-subghz" onclick="startScan('subghz')">▶ Scan (30s)</button>
           <div class="scan-spinner" id="spinner-subghz" style="display:none">
-            <span class="spinner"></span> Scanning… (up to 30s)
+            <span class="spinner"></span> Listening on 433.92 MHz…
           </div>
         </div>
         <div id="result-subghz"></div>
-        <p class="info-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
       </div>
       <div class="card">
         <div class="history-header">
@@ -235,14 +235,14 @@
     <div class="tab-pane" id="tab-nfc">
       <div class="card">
         <div class="card-title">💳 NFC Scan</div>
+        <p class="info-note">🪪 NFC CLI is limited in firmware 1.2.0. To scan: hold an NFC card or phone against the <strong>back</strong> of the Flipper and read it using the <strong>NFC app on the Flipper screen</strong>. Then click Scan here — it will read the most recently saved card file.</p>
         <div class="scan-actions">
-          <button class="btn btn-green btn-lg" id="scan-btn-nfc" onclick="startScan('nfc')">▶ Scan</button>
+          <button class="btn btn-green btn-lg" id="scan-btn-nfc" onclick="startScan('nfc')">▶ Read Saved Card</button>
           <div class="scan-spinner" id="spinner-nfc" style="display:none">
-            <span class="spinner"></span> Scanning… (up to 30s)
+            <span class="spinner"></span> Reading saved NFC files…
           </div>
         </div>
         <div id="result-nfc"></div>
-        <p class="info-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
       </div>
       <div class="card">
         <div class="history-header">
@@ -257,14 +257,14 @@
     <div class="tab-pane" id="tab-rfid">
       <div class="card">
         <div class="card-title">🏷 RFID Scan</div>
+        <p class="info-note">🔑 Reads 125 kHz low-frequency RFID cards (EM4100, HID, etc.) for up to 30 seconds. Hold a key fob, access card, or animal tag against the <strong>back</strong> of the Flipper, then click Scan.</p>
         <div class="scan-actions">
-          <button class="btn btn-green btn-lg" id="scan-btn-rfid" onclick="startScan('rfid')">▶ Scan</button>
+          <button class="btn btn-green btn-lg" id="scan-btn-rfid" onclick="startScan('rfid')">▶ Scan (30s)</button>
           <div class="scan-spinner" id="spinner-rfid" style="display:none">
-            <span class="spinner"></span> Scanning… (up to 30s)
+            <span class="spinner"></span> Reading RFID…
           </div>
         </div>
         <div id="result-rfid"></div>
-        <p class="info-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
       </div>
       <div class="card">
         <div class="history-header">
@@ -278,15 +278,15 @@
     <!-- ══ BLE Tab ══ -->
     <div class="tab-pane" id="tab-ble">
       <div class="card">
-        <div class="card-title">🔵 BLE Scan</div>
+        <div class="card-title">🔵 Bluetooth Info</div>
+        <p class="info-note">📡 BLE advertisement scanning is not available via the Flipper CLI. This returns the Flipper's own Bluetooth radio information (HCI version, MAC address). To scan nearby BLE devices, use the <strong>Bluetooth Scanner</strong> app on the Flipper screen.</p>
         <div class="scan-actions">
-          <button class="btn btn-green btn-lg" id="scan-btn-ble" onclick="startScan('ble')">▶ Scan</button>
+          <button class="btn btn-green btn-lg" id="scan-btn-ble" onclick="startScan('ble')">▶ Get BT Info</button>
           <div class="scan-spinner" id="spinner-ble" style="display:none">
-            <span class="spinner"></span> Scanning… (up to 30s)
+            <span class="spinner"></span> Reading BT radio info…
           </div>
         </div>
         <div id="result-ble"></div>
-        <p class="info-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
       </div>
       <div class="card">
         <div class="history-header">
@@ -300,15 +300,15 @@
     <!-- ══ IR Tab ══ -->
     <div class="tab-pane" id="tab-ir">
       <div class="card">
-        <div class="card-title">🔆 IR Scan</div>
+        <div class="card-title">🔆 Infrared Scan</div>
+        <p class="info-note">📺 Captures infrared signals for up to 30 seconds. Point any IR remote (TV, AC, projector, etc.) at the <strong>top</strong> of the Flipper and press a button on the remote, then click Scan. Captured signals can be replayed.</p>
         <div class="scan-actions">
-          <button class="btn btn-green btn-lg" id="scan-btn-ir" onclick="startScan('ir')">▶ Scan</button>
+          <button class="btn btn-green btn-lg" id="scan-btn-ir" onclick="startScan('ir')">▶ Scan (30s)</button>
           <div class="scan-spinner" id="spinner-ir" style="display:none">
-            <span class="spinner"></span> Scanning… (up to 30s)
+            <span class="spinner"></span> Waiting for IR signal…
           </div>
         </div>
         <div id="result-ir"></div>
-        <p class="info-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
       </div>
       <div class="card">
         <div class="history-header">
@@ -323,14 +323,14 @@
     <div class="tab-pane" id="tab-wifi">
       <div class="card">
         <div class="card-title">📶 WiFi Scan</div>
+        <p class="info-note">📡 Your Flipper has the <strong>ESP32 WiFi Marauder</strong> app installed. WiFi scanning runs through the Marauder app on the Flipper screen — the app UI doesn't pipe results back to the CLI. Open the <strong>ESP32 WiFi Marauder</strong> app on your Flipper (Apps → GPIO) to scan networks. Click Scan below to check for any saved scan results.</p>
         <div class="scan-actions">
-          <button class="btn btn-green btn-lg" id="scan-btn-wifi" onclick="startScan('wifi')">▶ Scan</button>
+          <button class="btn btn-green btn-lg" id="scan-btn-wifi" onclick="startScan('wifi')">▶ Check Results</button>
           <div class="scan-spinner" id="spinner-wifi" style="display:none">
-            <span class="spinner"></span> Scanning… (up to 30s)
+            <span class="spinner"></span> Checking…
           </div>
         </div>
         <div id="result-wifi"></div>
-        <p class="info-note">🛡 All requests require your API key. Key is stored locally in your browser only.</p>
       </div>
       <div class="card">
         <div class="history-header">
@@ -647,43 +647,73 @@ function buildResultCard(type, result, itemId) {
 function buildParsedView(type, p) {
   if (!p) { const d=document.createElement('div'); d.className='placeholder'; d.textContent='No data.'; return d; }
   const frag = document.createDocumentFragment();
+
+  // Always show note prominently if present
+  if (p.note) {
+    const nb = document.createElement('div');
+    nb.style.cssText = 'background:#161b22;border:1px solid #30363d;border-radius:6px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#8b949e;line-height:1.5;';
+    nb.textContent = 'ℹ️  ' + p.note;
+    frag.appendChild(nb);
+  }
+
   if (type === 'nfc') {
-    frag.appendChild(dataGrid([
-      { label: 'UID',       value: p.uid || '—',       cls: 'blue' },
-      { label: 'Card Type', value: p.card_type || p.type || '—' },
-      { label: 'ATQA',      value: p.atqa || '—',      cls: 'yellow' },
-      { label: 'SAK',       value: p.sak || '—',       cls: 'yellow' },
-    ]));
+    if (p.uid || p.card_type) {
+      frag.appendChild(dataGrid([
+        { label: 'UID',       value: p.uid || '—',              cls: 'blue' },
+        { label: 'Card Type', value: p.card_type || p.type || '—' },
+        { label: 'ATQA',      value: p.atqa || '—',             cls: 'yellow' },
+        { label: 'SAK',       value: p.sak || '—',              cls: 'yellow' },
+      ]));
+    }
   } else if (type === 'rfid') {
-    frag.appendChild(dataGrid([
-      { label: 'ID',        value: p.id || p.uid || '—',  cls: 'blue' },
-      { label: 'Card Type', value: p.card_type || p.type || '—' },
-    ]));
+    if (p.id || p.card_type) {
+      frag.appendChild(dataGrid([
+        { label: 'ID',        value: p.id || p.uid || '—', cls: 'blue' },
+        { label: 'Card Type', value: p.card_type || p.type || '—' },
+      ]));
+    } else if (!p.note) {
+      const d=document.createElement('div'); d.className='placeholder'; d.textContent='No card detected. Hold a key fob to the Flipper back and scan again.'; frag.appendChild(d);
+    }
   } else if (type === 'subghz') {
-    frag.appendChild(dataGrid([
-      { label: 'Frequency', value: p.frequency ? fmtFreq(p.frequency) : '—',    cls: 'green' },
-      { label: 'Protocol',  value: p.protocol || '—' },
-      { label: 'RSSI',      value: p.rssi != null ? p.rssi + ' dBm' : '—',      cls: rssiCls(p.rssi) },
-    ]));
+    if (p.frequency || p.protocol) {
+      frag.appendChild(dataGrid([
+        { label: 'Frequency', value: p.frequency ? fmtFreq(p.frequency) : '—', cls: 'green' },
+        { label: 'Protocol',  value: p.protocol || '—' },
+        { label: 'RSSI',      value: p.rssi != null ? p.rssi + ' dBm' : '—',   cls: rssiCls(p.rssi) },
+        { label: 'Key',       value: p.key || '—', cls: 'yellow' },
+      ]));
+    }
   } else if (type === 'ir') {
-    frag.appendChild(dataGrid([
-      { label: 'Protocol', value: p.protocol || '—' },
-      { label: 'Address',  value: p.address != null ? '0x' + toHex(p.address) : '—', cls: 'blue' },
-      { label: 'Command',  value: p.command != null ? '0x' + toHex(p.command) : '—',  cls: 'yellow' },
-    ]));
+    if (p.protocol || p.address || p.command) {
+      frag.appendChild(dataGrid([
+        { label: 'Protocol', value: p.protocol || '—' },
+        { label: 'Address',  value: p.address != null ? '0x' + toHex(p.address) : '—', cls: 'blue' },
+        { label: 'Command',  value: p.command != null ? '0x' + toHex(p.command) : '—',  cls: 'yellow' },
+      ]));
+    } else if (!p.note) {
+      const d=document.createElement('div'); d.className='placeholder'; d.textContent='No IR signal detected. Point a remote at the Flipper top and scan again.'; frag.appendChild(d);
+    }
   } else if (type === 'ble') {
     const devices = Array.isArray(p) ? p : (p.devices || []);
-    if (!devices.length) { const d=document.createElement('div'); d.className='placeholder'; d.textContent='No BLE devices found.'; frag.appendChild(d); }
-    else frag.appendChild(bleTable(devices));
+    if (devices.length) {
+      frag.appendChild(bleTable(devices));
+    } else if (p.mac || p.name || p.status) {
+      frag.appendChild(dataGrid([
+        { label: 'Name',       value: p.name || '—' },
+        { label: 'MAC',        value: p.mac || '—',    cls: 'blue' },
+        { label: 'Status',     value: p.status || '—', cls: 'green' },
+      ]));
+    }
   } else if (type === 'wifi') {
     const networks = Array.isArray(p) ? p : (p.networks || []);
-    if (!networks.length) { const d=document.createElement('div'); d.className='placeholder'; d.textContent='No WiFi networks found.'; frag.appendChild(d); }
-    else frag.appendChild(wifiTable(networks));
+    if (networks.length) frag.appendChild(wifiTable(networks));
   } else {
-    const pre = document.createElement('pre');
-    pre.style.cssText = 'font-size:12px;color:#8b949e;';
-    pre.textContent = JSON.stringify(p, null, 2);
-    frag.appendChild(pre);
+    if (!p.note) {
+      const pre = document.createElement('pre');
+      pre.style.cssText = 'font-size:12px;color:#8b949e;';
+      pre.textContent = JSON.stringify(p, null, 2);
+      frag.appendChild(pre);
+    }
   }
   const wrap = document.createElement('div');
   wrap.appendChild(frag);
