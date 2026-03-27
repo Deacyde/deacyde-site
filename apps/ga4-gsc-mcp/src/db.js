@@ -83,9 +83,9 @@ function initDb() {
 
   // Migration: add session_id column if it doesn't exist
   try {
-    getDb().prepare("SELECT session_id FROM chat_history LIMIT 1").get();
+    db.prepare("SELECT session_id FROM chat_history LIMIT 1").get();
   } catch {
-    getDb().exec("ALTER TABLE chat_history ADD COLUMN session_id TEXT DEFAULT 'active'");
+    db.exec("ALTER TABLE chat_history ADD COLUMN session_id TEXT DEFAULT 'active'");
   }
 
   return db;
