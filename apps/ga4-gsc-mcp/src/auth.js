@@ -13,21 +13,20 @@ function isSetupComplete() {
   return !!db.getSetting("admin_password_hash");
 }
 
-// Auth middleware — allows /auth/* routes and setup through
+// Auth middleware — protect API routes only, let static files through
 function requireAuth(req, res, next) {
+  // Always allow auth endpoints
   if (req.path.startsWith("/auth") || req.path.startsWith("/api/auth")) {
     return next();
   }
+  // Only protect /api/ routes — static files (HTML, CSS, JS) pass through
+  if (!req.path.startsWith("/api/")) {
+    return next();
+  }
   if (!isSetupComplete()) {
-    if (req.path.startsWith("/api/")) {
-      return res.status(401).json({ error: "setup_required" });
-    }
     return res.status(401).json({ error: "setup_required" });
   }
   if (!req.session.authenticated) {
-    if (req.path.startsWith("/api/")) {
-      return res.status(401).json({ error: "not_authenticated" });
-    }
     return res.status(401).json({ error: "not_authenticated" });
   }
   next();
