@@ -21,6 +21,7 @@
     .fade-in { animation: fadeIn 0.2s ease-in; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .chat-bubble { max-width: 85%; }
+    #model-select option { color: #000; background: #fff; }
     #chat-messages::-webkit-scrollbar { width: 6px; }
     #chat-messages::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
   </style>
@@ -69,7 +70,7 @@
       <select id="model-select" onchange="onModelChange()" class="text-xs px-2 py-1 rounded-full border focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer bg-gray-800 text-gray-400 border-gray-700">
         <option value="">No LLM</option>
       </select>
-      <span id="model-cost" class="text-[10px] text-gray-500 hidden max-w-[200px]"></span>
+      <span id="model-cost" class="text-[10px] text-white hidden max-w-[200px]"></span>
     </div>
     <div class="flex items-center gap-2">
       <button onclick="showSettings()" class="p-2 text-gray-400 hover:text-white transition" title="Settings">
@@ -331,7 +332,7 @@
           opt.value = m.id; opt.textContent = m.label;
           select.appendChild(opt);
         });
-        select.className = "text-xs px-2 py-1 rounded-full border focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer bg-green-900/50 text-green-400 border-green-700";
+        select.className = "text-xs px-2 py-1 rounded-full border focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer bg-green-800 text-lime-300 border-green-600 font-medium";
         // Load saved model or default
         const saved = localStorage.getItem("mcp-model");
         select.value = saved && OPENAI_MODELS.some(m => m.id === saved) ? saved : "gpt-4o-mini";
@@ -341,7 +342,7 @@
           opt.value = m.id; opt.textContent = m.label;
           select.appendChild(opt);
         });
-        select.className = "text-xs px-2 py-1 rounded-full border focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer bg-purple-900/50 text-purple-400 border-purple-700";
+        select.className = "text-xs px-2 py-1 rounded-full border focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer bg-purple-800 text-purple-200 border-purple-600 font-medium";
         const saved = localStorage.getItem("mcp-model");
         select.value = saved && ANTHROPIC_MODELS.some(m => m.id === saved) ? saved : "claude-sonnet-4-20250514";
       } else {
