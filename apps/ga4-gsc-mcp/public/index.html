@@ -340,7 +340,10 @@
       const data = await api("/api/chat", { method: "POST", body: { message: msg, clientId: parseInt(clientId) } });
       removeChatMessage(loadingId);
       const formatted = formatAssistantMessage(data.content);
-      addChatMessage("assistant", formatted);
+      const msgId = addChatMessage("assistant", formatted);
+      if (data.sources && data.sources.length > 0) {
+        addSourcesBadges(msgId, data.sources);
+      }
     } catch (err) {
       removeChatMessage(loadingId);
       addChatMessage("system", `Error: ${err.error || err.message || "Something went wrong"}`);
@@ -374,6 +377,36 @@
   function removeChatMessage(id) {
     const el = document.getElementById(id);
     if (el) el.remove();
+  }
+
+  function addSourcesBadges(msgId, sources) {
+    const msgEl = document.getElementById(msgId);
+    if (!msgEl) return;
+    const bubble = msgEl.querySelector(".chat-bubble");
+    if (!bubble) return;
+    const div = document.createElement("div");
+    div.className = "mt-3 pt-2 border-t border-gray-600/50 flex flex-wrap gap-2 items-center";
+    div.innerHTML = '<span class="text-xs text-gray-500 mr-1">📊 Sources:</span>';
+    sources.forEach(s => {
+      const badge = document.createElement("a");
+      badge.href = s.link;
+      badge.target = "_blank";
+      badge.rel = "noopener";
+      const colors = s.type === "GA4" ? "bg-orange-900/60 text-orange-300 border-orange-700 hover:bg-orange-800/60" 
+        : "bg-green-900/60 text-green-300 border-green-700 hover:bg-green-800/60";
+      badge.className = `inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full border ${colors} transition no-underline`;
+      const icon = s.type === "GA4" ? "📈" : "🔍";
+      let label = s.type;
+      if (s.query) {
+        const dims = s.query.dimensions ? s.query.dimensions.join(", ") : "";
+        const dates = s.query.startDate && s.query.endDate ? ` (${s.query.startDate} → ${s.query.endDate})` : "";
+        label += dims ? `: ${dims}${dates}` : dates;
+      }
+      if (s.type === "GSC URL Inspection") label = `URL Inspect: ${s.url || ""}`;
+      badge.innerHTML = `${icon} ${label}`;
+      div.appendChild(badge);
+    });
+    bubble.appendChild(div);
   }
 
   function formatAssistantMessage(content) {

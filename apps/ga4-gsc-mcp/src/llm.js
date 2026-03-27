@@ -157,34 +157,58 @@ function toolsForAnthropic() {
   }));
 }
 
-// ── Execute a tool call ──
+// ── Execute a tool call (tracks sources) ──
 
-async function executeTool(toolName, args, clientConfig) {
+async function executeTool(toolName, args, clientConfig, sources) {
   const { service_account_json, ga4_property_id, gsc_site_url } = clientConfig;
 
   switch (toolName) {
     case "query_ga4": {
       if (!ga4_property_id) return { error: "GA4 property ID not configured for this client" };
+      const resolvedStart = resolveDate(args.startDate);
+      const resolvedEnd = resolveDate(args.endDate);
+      if (sources) sources.push({
+        type: "GA4",
+        property: ga4_property_id,
+        query: { dimensions: args.dimensions, metrics: args.metrics, startDate: resolvedStart, endDate: resolvedEnd },
+        link: `https://analytics.google.com/analytics/web/#/p${ga4_property_id}/reports/explorer`
+      });
       return await runGA4Report({
         serviceAccountJson: service_account_json,
         propertyId: ga4_property_id,
         ...args,
-        startDate: resolveDate(args.startDate),
-        endDate: resolveDate(args.endDate),
+        startDate: resolvedStart,
+        endDate: resolvedEnd,
       });
     }
     case "query_gsc": {
       if (!gsc_site_url) return { error: "GSC site URL not configured for this client" };
+      const resolvedStart = resolveDate(args.startDate);
+      const resolvedEnd = resolveDate(args.endDate);
+      const siteEncoded = encodeURIComponent(gsc_site_url);
+      if (sources) sources.push({
+        type: "GSC",
+        site: gsc_site_url,
+        query: { dimensions: args.dimensions, startDate: resolvedStart, endDate: resolvedEnd, rowLimit: args.rowLimit },
+        link: `https://search.google.com/search-console/performance/search-analytics?resource_id=${siteEncoded}`
+      });
       return await queryGSC({
         serviceAccountJson: service_account_json,
         siteUrl: gsc_site_url,
         ...args,
-        startDate: resolveDate(args.startDate),
-        endDate: resolveDate(args.endDate),
+        startDate: resolvedStart,
+        endDate: resolvedEnd,
       });
     }
     case "inspect_url": {
       if (!gsc_site_url) return { error: "GSC site URL not configured for this client" };
+      const siteEncoded = encodeURIComponent(gsc_site_url);
+      if (sources) sources.push({
+        type: "GSC URL Inspection",
+        site: gsc_site_url,
+        url: args.url,
+        link: `https://search.google.com/search-console/inspect?resource_id=${siteEncoded}`
+      });
       return await inspectUrl({
         serviceAccountJson: service_account_json,
         siteUrl: gsc_site_url,
@@ -204,11 +228,12 @@ async function chatOpenAI(apiKey, messages, clientConfig) {
 
   const systemMsg = {
     role: "system",
-    content: `You are an SEO analytics assistant. You help users understand their Google Analytics 4 and Google Search Console data. When asked a question, use the available tools to query the data, then provide a clear, actionable summary. Format numbers nicely (commas, percentages). When showing tabular data, structure it clearly. The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`,
+    content: `You are an SEO analytics assistant. You help users understand their Google Analytics 4 and Google Search Console data. When asked a question, use the available tools to query the data, then provide a clear, actionable summary. Format numbers nicely (commas, percentages). When showing tabular data, structure it clearly. Do NOT describe which API calls you made or list query parameters — the UI automatically shows data sources with clickable links. Focus only on insights and analysis. The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`,
   };
 
   let conversation = [systemMsg, ...messages];
   const MAX_ITERATIONS = 5;
+  const sources = [];
 
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     const response = await openai.chat.completions.create({
@@ -225,7 +250,7 @@ async function chatOpenAI(apiKey, messages, clientConfig) {
 
       for (const toolCall of choice.message.tool_calls) {
         const args = JSON.parse(toolCall.function.arguments);
-        const result = await executeTool(toolCall.function.name, args, clientConfig);
+        const result = await executeTool(toolCall.function.name, args, clientConfig, sources);
         conversation.push({
           role: "tool",
           tool_call_id: toolCall.id,
@@ -236,11 +261,12 @@ async function chatOpenAI(apiKey, messages, clientConfig) {
       return {
         content: choice.message.content,
         toolCalls: extractToolCallsFromConversation(conversation),
+        sources,
       };
     }
   }
 
-  return { content: "I made several data queries but couldn't complete the analysis. Please try a simpler question.", toolCalls: [] };
+  return { content: "I made several data queries but couldn't complete the analysis. Please try a simpler question.", toolCalls: [], sources };
 }
 
 // ── Chat with Anthropic ──
@@ -249,7 +275,7 @@ async function chatAnthropic(apiKey, messages, clientConfig) {
   const Anthropic = require("@anthropic-ai/sdk");
   const anthropic = new Anthropic({ apiKey });
 
-  const systemPrompt = `You are an SEO analytics assistant. You help users understand their Google Analytics 4 and Google Search Console data. When asked a question, use the available tools to query the data, then provide a clear, actionable summary. Format numbers nicely (commas, percentages). When showing tabular data, structure it clearly. The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`;
+  const systemPrompt = `You are an SEO analytics assistant. You help users understand their Google Analytics 4 and Google Search Console data. When asked a question, use the available tools to query the data, then provide a clear, actionable summary. Format numbers nicely (commas, percentages). When showing tabular data, structure it clearly. Do NOT describe which API calls you made or list query parameters — the UI automatically shows data sources with clickable links. Focus only on insights and analysis. The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`;
 
   // Convert messages to Anthropic format
   const anthropicMessages = messages.map((m) => ({
@@ -259,6 +285,7 @@ async function chatAnthropic(apiKey, messages, clientConfig) {
 
   const MAX_ITERATIONS = 5;
   let currentMessages = [...anthropicMessages];
+  const sources = [];
 
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     const response = await anthropic.messages.create({
@@ -276,7 +303,7 @@ async function chatAnthropic(apiKey, messages, clientConfig) {
       const toolResults = [];
       for (const block of assistantContent) {
         if (block.type === "tool_use") {
-          const result = await executeTool(block.name, block.input, clientConfig);
+          const result = await executeTool(block.name, block.input, clientConfig, sources);
           toolResults.push({
             type: "tool_result",
             tool_use_id: block.id,
@@ -290,11 +317,12 @@ async function chatAnthropic(apiKey, messages, clientConfig) {
       return {
         content: textContent ? textContent.text : "No response generated.",
         toolCalls: [],
+        sources,
       };
     }
   }
 
-  return { content: "I made several data queries but couldn't complete the analysis. Please try a simpler question.", toolCalls: [] };
+  return { content: "I made several data queries but couldn't complete the analysis. Please try a simpler question.", toolCalls: [], sources };
 }
 
 function extractToolCallsFromConversation(conversation) {
