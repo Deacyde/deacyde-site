@@ -89,6 +89,12 @@ router.get("/api/chat/session/:sessionId", (req, res) => {
   res.json(messages);
 });
 
+// DELETE /api/chat/session/:sessionId — delete a past session
+router.delete("/api/chat/session/:sessionId", (req, res) => {
+  db.deleteSession(req.params.sessionId);
+  res.json({ ok: true });
+});
+
 // POST /api/chat/export — generate CSV from data
 router.post("/api/chat/export", (req, res) => {
   const { headers, rows } = req.body;

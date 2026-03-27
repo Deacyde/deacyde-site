@@ -444,7 +444,13 @@
       system: "bg-yellow-900/50 text-yellow-300 border border-yellow-700",
     };
     bubble.className = `chat-bubble rounded-2xl px-4 py-3 text-sm ${colors[role] || colors.assistant}`;
-    bubble.innerHTML = content;
+    if (role === "user") {
+      // Preserve line breaks and escape HTML for user messages
+      const escaped = content.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      bubble.innerHTML = escaped.replace(/\n/g, "<br>");
+    } else {
+      bubble.innerHTML = content;
+    }
     div.appendChild(bubble);
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
@@ -591,12 +597,22 @@
       }
       container.innerHTML = "";
       for (const s of sessions) {
+        const row = document.createElement("div");
+        row.className = "flex items-center gap-1 rounded-lg hover:bg-gray-800 transition group";
         const btn = document.createElement("button");
-        btn.className = "w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-gray-800 transition truncate";
+        btn.className = "flex-1 text-left px-3 py-2 truncate min-w-0";
         const date = new Date(s.created_at + "Z").toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-        btn.innerHTML = `<div class="text-gray-200 truncate">${s.title}</div><div class="text-[10px] text-gray-500">${date}</div>`;
+        btn.innerHTML = `<div class="text-gray-200 truncate text-sm">${s.title}</div><div class="text-[10px] text-gray-500">${date}</div>`;
         btn.onclick = () => viewPastChat(s.id);
-        container.appendChild(btn);
+        const menu = document.createElement("div");
+        menu.className = "relative shrink-0";
+        menu.innerHTML = `<button class="p-1.5 text-gray-500 hover:text-white opacity-0 group-hover:opacity-100 transition" onclick="event.stopPropagation();toggleChatMenu(this)">⋮</button>
+          <div class="chat-menu hidden absolute right-0 top-8 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 py-1 w-32">
+            <button class="w-full text-left px-3 py-1.5 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300" onclick="event.stopPropagation();deleteSession('${s.id}')">Delete</button>
+          </div>`;
+        row.appendChild(btn);
+        row.appendChild(menu);
+        container.appendChild(row);
       }
     } catch {
       container.innerHTML = '<p class="text-red-400 text-xs text-center mt-4">Failed to load</p>';
@@ -622,6 +638,25 @@
   function backToActiveChat() {
     document.getElementById("readonly-bar").classList.add("hidden");
     viewingPastChat = false;
+    onClientChange();
+  }
+
+  function toggleChatMenu(btn) {
+    // Close any other open menus
+    document.querySelectorAll(".chat-menu").forEach(m => m.classList.add("hidden"));
+    const menu = btn.nextElementSibling;
+    menu.classList.toggle("hidden");
+    // Close on outside click
+    const close = (e) => { if (!menu.contains(e.target) && e.target !== btn) { menu.classList.add("hidden"); document.removeEventListener("click", close); } };
+    setTimeout(() => document.addEventListener("click", close), 0);
+  }
+
+  async function deleteSession(sessionId) {
+    try {
+      await api(`/api/chat/session/${sessionId}`, { method: "DELETE" });
+      loadSidebarSessions();
+    } catch {}
+  }
     onClientChange();
   }
 

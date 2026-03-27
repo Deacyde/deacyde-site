@@ -219,6 +219,12 @@ function getSessionMessages(sessionId) {
     .all(sessionId);
 }
 
+function deleteSession(sessionId) {
+  const db = getDb();
+  db.prepare("DELETE FROM chat_history WHERE session_id = ?").run(sessionId);
+  db.prepare("DELETE FROM chat_sessions WHERE id = ?").run(sessionId);
+}
+
 module.exports = {
   getDb,
   getSetting,
@@ -236,6 +242,7 @@ module.exports = {
   archiveChat,
   getChatSessions,
   getSessionMessages,
+  deleteSession,
   encrypt,
   decrypt,
 };
