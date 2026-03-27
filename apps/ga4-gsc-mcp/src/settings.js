@@ -143,4 +143,61 @@ router.get("/api/clients/:id/test", async (req, res) => {
   res.json(results);
 });
 
+// POST /api/discover — discover GA4 properties and GSC sites from a service account
+router.post("/api/discover", async (req, res) => {
+  const { service_account_json } = req.body;
+  if (!service_account_json) {
+    return res.status(400).json({ error: "Service account JSON is required" });
+  }
+
+  let creds;
+  try {
+    creds = JSON.parse(service_account_json);
+  } catch {
+    return res.status(400).json({ error: "Invalid JSON" });
+  }
+
+  const results = { ga4_properties: [], gsc_sites: [] };
+
+  // Discover GA4 properties
+  try {
+    const { AnalyticsAdminServiceClient } = require("@google-analytics/admin");
+    const adminClient = new AnalyticsAdminServiceClient({ credentials: creds });
+    const [summaries] = await adminClient.listAccountSummaries();
+    for (const account of summaries) {
+      for (const prop of account.propertySummaries || []) {
+        const propId = prop.property.replace("properties/", "");
+        results.ga4_properties.push({
+          id: propId,
+          name: prop.displayName,
+          account: account.displayName,
+        });
+      }
+    }
+  } catch (err) {
+    results.ga4_error = err.message;
+  }
+
+  // Discover GSC sites
+  try {
+    const { google } = require("googleapis");
+    const auth = new google.auth.GoogleAuth({
+      credentials: creds,
+      scopes: ["https://www.googleapis.com/auth/webmasters.readonly"],
+    });
+    const searchconsole = google.searchconsole({ version: "v1", auth });
+    const sitesResponse = await searchconsole.sites.list({ auth });
+    for (const site of sitesResponse.data.siteEntry || []) {
+      results.gsc_sites.push({
+        url: site.siteUrl,
+        permissionLevel: site.permissionLevel,
+      });
+    }
+  } catch (err) {
+    results.gsc_error = err.message;
+  }
+
+  res.json(results);
+});
+
 module.exports = router;

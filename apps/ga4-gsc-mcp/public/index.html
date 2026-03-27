@@ -148,16 +148,32 @@
             <input id="cf-name" type="text" class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white" placeholder="e.g. insightsoftware">
           </div>
           <div>
-            <label class="block text-sm text-gray-300 mb-1">GA4 Property ID</label>
+            <label class="block text-sm text-gray-300 mb-1">Service Account JSON</label>
+            <textarea id="cf-sa" rows="4" class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white text-xs font-mono" placeholder='Paste the full JSON key file contents here...'></textarea>
+            <button onclick="discoverProperties()" class="mt-2 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition" id="discover-btn">🔍 Discover Properties & Sites</button>
+            <p id="discover-status" class="text-xs mt-1 text-gray-500"></p>
+          </div>
+          <div id="discover-results" class="hidden space-y-3">
+            <div>
+              <label class="block text-sm text-gray-300 mb-1">GA4 Property <span class="text-green-400 text-xs">(auto-discovered)</span></label>
+              <select id="cf-ga4-select" onchange="document.getElementById('cf-ga4').value=this.value" class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white text-sm">
+                <option value="">Select a property...</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm text-gray-300 mb-1">GSC Site <span class="text-green-400 text-xs">(auto-discovered)</span></label>
+              <select id="cf-gsc-select" onchange="document.getElementById('cf-gsc').value=this.value" class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white text-sm">
+                <option value="">Select a site...</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-1">GA4 Property ID <span class="text-gray-500 text-xs">(or pick from dropdown above)</span></label>
             <input id="cf-ga4" type="text" class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white" placeholder="e.g. 123456789">
           </div>
           <div>
-            <label class="block text-sm text-gray-300 mb-1">GSC Site URL</label>
+            <label class="block text-sm text-gray-300 mb-1">GSC Site URL <span class="text-gray-500 text-xs">(or pick from dropdown above)</span></label>
             <input id="cf-gsc" type="text" class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white" placeholder="e.g. https://www.example.com">
-          </div>
-          <div>
-            <label class="block text-sm text-gray-300 mb-1">Service Account JSON</label>
-            <textarea id="cf-sa" rows="4" class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white text-xs font-mono" placeholder='Paste the full JSON key file contents here...'></textarea>
           </div>
           <div class="flex gap-2">
             <button onclick="saveClient()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition">Save Client</button>
@@ -517,6 +533,63 @@
     document.getElementById("cf-ga4").value = "";
     document.getElementById("cf-gsc").value = "";
     document.getElementById("cf-sa").value = "";
+    document.getElementById("discover-results").classList.add("hidden");
+    document.getElementById("discover-status").textContent = "";
+  }
+
+  async function discoverProperties() {
+    const sa = document.getElementById("cf-sa").value.trim();
+    if (!sa) { alert("Paste a service account JSON first"); return; }
+    const btn = document.getElementById("discover-btn");
+    const status = document.getElementById("discover-status");
+    btn.disabled = true;
+    btn.textContent = "Discovering...";
+    status.textContent = "";
+
+    try {
+      const data = await api("/api/discover", { method: "POST", body: { service_account_json: sa } });
+      const resultsDiv = document.getElementById("discover-results");
+      resultsDiv.classList.remove("hidden");
+
+      // Populate GA4 dropdown
+      const ga4Select = document.getElementById("cf-ga4-select");
+      ga4Select.innerHTML = '<option value="">Select a property...</option>';
+      if (data.ga4_properties.length > 0) {
+        for (const p of data.ga4_properties) {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = `${p.name} (${p.account}) — ${p.id}`;
+          ga4Select.appendChild(opt);
+        }
+        status.textContent = `Found ${data.ga4_properties.length} GA4 properties`;
+        status.className = "text-xs mt-1 text-green-400";
+      } else {
+        ga4Select.innerHTML = '<option value="">No GA4 properties found</option>';
+      }
+
+      // Populate GSC dropdown
+      const gscSelect = document.getElementById("cf-gsc-select");
+      gscSelect.innerHTML = '<option value="">Select a site...</option>';
+      if (data.gsc_sites.length > 0) {
+        for (const s of data.gsc_sites) {
+          const opt = document.createElement("option");
+          opt.value = s.url;
+          opt.textContent = `${s.url} (${s.permissionLevel})`;
+          gscSelect.appendChild(opt);
+        }
+        status.textContent += `, ${data.gsc_sites.length} GSC sites`;
+      } else {
+        gscSelect.innerHTML = '<option value="">No GSC sites found</option>';
+      }
+
+      if (data.ga4_error) status.textContent += ` · GA4 error: ${data.ga4_error}`;
+      if (data.gsc_error) status.textContent += ` · GSC error: ${data.gsc_error}`;
+    } catch (err) {
+      status.textContent = `Discovery failed: ${err.error || err.message}`;
+      status.className = "text-xs mt-1 text-red-400";
+    }
+    btn.disabled = false;
+    btn.textContent = "🔍 Discover Properties & Sites";
   }
 
   async function editClient(id) {
