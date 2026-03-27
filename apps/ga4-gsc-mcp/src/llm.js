@@ -213,9 +213,10 @@ async function executeTool(toolName, args, clientConfig) {
 
 // ── Chat with OpenAI ──
 
-async function chatOpenAI(apiKey, messages, clientConfig) {
+async function chatOpenAI(apiKey, messages, clientConfig, model) {
   const OpenAI = require("openai");
   const openai = new OpenAI({ apiKey });
+  const useModel = model || "gpt-4o-mini";
 
   const systemMsg = {
     role: "system",
@@ -227,7 +228,7 @@ async function chatOpenAI(apiKey, messages, clientConfig) {
 
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: useModel,
       messages: conversation,
       tools: toolsForOpenAI(),
       tool_choice: "auto",
@@ -260,9 +261,10 @@ async function chatOpenAI(apiKey, messages, clientConfig) {
 
 // ── Chat with Anthropic ──
 
-async function chatAnthropic(apiKey, messages, clientConfig) {
+async function chatAnthropic(apiKey, messages, clientConfig, model) {
   const Anthropic = require("@anthropic-ai/sdk");
   const anthropic = new Anthropic({ apiKey });
+  const useModel = model || "claude-sonnet-4-20250514";
 
   const systemPrompt = `You are an SEO analytics assistant. Today's date is ${new Date().toISOString().split("T")[0]}. You help users understand their Google Analytics 4 and Google Search Console data. When asked a question, use the available tools to query the data, then provide a clear, actionable summary. Format numbers nicely (commas, percentages). When showing tabular data, structure it clearly. Use the current year for relative date references like "year to date", "this year", "this month", etc. IMPORTANT: When the user asks for data above or below a threshold (e.g. "over 10,000 clicks"), you MUST filter the results to only include rows that match that criteria. If no rows match, say so clearly — do NOT show rows that don't meet the threshold. The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`;
 
@@ -277,7 +279,7 @@ async function chatAnthropic(apiKey, messages, clientConfig) {
 
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: useModel,
       max_tokens: 4096,
       system: systemPrompt,
       messages: currentMessages,
@@ -326,17 +328,17 @@ function extractToolCallsFromConversation(conversation) {
 
 // ── Main chat function ──
 
-async function chat(messages, clientConfig) {
+async function chat(messages, clientConfig, model) {
   const provider = db.getSetting("active_llm_provider") || "openai";
 
   if (provider === "openai") {
     const apiKey = db.getEncryptedSetting("openai_api_key");
     if (!apiKey) throw new Error("OpenAI API key not configured. Go to Settings.");
-    return await chatOpenAI(apiKey, messages, clientConfig);
+    return await chatOpenAI(apiKey, messages, clientConfig, model);
   } else if (provider === "anthropic") {
     const apiKey = db.getEncryptedSetting("anthropic_api_key");
     if (!apiKey) throw new Error("Anthropic API key not configured. Go to Settings.");
-    return await chatAnthropic(apiKey, messages, clientConfig);
+    return await chatAnthropic(apiKey, messages, clientConfig, model);
   } else {
     throw new Error(`Unknown LLM provider: ${provider}`);
   }

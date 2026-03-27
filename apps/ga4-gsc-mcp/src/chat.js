@@ -10,7 +10,7 @@ const router = express.Router();
 
 // POST /api/chat — send a message and get LLM response
 router.post("/api/chat", async (req, res) => {
-  const { message, clientId } = req.body;
+  const { message, clientId, model } = req.body;
 
   if (!message) return res.status(400).json({ error: "Message is required" });
   if (!clientId) return res.status(400).json({ error: "Client is required" });
@@ -32,7 +32,7 @@ router.post("/api/chat", async (req, res) => {
   }));
 
   try {
-    const response = await chat(messages, clientConfig);
+    const response = await chat(messages, clientConfig, model);
 
     // Save assistant response
     db.saveChatMessage(clientId, "assistant", response.content, {
