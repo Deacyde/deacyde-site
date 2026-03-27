@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GA4 & GSC Custom MCP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .fade-in { animation: fadeIn 0.2s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .chat-bubble { max-width: 85%; }
+    #chat-messages::-webkit-scrollbar { width: 6px; }
+    #chat-messages::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+  </style>
+</head>
+<body class="h-full dark">
+
+<!-- ═══ AUTH SCREENS ═══ -->
+<div id="auth-screen" class="hidden min-h-full flex items-center justify-center p-4">
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-white">🔗 GA4 & GSC Custom MCP</h1>
+      <p id="auth-subtitle" class="text-gray-400 mt-2">Set your admin password</p>
+    </div>
+    <div class="bg-gray-900 rounded-xl p-6 border border-gray-800">
+      <div id="auth-error" class="hidden mb-4 p-3 bg-red-900/50 border border-red-700 rounded-lg text-red-300 text-sm"></div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-300 mb-1">Password</label>
+          <input id="auth-password" type="password" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Enter password">
+        </div>
+        <div id="auth-confirm-group" class="hidden">
+          <label class="block text-sm font-medium text-gray-300 mb-1">Confirm Password</label>
+          <input id="auth-confirm" type="password" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Confirm password">
+        </div>
+        <button id="auth-submit" onclick="handleAuth()" class="w-full py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg transition">Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div id="app-screen" class="hidden h-full flex flex-col">
+  <!-- Header -->
+  <header class="bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center justify-between shrink-0">
+    <div class="flex items-center gap-3">
+      <h1 class="text-lg font-bold text-white">🔗 GA4 & GSC Custom MCP</h1>
+      <select id="client-select" class="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+        <option value="">Select client...</option>
+      </select>
+      <span id="llm-badge" class="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-400 border border-gray-700">No LLM</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="showSettings()" class="p-2 text-gray-400 hover:text-white transition" title="Settings">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </button>
+      <button onclick="handleLogout()" class="p-2 text-gray-400 hover:text-white transition" title="Logout">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Chat area -->
+  <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+    <div class="text-center text-gray-500 mt-20">
+      <p class="text-4xl mb-4">🔗</p>
+      <p class="text-lg font-medium">GA4 & GSC Custom MCP</p>
+      <p class="text-sm mt-2">Select a client and ask a question about your analytics data.</p>
+      <p class="text-xs mt-1 text-gray-600">Configure your API keys in Settings to get started.</p>
+    </div>
+  </div>
+
+  <!-- Input bar -->
+  <div class="bg-gray-900 border-t border-gray-800 p-4 shrink-0">
+    <div class="max-w-4xl mx-auto flex gap-3">
+      <input id="chat-input" type="text" placeholder="Ask about your GA4 or GSC data..."
+        class="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+        onkeydown="if(event.key==='Enter')sendMessage()">
+      <button onclick="sendMessage()" class="px-5 py-3 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl transition">
+        Send
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS MODAL ═══ -->
+<div id="settings-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+  <div class="bg-gray-900 rounded-2xl border border-gray-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between p-6 border-b border-gray-800">
+      <h2 class="text-xl font-bold text-white">⚙️ Settings</h2>
+      <button onclick="closeSettings()" class="text-gray-400 hover:text-white">✕</button>
+    </div>
+    <div class="p-6 space-y-8">
+
+      <!-- LLM Keys -->
+      <div>
+        <h3 class="text-lg font-semibold text-white mb-4">LLM API Keys</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Active Provider</label>
+            <select id="set-llm-provider" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white">
+              <option value="openai">OpenAI (GPT)</option>
+              <option value="anthropic">Anthropic (Claude)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">OpenAI API Key</label>
+            <input id="set-openai-key" type="password" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white" placeholder="sk-...">
+            <p id="openai-status" class="text-xs mt-1 text-gray-500"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-1">Anthropic API Key</label>
+            <input id="set-anthropic-key" type="password" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white" placeholder="sk-ant-...">
+            <p id="anthropic-status" class="text-xs mt-1 text-gray-500"></p>
+          </div>
+          <button onclick="saveLlmSettings()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition">Save LLM Settings</button>
+        </div>
+      </div>
+
+      <!-- Clients -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-white">Client Configs</h3>
+          <button onclick="showAddClient()" class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">+ Add Client</button>
+        </div>
+        <div id="clients-list" class="space-y-3"></div>
+      </div>
+
+      <!-- Add/Edit Client Form -->
+      <div id="client-form" class="hidden bg-gray-800 rounded-xl p-5 border border-gray-700">
+        <h4 id="client-form-title" class="text-md font-semibold text-white mb-4">Add Client</h4>
+        <input type="hidden" id="client-form-id">
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm text-gray-300 mb-1">Client Name</label>
+            <input id="cf-name" type="text" class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white" placeholder="e.g. insightsoftware">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-1">GA4 Property ID</label>
+            <input id="cf-ga4" type="text" class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white" placeholder="e.g. 123456789">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-1">GSC Site URL</label>
+            <input id="cf-gsc" type="text" class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white" placeholder="e.g. https://www.example.com">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-1">Service Account JSON</label>
+            <textarea id="cf-sa" rows="4" class="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white text-xs font-mono" placeholder='Paste the full JSON key file contents here...'></textarea>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="saveClient()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg transition">Save Client</button>
+            <button onclick="hideClientForm()" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── State ──
+  let currentView = null;
+
+  // ── API helpers ──
+  async function api(url, opts = {}) {
+    const res = await fetch(url, {
+      headers: { "Content-Type": "application/json", ...opts.headers },
+      ...opts,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    const data = await res.json();
+    if (!res.ok) throw data;
+    return data;
+  }
+
+  // ── Auth ──
+  async function init() {
+    try {
+      const status = await api("/api/auth/status");
+      if (!status.setup_complete) {
+        showAuthScreen("setup");
+      } else if (!status.authenticated) {
+        showAuthScreen("login");
+      } else {
+        showApp();
+      }
+    } catch (err) {
+      showAuthScreen("login");
+    }
+  }
+
+  function showAuthScreen(mode) {
+    document.getElementById("auth-screen").classList.remove("hidden");
+    document.getElementById("app-screen").classList.add("hidden");
+    document.getElementById("settings-modal").classList.add("hidden");
+    const isSetup = mode === "setup";
+    document.getElementById("auth-subtitle").textContent = isSetup ? "Create your admin password" : "Enter your password";
+    document.getElementById("auth-confirm-group").classList.toggle("hidden", !isSetup);
+    document.getElementById("auth-submit").textContent = isSetup ? "Create Password" : "Login";
+    document.getElementById("auth-error").classList.add("hidden");
+    document.getElementById("auth-password").value = "";
+    document.getElementById("auth-confirm").value = "";
+    currentView = mode;
+    document.getElementById("auth-password").focus();
+  }
+
+  async function handleAuth() {
+    const pw = document.getElementById("auth-password").value;
+    const errEl = document.getElementById("auth-error");
+
+    if (currentView === "setup") {
+      const confirm = document.getElementById("auth-confirm").value;
+      if (pw !== confirm) {
+        errEl.textContent = "Passwords don't match";
+        errEl.classList.remove("hidden");
+        return;
+      }
+      try {
+        await api("/api/auth/setup", { method: "POST", body: { password: pw } });
+        showApp();
+      } catch (err) {
+        errEl.textContent = err.error || "Setup failed";
+        errEl.classList.remove("hidden");
+      }
+    } else {
+      try {
+        await api("/api/auth/login", { method: "POST", body: { password: pw } });
+        showApp();
+      } catch (err) {
+        errEl.textContent = err.error || "Login failed";
+        errEl.classList.remove("hidden");
+      }
+    }
+  }
+
+  async function handleLogout() {
+    await api("/api/auth/logout", { method: "POST" });
+    showAuthScreen("login");
+  }
+
+  // ── Main App ──
+  async function showApp() {
+    document.getElementById("auth-screen").classList.add("hidden");
+    document.getElementById("app-screen").classList.remove("hidden");
+    currentView = "app";
+    await loadClients();
+    await loadLlmStatus();
+  }
+
+  async function loadClients() {
+    try {
+      const clients = await api("/api/clients");
+      const select = document.getElementById("client-select");
+      select.innerHTML = '<option value="">Select client...</option>';
+      clients.forEach((c) => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.name;
+        select.appendChild(opt);
+      });
+    } catch {}
+  }
+
+  async function loadLlmStatus() {
+    try {
+      const data = await api("/api/settings/llm");
+      const badge = document.getElementById("llm-badge");
+      if (data.active_provider === "openai" && data.openai_configured) {
+        badge.textContent = "GPT";
+        badge.className = "text-xs px-2 py-1 rounded-full bg-green-900/50 text-green-400 border border-green-700";
+      } else if (data.active_provider === "anthropic" && data.anthropic_configured) {
+        badge.textContent = "Claude";
+        badge.className = "text-xs px-2 py-1 rounded-full bg-purple-900/50 text-purple-400 border border-purple-700";
+      } else {
+        badge.textContent = "No LLM";
+        badge.className = "text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-400 border border-gray-700";
+      }
+    } catch {}
+  }
+
+  // ── Chat (placeholder — Phase 5) ──
+  function sendMessage() {
+    const input = document.getElementById("chat-input");
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    const clientId = document.getElementById("client-select").value;
+    if (!clientId) {
+      addChatMessage("system", "Please select a client first.");
+      return;
+    }
+
+    addChatMessage("user", msg);
+    input.value = "";
+    addChatMessage("assistant", "⏳ Chat functionality coming in Phase 4+5. Settings and client configs are ready — click ⚙️ to configure.");
+  }
+
+  function addChatMessage(role, content) {
+    const container = document.getElementById("chat-messages");
+    // Clear welcome screen on first message
+    if (container.querySelector(".text-center")) {
+      container.innerHTML = "";
+    }
+    const div = document.createElement("div");
+    div.className = `fade-in flex ${role === "user" ? "justify-end" : "justify-start"}`;
+    const bubble = document.createElement("div");
+    const colors = {
+      user: "bg-brand-600 text-white",
+      assistant: "bg-gray-800 text-gray-200 border border-gray-700",
+      system: "bg-yellow-900/50 text-yellow-300 border border-yellow-700",
+    };
+    bubble.className = `chat-bubble rounded-2xl px-4 py-3 text-sm ${colors[role] || colors.assistant}`;
+    bubble.innerHTML = content;
+    div.appendChild(bubble);
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // ── Settings Modal ──
+  function showSettings() {
+    document.getElementById("settings-modal").classList.remove("hidden");
+    loadSettingsData();
+  }
+
+  function closeSettings() {
+    document.getElementById("settings-modal").classList.add("hidden");
+    hideClientForm();
+    loadClients();
+    loadLlmStatus();
+  }
+
+  async function loadSettingsData() {
+    try {
+      const llm = await api("/api/settings/llm");
+      document.getElementById("set-llm-provider").value = llm.active_provider;
+      document.getElementById("openai-status").textContent = llm.openai_configured ? "✓ Key configured" : "Not configured";
+      document.getElementById("openai-status").className = `text-xs mt-1 ${llm.openai_configured ? "text-green-400" : "text-gray-500"}`;
+      document.getElementById("anthropic-status").textContent = llm.anthropic_configured ? "✓ Key configured" : "Not configured";
+      document.getElementById("anthropic-status").className = `text-xs mt-1 ${llm.anthropic_configured ? "text-green-400" : "text-gray-500"}`;
+    } catch {}
+
+    try {
+      const clients = await api("/api/clients");
+      const list = document.getElementById("clients-list");
+      if (clients.length === 0) {
+        list.innerHTML = '<p class="text-gray-500 text-sm">No clients configured yet.</p>';
+        return;
+      }
+      list.innerHTML = clients
+        .map(
+          (c) => `
+        <div class="flex items-center justify-between bg-gray-800 rounded-lg p-3 border border-gray-700">
+          <div>
+            <p class="text-white font-medium">${c.name}</p>
+            <p class="text-xs text-gray-400">${c.ga4_property_id ? "GA4: " + c.ga4_property_id : ""} ${c.gsc_site_url ? " · GSC: " + c.gsc_site_url : ""}</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="testClient(${c.id})" class="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition" id="test-btn-${c.id}">Test</button>
+            <button onclick="editClient(${c.id})" class="px-2 py-1 text-xs bg-gray-600 hover:bg-gray-500 text-white rounded transition">Edit</button>
+            <button onclick="removeClient(${c.id})" class="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition">Delete</button>
+          </div>
+        </div>`
+        )
+        .join("");
+    } catch {}
+  }
+
+  async function saveLlmSettings() {
+    const body = { active_provider: document.getElementById("set-llm-provider").value };
+    const openaiKey = document.getElementById("set-openai-key").value;
+    const anthropicKey = document.getElementById("set-anthropic-key").value;
+    if (openaiKey) body.openai_api_key = openaiKey;
+    if (anthropicKey) body.anthropic_api_key = anthropicKey;
+    await api("/api/settings/llm", { method: "POST", body });
+    document.getElementById("set-openai-key").value = "";
+    document.getElementById("set-anthropic-key").value = "";
+    loadSettingsData();
+    loadLlmStatus();
+  }
+
+  // ── Client CRUD ──
+  function showAddClient() {
+    document.getElementById("client-form").classList.remove("hidden");
+    document.getElementById("client-form-title").textContent = "Add Client";
+    document.getElementById("client-form-id").value = "";
+    document.getElementById("cf-name").value = "";
+    document.getElementById("cf-ga4").value = "";
+    document.getElementById("cf-gsc").value = "";
+    document.getElementById("cf-sa").value = "";
+  }
+
+  async function editClient(id) {
+    // Fetch fresh client list to populate form
+    const clients = await api("/api/clients");
+    const c = clients.find((cl) => cl.id === id);
+    if (!c) return;
+    document.getElementById("client-form").classList.remove("hidden");
+    document.getElementById("client-form-title").textContent = "Edit Client";
+    document.getElementById("client-form-id").value = id;
+    document.getElementById("cf-name").value = c.name;
+    document.getElementById("cf-ga4").value = c.ga4_property_id || "";
+    document.getElementById("cf-gsc").value = c.gsc_site_url || "";
+    document.getElementById("cf-sa").value = "";
+  }
+
+  async function saveClient() {
+    const id = document.getElementById("client-form-id").value;
+    const body = {
+      name: document.getElementById("cf-name").value,
+      ga4_property_id: document.getElementById("cf-ga4").value,
+      gsc_site_url: document.getElementById("cf-gsc").value,
+    };
+    const sa = document.getElementById("cf-sa").value.trim();
+    if (sa) body.service_account_json = sa;
+
+    if (id) {
+      await api(`/api/clients/${id}`, { method: "PUT", body });
+    } else {
+      await api("/api/clients", { method: "POST", body });
+    }
+    hideClientForm();
+    loadSettingsData();
+    loadClients();
+  }
+
+  function hideClientForm() {
+    document.getElementById("client-form").classList.add("hidden");
+  }
+
+  async function removeClient(id) {
+    if (!confirm("Delete this client?")) return;
+    await api(`/api/clients/${id}`, { method: "DELETE" });
+    loadSettingsData();
+    loadClients();
+  }
+
+  async function testClient(id) {
+    const btn = document.getElementById(`test-btn-${id}`);
+    btn.textContent = "Testing...";
+    btn.disabled = true;
+    try {
+      const result = await api(`/api/clients/${id}/test`);
+      let msg = [];
+      if (result.ga4) msg.push(`GA4: ${result.ga4}`);
+      if (result.gsc) msg.push(`GSC: ${result.gsc}`);
+      alert(msg.join("\n") || "No APIs configured to test");
+    } catch (err) {
+      alert("Test failed: " + (err.error || "Unknown error"));
+    }
+    btn.textContent = "Test";
+    btn.disabled = false;
+  }
+
+  // Enter key on auth screen
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && currentView && currentView !== "app") {
+      handleAuth();
+    }
+  });
+
+  // Boot
+  init();
+</script>
+</body>
+</html>
