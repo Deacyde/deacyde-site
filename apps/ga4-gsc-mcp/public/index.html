@@ -41,9 +41,10 @@
           <label class="block text-sm font-medium text-gray-300 mb-1">Username</label>
           <input id="auth-username" type="text" autocomplete="username" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Username" value="Deacyded">
         </div>
-        <div>
+        <div class="relative">
           <label class="block text-sm font-medium text-gray-300 mb-1">Password</label>
-          <input id="auth-password" type="password" autocomplete="current-password" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Enter password">
+          <input id="auth-password" type="password" autocomplete="current-password" class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-brand-500 pr-10" placeholder="Enter password">
+          <button type="button" onclick="const p=document.getElementById('auth-password');p.type=p.type==='password'?'text':'password';this.textContent=p.type==='password'?'👁':'🙈'" class="absolute right-2 top-8 text-gray-400 hover:text-white text-sm">👁</button>
         </div>
         <div id="auth-confirm-group" class="hidden">
           <label class="block text-sm font-medium text-gray-300 mb-1">Confirm Password</label>

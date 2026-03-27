@@ -21,11 +21,14 @@ router.post("/api/chat", async (req, res) => {
   // Save user message
   db.saveChatMessage(clientId, "user", message);
 
-  // Build message history (last 20 messages for context)
-  const history = db.getChatHistory(clientId, 20);
+  // Build message history — limit to last 10 messages and truncate long ones
+  const history = db.getChatHistory(clientId, 10);
+  const MAX_MSG_CHARS = 3000;
   const messages = history.map((h) => ({
     role: h.role,
-    content: h.content,
+    content: h.content.length > MAX_MSG_CHARS
+      ? h.content.substring(0, MAX_MSG_CHARS) + "\n...[truncated for brevity]"
+      : h.content,
   }));
 
   try {

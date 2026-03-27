@@ -162,26 +162,33 @@ function toolsForAnthropic() {
 async function executeTool(toolName, args, clientConfig) {
   const { service_account_json, ga4_property_id, gsc_site_url } = clientConfig;
 
+  // Cap row limits to prevent massive responses
+  if (args.rowLimit) args.rowLimit = Math.min(args.rowLimit, 50);
+  if (args.limit) args.limit = Math.min(args.limit, 50);
+
+  let result;
   switch (toolName) {
     case "query_ga4": {
       if (!ga4_property_id) return { error: "GA4 property ID not configured for this client" };
-      return await runGA4Report({
+      result = await runGA4Report({
         serviceAccountJson: service_account_json,
         propertyId: ga4_property_id,
         ...args,
         startDate: resolveDate(args.startDate),
         endDate: resolveDate(args.endDate),
       });
+      break;
     }
     case "query_gsc": {
       if (!gsc_site_url) return { error: "GSC site URL not configured for this client" };
-      return await queryGSC({
+      result = await queryGSC({
         serviceAccountJson: service_account_json,
         siteUrl: gsc_site_url,
         ...args,
         startDate: resolveDate(args.startDate),
         endDate: resolveDate(args.endDate),
       });
+      break;
     }
     case "inspect_url": {
       if (!gsc_site_url) return { error: "GSC site URL not configured for this client" };
@@ -194,6 +201,14 @@ async function executeTool(toolName, args, clientConfig) {
     default:
       return { error: `Unknown tool: ${toolName}` };
   }
+
+  // Truncate massive results to stay within token limits
+  const resultStr = JSON.stringify(result);
+  if (resultStr.length > 15000) {
+    const truncated = result.rows ? { ...result, rows: result.rows.slice(0, 25), rowCount: result.rows.length, note: `Showing top 25 of ${result.rows.length} rows` } : result;
+    return truncated;
+  }
+  return result;
 }
 
 // ── Chat with OpenAI ──
