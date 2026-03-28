@@ -105,7 +105,8 @@
     else if (n.includes('GPS') || n.includes('NAVSTAR') || n.includes('GALILEO') || n.includes('BEIDOU') || n.includes('GLONASS')) { emoji = '📍'; color = '#34d399'; }
     else if (n.includes('NOAA') || n.includes('GOES') || n.includes('METEOSAT') || n.includes('METEOR')) { emoji = '🌤️'; color = '#38bdf8'; }
     else if (n.includes('HUBBLE') || n.includes('CHANDRA') || n.includes('JAMES WEBB') || n.includes('JWST')) { emoji = '🔭'; color = '#f472b6'; }
-    else if (category === 'debris' || n.includes('DEB') || n.includes('R/B')) { emoji = '💀'; color = '#ef4444'; }
+    else if (n.includes('R/B')) { emoji = '🚀'; color = '#f59e0b'; }
+    else if (category === 'debris' || n.includes('DEB')) { emoji = '🗑️'; color = '#6b7280'; }
 
     return {
       icon: L.divIcon({
@@ -140,11 +141,21 @@
   // Fetch TLEs from CelesTrak
   async function fetchTLEs(category) {
     if (category === 'all') {
-      const [stations, visual] = await Promise.all([
+      const [stations, visual, weather, gnss, science] = await Promise.all([
         fetchTLEsForGroup('stations'),
         fetchTLEsForGroup('visual'),
+        fetchTLEsForGroup('weather'),
+        fetchTLEsForGroup('gnss'),
+        fetchTLEsForGroup('science'),
       ]);
-      return [...stations, ...visual];
+      // Dedupe by TLE line 1 (NORAD ID)
+      const seen = new Set();
+      const combined = [];
+      for (const sat of [...stations, ...visual, ...weather, ...gnss, ...science]) {
+        const id = sat.tle1.substring(2, 7).trim();
+        if (!seen.has(id)) { seen.add(id); combined.push(sat); }
+      }
+      return combined;
     }
     return fetchTLEsForGroup(CATEGORIES[category] || category);
   }
@@ -523,6 +534,7 @@
             <div class="flex items-center gap-2">📍 <span class="text-gray-300">GPS/Navigation</span></div>
             <div class="flex items-center gap-2">🌤️ <span class="text-gray-300">Weather Satellites</span></div>
             <div class="flex items-center gap-2">🔭 <span class="text-gray-300">Science/Telescopes</span></div>
+            <div class="flex items-center gap-2">🚀 <span class="text-gray-300">Rocket Bodies</span></div>
             <div class="flex items-center gap-2">🛰️ <span class="text-gray-300">Other Satellites</span></div>
           </div>
           <div class="font-semibold text-gray-200 mt-2 mb-1.5">🌌 Deep Sky</div>
