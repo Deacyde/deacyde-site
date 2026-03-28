@@ -39,7 +39,7 @@
           <option value="all" selected>All Objects</option>
           <option value="stations">Space Stations</option>
           <option value="starlink">Starlink</option>
-          <option value="active">Active Satellites</option>
+          <option value="active">Brightest Satellites</option>
           <option value="weather">Weather Sats</option>
           <option value="gps">GPS/Navigation</option>
           <option value="science">Science</option>
@@ -88,8 +88,8 @@
   // TLE category URLs from CelesTrak
   const CATEGORIES = {
     stations:  "stations",
-    starlink:  "supplemental/starlink",  // Note: large dataset
-    active:    "active",
+    starlink:  "starlink",
+    active:    "visual",
     weather:   "weather",
     gps:       "gnss",
     science:   "science",
@@ -140,12 +140,11 @@
   // Fetch TLEs from CelesTrak
   async function fetchTLEs(category) {
     if (category === 'all') {
-      // Fetch stations + a sample of active satellites (avoid huge downloads)
-      const [stations, active] = await Promise.all([
+      const [stations, visual] = await Promise.all([
         fetchTLEsForGroup('stations'),
-        fetchTLEsForGroup('active'),
+        fetchTLEsForGroup('visual'),
       ]);
-      return [...stations, ...active];
+      return [...stations, ...visual];
     }
     return fetchTLEsForGroup(CATEGORIES[category] || category);
   }
@@ -156,15 +155,10 @@
       return tleCache[cacheKey].data;
     }
 
-    let url;
-    if (group.includes('/')) {
-      url = `https://celestrak.org/NORAD/elements/${group}.txt`;
-    } else {
-      url = `${CELESTRAK_BASE}?GROUP=${group}&FORMAT=tle`;
-    }
+    const url = `${CELESTRAK_BASE}?GROUP=${group}&FORMAT=tle`;
 
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`CelesTrak returned ${res.status}`);
+    if (!res.ok) throw new Error(`CelesTrak returned ${res.status} for ${group}`);
     const text = await res.text();
     const lines = text.trim().split('\n');
     const sats = [];
