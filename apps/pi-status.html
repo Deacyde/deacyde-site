@@ -256,16 +256,18 @@
     }
 
     // ── Security Scan (local only) ──
+    const PI_LOCAL = 'http://192.168.1.86:3000';
+
     async function checkLocalAndShowSecurity() {
       try {
-        const res = await fetch('https://pi.deacyde.com/security-scan', { signal: AbortSignal.timeout(3000) });
+        const res = await fetch(PI_LOCAL + '/security-scan', { signal: AbortSignal.timeout(2000) });
         if (res.ok) {
           document.getElementById('security-section').style.display = '';
           const data = await res.json();
           if (data.timestamp) renderScanResults(data);
           else document.getElementById('scan-last').style.display = 'none';
         }
-      } catch { /* not on local network or scan endpoint not available */ }
+      } catch { /* not on local network — section stays hidden */ }
     }
 
     async function runScan() {
@@ -280,7 +282,7 @@
       statusEl.textContent = '🔍 Running security checks — firewall, fail2ban, SSH, ports, PM2, disk, memory, CPU temp...';
 
       try {
-        const res = await fetch('https://pi.deacyde.com/security-scan', { method: 'POST' });
+        const res = await fetch(PI_LOCAL + '/security-scan', { method: 'POST' });
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         renderScanResults(data);
