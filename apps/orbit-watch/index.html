@@ -348,11 +348,11 @@
       }
 
       renderSatellites(overhead, overheadPos);
-      if (deepSkyOn) renderDeepSky();
+      if (deepSkyOn) { try { renderDeepSky(); } catch(e) { console.warn('Deep sky error:', e); } }
     } catch (err) {
-      badge.textContent = 'Error';
+      badge.textContent = `Error: ${err.message || err}`;
       badge.className = 'text-xs px-2 py-1 rounded-full bg-red-900/50 text-red-400 border border-red-700';
-      console.error(err);
+      console.error('Orbit Watch error:', err);
     }
   }
 
