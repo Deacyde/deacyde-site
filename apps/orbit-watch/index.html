@@ -141,7 +141,7 @@
   // Fetch TLEs from CelesTrak
   async function fetchTLEs(category) {
     if (category === 'all') {
-      const [stations, visual, starlink, weather, gnss, science] = await Promise.all([
+      const results = await Promise.allSettled([
         fetchTLEsForGroup('stations'),
         fetchTLEsForGroup('visual'),
         fetchTLEsForGroup('starlink'),
@@ -149,12 +149,15 @@
         fetchTLEsForGroup('gnss'),
         fetchTLEsForGroup('science'),
       ]);
-      // Dedupe by TLE line 1 (NORAD ID)
+      // Collect successes, skip failures
       const seen = new Set();
       const combined = [];
-      for (const sat of [...stations, ...visual, ...starlink, ...weather, ...gnss, ...science]) {
-        const id = sat.tle1.substring(2, 7).trim();
-        if (!seen.has(id)) { seen.add(id); combined.push(sat); }
+      for (const r of results) {
+        if (r.status !== 'fulfilled') { console.warn('CelesTrak group failed:', r.reason); continue; }
+        for (const sat of r.value) {
+          const id = sat.tle1.substring(2, 7).trim();
+          if (!seen.has(id)) { seen.add(id); combined.push(sat); }
+        }
       }
       return combined;
     }
@@ -167,7 +170,10 @@
       return tleCache[cacheKey].data;
     }
 
-    const url = `${CELESTRAK_BASE}?GROUP=${group}&FORMAT=tle`;
+    // Starlink needs NAME= param (GROUP= returns 403)
+    const url = group === 'starlink'
+      ? `${CELESTRAK_BASE}?NAME=STARLINK&FORMAT=tle`
+      : `${CELESTRAK_BASE}?GROUP=${group}&FORMAT=tle`;
 
     const res = await fetch(url);
     if (!res.ok) throw new Error(`CelesTrak returned ${res.status} for ${group}`);
