@@ -141,9 +141,10 @@
   // Fetch TLEs from CelesTrak
   async function fetchTLEs(category) {
     if (category === 'all') {
-      const [stations, visual, weather, gnss, science] = await Promise.all([
+      const [stations, visual, starlink, weather, gnss, science] = await Promise.all([
         fetchTLEsForGroup('stations'),
         fetchTLEsForGroup('visual'),
+        fetchTLEsForGroup('starlink'),
         fetchTLEsForGroup('weather'),
         fetchTLEsForGroup('gnss'),
         fetchTLEsForGroup('science'),
@@ -151,7 +152,7 @@
       // Dedupe by TLE line 1 (NORAD ID)
       const seen = new Set();
       const combined = [];
-      for (const sat of [...stations, ...visual, ...weather, ...gnss, ...science]) {
+      for (const sat of [...stations, ...visual, ...starlink, ...weather, ...gnss, ...science]) {
         const id = sat.tle1.substring(2, 7).trim();
         if (!seen.has(id)) { seen.add(id); combined.push(sat); }
       }
@@ -328,8 +329,8 @@
       const overhead = [];
       const overheadPos = [];
 
-      // Limit Starlink to avoid freezing (thousands of sats)
-      const limit = category === 'starlink' ? 500 : allSats.length;
+      // Process up to 2000 for 'all' (includes starlink), 500 for starlink-only
+      const limit = (category === 'starlink' || category === 'all') ? 2000 : allSats.length;
       const toProcess = allSats.slice(0, limit);
 
       for (const sat of toProcess) {
