@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
   <script>
     tailwind.config = { theme: { extend: { colors: { brand: { 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' } } } } }
   </script>
@@ -54,6 +55,9 @@
       </div>
       <button onclick="refresh()" class="px-3 py-1.5 text-xs bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg transition">
         🔄 Refresh
+      </button>
+      <button id="deepsky-toggle" onclick="toggleDeepSky()" class="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium rounded-lg transition border border-gray-700" title="Show planets, Moon & Sun">
+        🌌 Deep Sky
       </button>
       <span id="obj-count" class="text-xs text-gray-400"></span>
     </div>
@@ -332,6 +336,7 @@
       }
 
       renderSatellites(overhead, overheadPos);
+      if (deepSkyOn) renderDeepSky();
     } catch (err) {
       badge.textContent = 'Error';
       badge.className = 'text-xs px-2 py-1 rounded-full bg-red-900/50 text-red-400 border border-red-700';
@@ -374,6 +379,140 @@
     }
   }
 
+  // ── Deep Sky (Planets, Moon, Sun) ──
+  let deepSkyOn = false;
+  let deepSkyMarkers = [];
+
+  const CELESTIAL_BODIES = [
+    { id: 'Sun',     emoji: '☀️', color: '#fbbf24', size: 28 },
+    { id: 'Moon',    emoji: '🌙', color: '#e5e7eb', size: 26 },
+    { id: 'Mercury', emoji: '⚫', color: '#9ca3af', size: 16, label: 'Mercury' },
+    { id: 'Venus',   emoji: '🌟', color: '#fde68a', size: 20, label: 'Venus' },
+    { id: 'Mars',    emoji: '🔴', color: '#ef4444', size: 18, label: 'Mars' },
+    { id: 'Jupiter', emoji: '🟠', color: '#f97316', size: 22, label: 'Jupiter' },
+    { id: 'Saturn',  emoji: '🪐', color: '#d4a574', size: 22, label: 'Saturn' },
+    { id: 'Uranus',  emoji: '🔵', color: '#67e8f9', size: 14, label: 'Uranus' },
+    { id: 'Neptune', emoji: '💙', color: '#3b82f6', size: 14, label: 'Neptune' },
+  ];
+
+  function toggleDeepSky() {
+    deepSkyOn = !deepSkyOn;
+    const btn = document.getElementById('deepsky-toggle');
+    if (deepSkyOn) {
+      btn.className = 'px-3 py-1.5 text-xs bg-indigo-700 hover:bg-indigo-600 text-white font-medium rounded-lg transition border border-indigo-500';
+      renderDeepSky();
+    } else {
+      btn.className = 'px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium rounded-lg transition border border-gray-700';
+      clearDeepSky();
+    }
+  }
+
+  function clearDeepSky() {
+    deepSkyMarkers.forEach(m => map.removeLayer(m));
+    deepSkyMarkers = [];
+  }
+
+  function renderDeepSky() {
+    clearDeepSky();
+    if (!map || !userLat) return;
+
+    const observer = new Astronomy.Observer(userLat, userLon, 0);
+    const now = new Date();
+
+    for (const body of CELESTIAL_BODIES) {
+      try {
+        const equ = Astronomy.Equator(body.id, now, observer, true, true);
+        const hor = Astronomy.Horizon(now, observer, equ.ra, equ.dec, 'normal');
+
+        // Only show if above horizon
+        if (hor.altitude < -5) continue;
+
+        // Project onto map — use azimuth/altitude to place around user
+        // Place at a fixed visual distance from user, in the direction of azimuth
+        const distDeg = Math.max(2, 15 - hor.altitude * 0.15); // closer to center = higher in sky
+        const azRad = (hor.azimuth - 90) * Math.PI / 180; // convert to math angle (N=up on map)
+        const projLat = userLat + distDeg * Math.cos((hor.azimuth * Math.PI) / 180);
+        const projLon = userLon + distDeg * Math.sin((hor.azimuth * Math.PI) / 180) / Math.cos(userLat * Math.PI / 180);
+
+        const icon = L.divIcon({
+          className: '',
+          html: `<div style="font-size:${body.size}px;filter:drop-shadow(0 0 6px ${body.color});text-align:center;line-height:1;">${body.emoji}</div>`,
+          iconSize: [body.size + 4, body.size + 4],
+          iconAnchor: [(body.size + 4) / 2, (body.size + 4) / 2],
+        });
+
+        const marker = L.marker([projLat, projLon], { icon, zIndexOffset: 1000 }).addTo(map);
+
+        // Permanent label
+        marker.bindTooltip(body.label || body.id, {
+          permanent: true, direction: 'right', className: 'sat-label', offset: [body.size / 2 + 2, 0],
+        });
+
+        // Moon phase info
+        let extraInfo = '';
+        if (body.id === 'Moon') {
+          const phase = Astronomy.MoonPhase(now);
+          const phaseName = phase < 22.5 ? 'New Moon 🌑' : phase < 67.5 ? 'Waxing Crescent 🌒' :
+            phase < 112.5 ? 'First Quarter 🌓' : phase < 157.5 ? 'Waxing Gibbous 🌔' :
+            phase < 202.5 ? 'Full Moon 🌕' : phase < 247.5 ? 'Waning Gibbous 🌖' :
+            phase < 292.5 ? 'Last Quarter 🌗' : 'Waning Crescent 🌘';
+          const illum = Astronomy.Illumination(body.id, now);
+          extraInfo = `
+            <div><div class="info-label">Phase</div><div class="info-value">${phaseName}</div></div>
+            <div><div class="info-label">Illumination</div><div class="info-value">${(illum.phase_fraction * 100).toFixed(1)}%</div></div>
+          `;
+        }
+
+        // Distance
+        let distInfo = '';
+        try {
+          const illum = Astronomy.Illumination(body.id, now);
+          const distAU = illum.dist;
+          const distKm = Math.round(distAU * 149597870.7);
+          const distMi = Math.round(distKm * 0.621371);
+          distInfo = `<div><div class="info-label">Distance</div><div class="info-value">${distKm > 1000000 ? (distKm / 1000000).toFixed(1) + 'M km' : distKm.toLocaleString() + ' km'} <span class="text-gray-400 text-xs">(${distMi > 1000000 ? (distMi / 1000000).toFixed(1) + 'M mi' : distMi.toLocaleString() + ' mi'})</span></div></div>`;
+        } catch {}
+
+        // Rise/set times
+        let riseSetInfo = '';
+        try {
+          const rise = Astronomy.SearchRiseSet(body.id, observer, +1, now, 1);
+          const set = Astronomy.SearchRiseSet(body.id, observer, -1, now, 1);
+          const fmt = (d) => d ? new Date(d.date).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '—';
+          riseSetInfo = `
+            <div><div class="info-label">Rises</div><div class="info-value">${fmt(rise)}</div></div>
+            <div><div class="info-label">Sets</div><div class="info-value">${fmt(set)}</div></div>
+          `;
+        } catch {}
+
+        marker.on('click', () => {
+          const panel = document.getElementById('detail-panel');
+          document.getElementById('detail-title').textContent = `${body.emoji} ${body.label || body.id}`;
+          document.getElementById('detail-body').innerHTML = `
+            <div><div class="info-label">Altitude (sky)</div><div class="info-value">${hor.altitude.toFixed(1)}° ${hor.altitude > 60 ? 'High' : hor.altitude > 20 ? 'Mid-sky' : 'Low'}</div></div>
+            <div><div class="info-label">Azimuth</div><div class="info-value">${hor.azimuth.toFixed(1)}° ${compassDir(hor.azimuth)}</div></div>
+            ${distInfo}
+            <div><div class="info-label">Right Ascension</div><div class="info-value">${equ.ra.toFixed(4)}h</div></div>
+            <div><div class="info-label">Declination</div><div class="info-value">${equ.dec.toFixed(4)}°</div></div>
+            ${extraInfo}
+            ${riseSetInfo}
+            <div><div class="info-label">Visibility</div><div class="info-value">${hor.altitude > 0 ? '✅ Above horizon' : '⬇️ Below horizon'} ${body.id !== 'Sun' && hor.altitude > 5 ? '(Look ' + compassDir(hor.azimuth) + ')' : ''}</div></div>
+          `;
+          panel.classList.remove('hidden');
+        });
+
+        deepSkyMarkers.push(marker);
+      } catch (e) {
+        console.warn(`Failed to compute ${body.id}:`, e);
+      }
+    }
+  }
+
+  function compassDir(az) {
+    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    return dirs[Math.round(az / 22.5) % 16];
+  }
+
   // Legend
   window.addEventListener('load', () => {
     init();
@@ -391,6 +530,11 @@
             <div class="flex items-center gap-2">🌤️ <span class="text-gray-300">Weather Satellites</span></div>
             <div class="flex items-center gap-2">🔭 <span class="text-gray-300">Science/Telescopes</span></div>
             <div class="flex items-center gap-2">🛰️ <span class="text-gray-300">Other Satellites</span></div>
+          </div>
+          <div class="font-semibold text-gray-200 mt-2 mb-1.5">🌌 Deep Sky</div>
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2">☀️🌙 <span class="text-gray-300">Sun & Moon</span></div>
+            <div class="flex items-center gap-2">🌟🔴🟠🪐 <span class="text-gray-300">Planets</span></div>
           </div>
         `;
         return div;
