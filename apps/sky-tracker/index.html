@@ -244,13 +244,25 @@
       if (regRow) regRow.innerHTML = `<div class="info-label">Registration</div><div class="info-value font-mono">${info.Registration || '—'}</div>`;
       if (ownerRow) ownerRow.innerHTML = `<div class="info-label">Operator</div><div class="info-value">${info.RegisteredOwners || '—'}</div>`;
 
-      // Show aircraft photo
-      const imgUrl = `https://hexdb.io/hex-image-thumb?hex=${f.icao24}`;
-      if (photoRow) photoRow.innerHTML = `
-        <img src="${imgUrl}" alt="${typeName}" class="rounded-lg border border-gray-700 max-h-40 object-cover"
-             onerror="this.parentElement.innerHTML='<div class=\\'text-gray-500 text-xs\\'>No photo available</div>'" />
-        <div class="text-xs text-gray-400 mt-1">${typeName}${info.Registration ? ' — ' + info.Registration : ''}</div>
-      `;
+      // Show aircraft photo from planespotters.net
+      try {
+        const photoRes = await fetch(`https://api.planespotters.net/pub/photos/hex/${f.icao24}`);
+        if (photoRes.ok) {
+          const photoData = await photoRes.json();
+          const photo = photoData.photos && photoData.photos[0];
+          if (photo && photoRow) {
+            const imgSrc = photo.thumbnail_large ? photo.thumbnail_large.src : photo.thumbnail.src;
+            photoRow.innerHTML = `
+              <img src="${imgSrc}" alt="${typeName}" class="rounded-lg border border-gray-700 max-h-40 object-cover" />
+              <div class="text-xs text-gray-400 mt-1">${typeName}${info.Registration ? ' — ' + info.Registration : ''} · 📷 ${photo.photographer || ''}</div>
+            `;
+          } else if (photoRow) {
+            photoRow.innerHTML = `<div class="text-gray-500 text-xs">${typeName}${info.Registration ? ' — ' + info.Registration : ''} · No photo available</div>`;
+          }
+        }
+      } catch {
+        if (photoRow) photoRow.innerHTML = `<div class="text-gray-500 text-xs">${typeName} · No photo available</div>`;
+      }
     } else {
       if (photoRow) photoRow.innerHTML = '<div class="text-gray-500 text-xs">Aircraft info unavailable</div>';
       if (typeRow) typeRow.innerHTML = '<div class="info-label">Aircraft Type</div><div class="info-value text-gray-500">—</div>';
