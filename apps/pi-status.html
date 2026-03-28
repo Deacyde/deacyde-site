@@ -136,6 +136,24 @@
     <div class="last-req-time" id="m-lasttime">—</div>
   </div>
 
+  <!-- Security Section (local network only) -->
+  <div id="security-section" style="display:none">
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+      <h2 style="font-size:1.3rem;font-weight:700;">🛡 Security Scan</h2>
+      <button class="btn-ghost" onclick="runScan()" id="scan-btn">▶ Run Scan</button>
+    </div>
+    <div id="scan-last" style="font-size:0.78rem;color:#555;margin-bottom:0.75rem;display:none"></div>
+    <div id="scan-status" style="display:none;font-size:0.85rem;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;"></div>
+    <div id="scan-summary" style="display:none;margin-bottom:1rem;">
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+        <span id="scan-pass" style="background:#14532d;color:#4ade80;padding:0.35rem 0.85rem;border-radius:999px;font-size:0.82rem;font-weight:600;"></span>
+        <span id="scan-warn" style="background:#422006;color:#facc15;padding:0.35rem 0.85rem;border-radius:999px;font-size:0.82rem;font-weight:600;"></span>
+        <span id="scan-fail" style="background:#450a0a;color:#f87171;padding:0.35rem 0.85rem;border-radius:999px;font-size:0.82rem;font-weight:600;"></span>
+      </div>
+    </div>
+    <div id="scan-results" style="display:none;"></div>
+  </div>
+
   <script>
     let autoTimer = null;
 
@@ -237,7 +255,75 @@
       if (on) autoTimer = setInterval(load, 30000);
     }
 
+    // ── Security Scan (local only) ──
+    async function checkLocalAndShowSecurity() {
+      try {
+        const res = await fetch('https://pi.deacyde.com/security-scan', { signal: AbortSignal.timeout(3000) });
+        if (res.ok) {
+          document.getElementById('security-section').style.display = '';
+          const data = await res.json();
+          if (data.timestamp) renderScanResults(data);
+          else document.getElementById('scan-last').style.display = 'none';
+        }
+      } catch { /* not on local network or scan endpoint not available */ }
+    }
+
+    async function runScan() {
+      const btn = document.getElementById('scan-btn');
+      const statusEl = document.getElementById('scan-status');
+      btn.disabled = true;
+      btn.textContent = '⏳ Scanning...';
+      statusEl.style.display = '';
+      statusEl.style.background = '#1a1a2e';
+      statusEl.style.border = '1px solid #333';
+      statusEl.style.color = '#facc15';
+      statusEl.textContent = '🔍 Running security checks — firewall, fail2ban, SSH, ports, PM2, disk, memory, CPU temp...';
+
+      try {
+        const res = await fetch('https://pi.deacyde.com/security-scan', { method: 'POST' });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        renderScanResults(data);
+        statusEl.style.display = 'none';
+      } catch (e) {
+        statusEl.style.background = '#1a0a0a';
+        statusEl.style.border = '1px solid #3b0a0a';
+        statusEl.style.color = '#f87171';
+        statusEl.textContent = '⚠ Scan failed: ' + e.message;
+      }
+      btn.disabled = false;
+      btn.textContent = '▶ Run Scan';
+    }
+
+    function renderScanResults(data) {
+      const lastEl = document.getElementById('scan-last');
+      lastEl.style.display = '';
+      lastEl.textContent = 'Last scan: ' + new Date(data.timestamp).toLocaleString();
+
+      const summaryEl = document.getElementById('scan-summary');
+      summaryEl.style.display = '';
+      document.getElementById('scan-pass').textContent = '✅ ' + data.passed + ' passed';
+      document.getElementById('scan-warn').textContent = '⚠️ ' + data.warned + ' warnings';
+      document.getElementById('scan-fail').textContent = '❌ ' + data.failed + ' failed';
+      document.getElementById('scan-warn').style.display = data.warned ? '' : 'none';
+      document.getElementById('scan-fail').style.display = data.failed ? '' : 'none';
+
+      const resultsEl = document.getElementById('scan-results');
+      resultsEl.style.display = '';
+      const colors = { pass: { bg: '#0a1a0a', border: '#14532d', icon: '✅' }, warn: { bg: '#1a1500', border: '#422006', icon: '⚠️' }, fail: { bg: '#1a0a0a', border: '#450a0a', icon: '❌' } };
+      resultsEl.innerHTML = data.checks.map(c => {
+        const s = colors[c.status] || colors.warn;
+        return '<div style="background:' + s.bg + ';border:1px solid ' + s.border + ';border-radius:8px;padding:0.75rem 1rem;margin-bottom:0.5rem;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<span style="font-size:0.9rem;font-weight:600;">' + s.icon + ' ' + c.name + '</span>' +
+          '</div>' +
+          '<div style="font-size:0.8rem;color:#888;margin-top:0.3rem;">' + c.detail + '</div>' +
+          '</div>';
+      }).join('');
+    }
+
     load();
+    checkLocalAndShowSecurity();
   </script>
 </body>
 </html>
