@@ -526,7 +526,7 @@
     }
   }
 
-  // ── Fireballs (NASA JPL) ──
+  // ── Fireballs (NASA JPL — static dataset) ──
   let fireballOn = false, fireballMarkers = [], fireballData = null;
 
   function toggleFireballs() {
@@ -549,10 +549,10 @@
   async function loadFireballs() {
     if (!fireballData) {
       try {
-        const res = await fetch('https://ssd-api.jpl.nasa.gov/fireball.api?limit=200');
+        const res = await fetch('fireballs.json');
         fireballData = await res.json();
       } catch (e) {
-        console.error('Fireball API error:', e);
+        console.error('Fireball data error:', e);
         return;
       }
     }
@@ -561,25 +561,10 @@
 
   function renderFireballs() {
     clearFireballs();
-    if (!fireballData || !fireballData.data || !map) return;
+    if (!fireballData || !map) return;
 
-    const fields = fireballData.fields;
-    const iDate = fields.indexOf('date');
-    const iLat = fields.indexOf('lat');
-    const iLatDir = fields.indexOf('lat-dir');
-    const iLon = fields.indexOf('lon');
-    const iLonDir = fields.indexOf('lon-dir');
-    const iEnergy = fields.indexOf('energy');
-    const iImpact = fields.indexOf('impact-e');
-    const iAlt = fields.indexOf('alt');
-    const iVel = fields.indexOf('vel');
-
-    for (const row of fireballData.data) {
-      const lat = row[iLat] ? parseFloat(row[iLat]) * (row[iLatDir] === 'S' ? -1 : 1) : null;
-      const lon = row[iLon] ? parseFloat(row[iLon]) * (row[iLonDir] === 'W' ? -1 : 1) : null;
-      if (!lat || !lon) continue;
-
-      const energy = row[iEnergy] ? parseFloat(row[iEnergy]) : 0;
+    for (const fb of fireballData) {
+      const energy = fb.energy || 0;
       const size = Math.max(14, Math.min(30, 14 + energy * 2));
 
       const icon = L.divIcon({
@@ -589,29 +574,26 @@
         iconAnchor: [(size + 4) / 2, (size + 4) / 2],
       });
 
-      const marker = L.marker([lat, lon], { icon, zIndexOffset: 500 }).addTo(map);
+      const marker = L.marker([fb.lat, fb.lon], { icon, zIndexOffset: 500 }).addTo(map);
 
-      const date = row[iDate] || '—';
-      const impact = row[iImpact] ? parseFloat(row[iImpact]).toFixed(3) : '—';
-      const alt = row[iAlt] || '—';
-      const vel = row[iVel] || '—';
+      const impact = fb.impact ? fb.impact.toFixed(3) : '—';
 
-      marker.bindTooltip(`Fireball ${date.split(' ')[0]}`, {
+      marker.bindTooltip(`Fireball ${fb.date.split(' ')[0]}`, {
         permanent: false, direction: 'top', className: 'bg-gray-800 text-white text-xs px-2 py-1 rounded border border-gray-700',
       });
 
       marker.on('click', () => {
         const panel = document.getElementById('detail-panel');
-        document.getElementById('detail-title').textContent = `🔥 Fireball — ${date}`;
+        document.getElementById('detail-title').textContent = `🔥 Fireball — ${fb.date}`;
         document.getElementById('detail-body').innerHTML = `
-          <div><div class="info-label">Date/Time (UTC)</div><div class="info-value">${date}</div></div>
+          <div><div class="info-label">Date/Time (UTC)</div><div class="info-value">${fb.date}</div></div>
           <div><div class="info-label">Radiated Energy</div><div class="info-value">${energy} J (×10¹⁰)</div></div>
           <div><div class="info-label">Impact Energy</div><div class="info-value">${impact} kt TNT</div></div>
-          <div><div class="info-label">Altitude</div><div class="info-value">${alt} km</div></div>
-          <div><div class="info-label">Velocity</div><div class="info-value">${vel} km/s</div></div>
-          <div><div class="info-label">Coordinates</div><div class="info-value">${Math.abs(lat).toFixed(1)}°${lat > 0 ? 'N' : 'S'}, ${Math.abs(lon).toFixed(1)}°${lon > 0 ? 'E' : 'W'}</div></div>
+          <div><div class="info-label">Altitude</div><div class="info-value">${fb.alt || '—'} km</div></div>
+          <div><div class="info-label">Velocity</div><div class="info-value">${fb.vel || '—'} km/s</div></div>
+          <div><div class="info-label">Coordinates</div><div class="info-value">${Math.abs(fb.lat).toFixed(1)}°${fb.lat > 0 ? 'N' : 'S'}, ${Math.abs(fb.lon).toFixed(1)}°${fb.lon > 0 ? 'E' : 'W'}</div></div>
           <div><div class="info-label">Source</div><div class="info-value"><a href="https://cneos.jpl.nasa.gov/fireballs/" target="_blank" class="text-indigo-400 underline">NASA CNEOS</a></div></div>
-          <div><div class="info-label">Scale</div><div class="info-value text-gray-400 text-xs">${parseFloat(impact) > 1 ? '⚠️ Significant event' : 'Small bolide'}</div></div>
+          <div><div class="info-label">Scale</div><div class="info-value text-gray-400 text-xs">${fb.impact > 1 ? '⚠️ Significant event' : 'Small bolide'}</div></div>
         `;
         panel.classList.remove('hidden');
       });
@@ -620,7 +602,7 @@
     }
   }
 
-  // ── Meteorite Landings (NASA Open Data) ──
+  // ── Meteorite Landings (NASA — static dataset) ──
   let meteoriteOn = false, meteoriteMarkers = [], meteoriteData = null;
 
   function toggleMeteorites() {
@@ -643,10 +625,10 @@
   async function loadMeteorites() {
     if (!meteoriteData) {
       try {
-        const res = await fetch('https://data.nasa.gov/resource/gh4g-9sfh.json?$limit=1000&$where=reclat IS NOT NULL&$order=year DESC');
+        const res = await fetch('meteorites.json');
         meteoriteData = await res.json();
       } catch (e) {
-        console.error('Meteorite API error:', e);
+        console.error('Meteorite data error:', e);
         return;
       }
     }
@@ -658,12 +640,9 @@
     if (!meteoriteData || !map) return;
 
     for (const m of meteoriteData) {
-      const lat = parseFloat(m.reclat);
-      const lon = parseFloat(m.reclong);
-      if (!lat && !lon) continue;
-      if (isNaN(lat) || isNaN(lon)) continue;
+      if (!m.lat && !m.lon) continue;
 
-      const mass = m.mass ? parseFloat(m.mass) : 0;
+      const mass = m.mass || 0;
       const size = Math.max(12, Math.min(28, 12 + Math.log10(Math.max(mass, 1)) * 3));
 
       const icon = L.divIcon({
@@ -673,13 +652,13 @@
         iconAnchor: [(size + 4) / 2, (size + 4) / 2],
       });
 
-      const marker = L.marker([lat, lon], { icon, zIndexOffset: 400 }).addTo(map);
+      const marker = L.marker([m.lat, m.lon], { icon, zIndexOffset: 400 }).addTo(map);
 
-      const year = m.year ? new Date(m.year).getFullYear() : '—';
       const massKg = mass ? (mass / 1000).toFixed(1) : '—';
       const massLb = mass ? (mass / 453.592).toFixed(1) : '—';
+      const massG = mass ? mass.toLocaleString() : '—';
 
-      marker.bindTooltip(`${m.name} (${year})`, {
+      marker.bindTooltip(`${m.name} (${m.year || '?'})`, {
         permanent: false, direction: 'top', className: 'bg-gray-800 text-white text-xs px-2 py-1 rounded border border-gray-700',
       });
 
@@ -687,14 +666,13 @@
         const panel = document.getElementById('detail-panel');
         document.getElementById('detail-title').textContent = `🪨 ${m.name}`;
         document.getElementById('detail-body').innerHTML = `
-          <div><div class="info-label">Year</div><div class="info-value">${year}</div></div>
-          <div><div class="info-label">Mass</div><div class="info-value">${massKg} kg <span class="text-gray-400 text-xs">(${massLb} lb)</span></div></div>
-          <div><div class="info-label">Classification</div><div class="info-value">${m.recclass || '—'}</div></div>
+          <div><div class="info-label">Year</div><div class="info-value">${m.year || '—'}</div></div>
+          <div><div class="info-label">Mass</div><div class="info-value">${mass >= 1000 ? massKg + ' kg' : massG + ' g'} <span class="text-gray-400 text-xs">(${massLb} lb)</span></div></div>
+          <div><div class="info-label">Classification</div><div class="info-value">${m.class || '—'}</div></div>
           <div><div class="info-label">Fall Type</div><div class="info-value">${m.fall === 'Fell' ? '👁️ Witnessed fall' : '🔍 Found on ground'}</div></div>
-          <div><div class="info-label">Coordinates</div><div class="info-value">${lat.toFixed(4)}°, ${lon.toFixed(4)}°</div></div>
-          <div><div class="info-label">NORAD ID</div><div class="info-value font-mono">${m.id || '—'}</div></div>
-          <div><div class="info-label">Source</div><div class="info-value"><a href="https://data.nasa.gov/resource/gh4g-9sfh" target="_blank" class="text-indigo-400 underline">NASA Open Data</a></div></div>
-          <div><div class="info-label">Scale</div><div class="info-value text-gray-400 text-xs">${mass > 100000 ? '🏋️ Major meteorite' : mass > 1000 ? 'Notable find' : 'Small fragment'}</div></div>
+          <div><div class="info-label">Coordinates</div><div class="info-value">${m.lat.toFixed(4)}°, ${m.lon.toFixed(4)}°</div></div>
+          <div><div class="info-label">Source</div><div class="info-value"><a href="https://www.lpi.usra.edu/meteor/" target="_blank" class="text-indigo-400 underline">Meteoritical Society</a></div></div>
+          <div><div class="info-label">Scale</div><div class="info-value text-gray-400 text-xs">${mass > 100000 ? '🏋️ Major meteorite (100+ kg)' : mass > 10000 ? '⚡ Large find (10+ kg)' : mass > 1000 ? 'Notable find' : 'Small fragment'}</div></div>
         `;
         panel.classList.remove('hidden');
       });
