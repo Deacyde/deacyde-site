@@ -1,19 +1,20 @@
 <!DOCTYPE html>
-<html><head><title>Steam Deck Debug</title>
+<html><head><title>IP Changed!</title>
 <style>body{background:#111;color:#0f0;font-family:monospace;padding:20px}
-code{background:#222;padding:8px 12px;display:block;margin:10px 0;font-size:14px;cursor:pointer;border:1px solid #0f0;user-select:all}
+code{background:#222;padding:8px 12px;display:block;margin:10px 0;font-size:16px;cursor:pointer;border:1px solid #0f0;user-select:all}
 h3{color:#ff0;margin-top:20px}</style>
 </head><body>
-<h2>On Steam Deck Desktop Mode - Open Konsole and run:</h2>
+<h2>Beelink IP changed to 192.168.1.66 (ethernet)</h2>
 
-<h3>Step 1: Check eqclient.ini for ConnectionType</h3>
+<h3>Update Steam Deck eqhost.txt to:</h3>
+<code>[LoginServer]
+Host=192.168.1.66:5999</code>
+
+<h3>Then in Konsole run these debug commands:</h3>
+<p>Step 1: Check ConnectionType</p>
 <code>grep -i "connection" ~/Games/EverQuest/Full_RoF2/eqclient.ini</code>
-
-<h3>Step 2: Test if you can reach zone port</h3>
-<code>echo "test" | nc -u -w2 192.168.1.90 7003</code>
-
-<h3>Step 3: Check eqhost.txt is correct</h3>
+<p>Step 2: Test zone port</p>
+<code>echo "test" | nc -u -w2 192.168.1.66 7003</code>
+<p>Step 3: Verify eqhost</p>
 <code>cat ~/Games/EverQuest/Full_RoF2/eqhost.txt</code>
-
-<p style="color:yellow">Tell me what each command outputs!</p>
 </body></html>
