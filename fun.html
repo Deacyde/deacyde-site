@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html><head><title>Commands</title>
+<style>
+body { background: #1a1a2e; color: #eee; font-family: monospace; padding: 20px; }
+pre { background: #0d1117; padding: 15px; border-radius: 8px; font-size: 16px; user-select: all; cursor: pointer; }
+h3 { color: #7c3aed; }
+p { color: #aaa; font-size: 14px; }
+</style></head><body>
+<h2>Beelink Setup Commands</h2>
+<p>Click each box to select, then copy. Run in PowerShell as Admin on Beelink.</p>
+
+<h3>Step 1: Install SSH Server</h3>
+<pre>Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0</pre>
+
+<h3>Step 2: Start SSH</h3>
+<pre>Start-Service sshd</pre>
+
+<h3>Step 3: Auto-start on boot</h3>
+<pre>Set-Service -Name sshd -StartupType Automatic</pre>
+
+<h3>Step 4: Allow SSH through firewall</h3>
+<pre>New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22</pre>
+
+<p>After all 4, tell me the Windows username (type whoami in PowerShell)</p>
+</body></html>
