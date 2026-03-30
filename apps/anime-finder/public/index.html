@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TV, Movie & Anime Finder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { colors: { brand: { 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9' } } } } }</script>
+  <style>
+    .cover-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .cover-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.4); }
+    .score-badge { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: 700; font-size: 13px; }
+    .tab-active { border-bottom: 2px solid #8b5cf6; color: #fff; }
+    .tab-inactive { border-bottom: 2px solid transparent; color: #9ca3af; }
+    .tab-inactive:hover { color: #d1d5db; }
+    input[type="range"] { accent-color: #8b5cf6; }
+    .genre-pill { font-size: 11px; padding: 2px 8px; border-radius: 9999px; background: #374151; color: #d1d5db; white-space: nowrap; }
+    .user-tag { font-size: 11px; padding: 2px 8px; border-radius: 9999px; font-weight: 600; white-space: nowrap; cursor: default; }
+    .tag-me { background: #1e3a5f; color: #60a5fa; }
+    .tag-tato { background: #5b1f5f; color: #e879f9; }
+    .tag-both { background: #14532d; color: #4ade80; }
+    .streaming-link { font-size: 11px; padding: 2px 8px; border-radius: 6px; background: #1e1b4b; color: #a78bfa; text-decoration: none; }
+    .streaming-link:hover { background: #312e81; }
+    .modal-bg { background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    @media (max-width: 640px) {
+      .cover-card:hover { transform: none; }
+    }
+  </style>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+
+<!-- ── App Container ── -->
+<div id="app"></div>
+
+<script>
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+let state = {
+  view: 'loading', // loading, setup, login, library, search, import, taste, recs, settings
+  library: [],
+  stats: {},
+  searchResults: [],
+  recommendations: [],
+  tasteProfile: null,
+  settings: {},
+  searchQuery: '',
+  filters: { type: '', status: '', genre: '', user_tag: '', sort: 'updated_at' },
+  tasteFilters: { type: '', user_tag: '' },
+  selectedRecGenres: [],
+};
+
+// ── API helpers ──
+const BASE = new URL('.', window.location.href).pathname;
+async function api(path, opts = {}) {
+  const res = await fetch(`${BASE}api${path}`, {
+    headers: { 'Content-Type': 'application/json', ...opts.headers },
+    ...opts,
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  return res.json();
+}
+
+// ── Init ──
+async function init() {
+  const { hasPassword, authenticated, needsSetup } = await api('/auth/status');
+  if (needsSetup) state.view = 'setup';
+  else if (!authenticated) state.view = 'login';
+  else { state.view = 'library'; await loadLibrary(); }
+  render();
+}
+
+async function loadLibrary() {
+  const params = new URLSearchParams();
+  if (state.filters.type) params.set('type', state.filters.type);
+  if (state.filters.status) params.set('status', state.filters.status);
+  if (state.filters.genre) params.set('genre', state.filters.genre);
+  if (state.filters.user_tag) params.set('user_tag', state.filters.user_tag);
+  if (state.filters.sort) params.set('sort', state.filters.sort);
+  const data = await api(`/library?${params}`);
+  state.library = data.items || [];
+  state.stats = data.stats || {};
+}
+
+async function loadSettings() {
+  state.settings = await api('/settings');
+}
+
+// ── Render ──
+function render() {
+  const app = $('#app');
+  switch (state.view) {
+    case 'loading': app.innerHTML = renderLoading(); break;
+    case 'setup': app.innerHTML = renderSetup(); break;
+    case 'login': app.innerHTML = renderLogin(); break;
+    case 'library': app.innerHTML = renderNav() + renderLibrary(); break;
+    case 'search': app.innerHTML = renderNav() + renderSearch(); break;
+    case 'import': app.innerHTML = renderNav() + renderImport(); break;
+    case 'taste': app.innerHTML = renderNav() + renderTaste(); break;
+    case 'recs': app.innerHTML = renderNav() + renderRecs(); postRenderRecs(); break;
+    case 'settings': app.innerHTML = renderNav() + renderSettings(); break;
+  }
+}
+
+function renderLoading() {
+  return `<div class="flex items-center justify-center h-screen"><div class="text-gray-400">Loading...</div></div>`;
+}
+
+// ── Setup (first run) ──
+function renderSetup() {
+  return `
+    <div class="flex items-center justify-center min-h-screen">
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full max-w-sm">
+        <h1 class="text-2xl font-bold mb-2">🎬 TV, Movie & Anime Finder</h1>
+        <p class="text-gray-400 text-sm mb-6">Welcome, Deacyde! Set your password to get started.</p>
+        <div class="space-y-4">
+          <div>
+            <label class="text-xs text-gray-400 uppercase">Password</label>
+            <div class="relative">
+              <input id="setup-pw" type="password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white mt-1" placeholder="Choose a password" />
+              <button onclick="togglePw('setup-pw')" class="absolute right-2 top-1/2 -translate-y-1/2 mt-0.5 text-gray-400 hover:text-white text-sm">👁</button>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 uppercase">Confirm Password</label>
+            <div class="relative">
+              <input id="setup-pw2" type="password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white mt-1" placeholder="Confirm password" />
+              <button onclick="togglePw('setup-pw2')" class="absolute right-2 top-1/2 -translate-y-1/2 mt-0.5 text-gray-400 hover:text-white text-sm">👁</button>
+            </div>
+          </div>
+          <div id="setup-err" class="text-red-400 text-sm hidden"></div>
+          <button onclick="doSetup()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2 rounded-lg transition">Create Account</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Login ──
+function renderLogin() {
+  return `
+    <div class="flex items-center justify-center min-h-screen">
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full max-w-sm">
+        <h1 class="text-2xl font-bold mb-2">🎬 TV, Movie & Anime Finder</h1>
+        <p class="text-gray-400 text-sm mb-6">Welcome back, Deacyde</p>
+        <div class="space-y-4">
+          <div>
+            <label class="text-xs text-gray-400 uppercase">Password</label>
+            <div class="relative">
+              <input id="login-pw" type="password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white mt-1" placeholder="Enter password"
+                onkeydown="if(event.key==='Enter')doLogin()" />
+              <button onclick="togglePw('login-pw')" class="absolute right-2 top-1/2 -translate-y-1/2 mt-0.5 text-gray-400 hover:text-white text-sm">👁</button>
+            </div>
+          </div>
+          <div id="login-err" class="text-red-400 text-sm hidden"></div>
+          <button onclick="doLogin()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2 rounded-lg transition">Sign In</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Navigation ──
+function renderNav() {
+  const tabs = [
+    { id: 'library', icon: '📚', label: 'Library' },
+    { id: 'search', icon: '🔍', label: 'Search' },
+    { id: 'import', icon: '📋', label: 'Import' },
+    { id: 'taste', icon: '📊', label: 'Taste' },
+    { id: 'recs', icon: '🧠', label: 'Recs' },
+    { id: 'settings', icon: '⚙️', label: 'Settings' },
+  ];
+  return `
+    <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+      <div class="px-3 py-2">
+        <h1 class="text-base font-bold">🎬 TV, Movie & Anime Finder</h1>
+      </div>
+      <nav class="flex overflow-x-auto px-1 pb-1 -mt-1 scrollbar-hide">
+        ${tabs.map(t => `
+          <button onclick="navigate('${t.id}')" class="px-3 py-1.5 text-xs whitespace-nowrap shrink-0 ${state.view === t.id ? 'tab-active' : 'tab-inactive'} transition">
+            ${t.icon} ${t.label}
+          </button>
+        `).join('')}
+      </nav>
+    </header>`;
+}
+
+// ── Library ──
+function renderLibrary() {
+  const s = state.stats;
+  const allGenres = [...new Set(state.library.flatMap(i => { try { return JSON.parse(i.genres); } catch { return []; } }))].sort();
+
+  return `
+    <div class="p-3">
+      <!-- Stats bar -->
+      <div class="flex flex-wrap items-center gap-2 mb-3 text-xs text-gray-400">
+        <span>📚 ${s.total || 0} titles</span>
+        <span>⭐ ${s.avgScore || '—'} avg</span>
+        ${(s.byType || []).map(t => `<span class="genre-pill">${t.media_type}: ${t.c}</span>`).join('')}
+      </div>
+
+      <!-- Filters -->
+      <div class="grid grid-cols-3 gap-2 mb-3 sm:flex sm:flex-wrap sm:gap-3">
+        <select onchange="setFilter('type', this.value)" class="text-xs bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white w-full sm:w-auto">
+          <option value="">All Types</option>
+          <option value="anime" ${state.filters.type === 'anime' ? 'selected' : ''}>Anime</option>
+          <option value="tv" ${state.filters.type === 'tv' ? 'selected' : ''}>TV</option>
+          <option value="movie" ${state.filters.type === 'movie' ? 'selected' : ''}>Movie</option>
+        </select>
+        <select onchange="setFilter('status', this.value)" class="text-xs bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white w-full sm:w-auto">
+          <option value="">All Status</option>
+          <option value="watched" ${state.filters.status === 'watched' ? 'selected' : ''}>Watched</option>
+          <option value="watching" ${state.filters.status === 'watching' ? 'selected' : ''}>Watching</option>
+          <option value="plan" ${state.filters.status === 'plan' ? 'selected' : ''}>Plan to Watch</option>
+          <option value="dropped" ${state.filters.status === 'dropped' ? 'selected' : ''}>Dropped</option>
+        </select>
+        <select onchange="setFilter('user_tag', this.value)" class="text-xs bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white w-full sm:w-auto">
+          <option value="">👥 Everyone</option>
+          <option value="Me" ${state.filters.user_tag === 'Me' ? 'selected' : ''}>🙋 Just Me</option>
+          <option value="Tato" ${state.filters.user_tag === 'Tato' ? 'selected' : ''}>💜 Just Tato</option>
+          <option value="Both" ${state.filters.user_tag === 'Both' ? 'selected' : ''}>👫 Both of Us</option>
+        </select>
+        <select onchange="setFilter('genre', this.value)" class="text-xs bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white w-full sm:w-auto col-span-2">
+          <option value="">All Genres</option>
+          ${allGenres.map(g => `<option value="${g}" ${state.filters.genre === g ? 'selected' : ''}>${g}</option>`).join('')}
+        </select>
+        <select onchange="setFilter('sort', this.value)" class="text-xs bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white w-full sm:w-auto">
+          <option value="updated_at" ${state.filters.sort === 'updated_at' ? 'selected' : ''}>Recent</option>
+          <option value="score" ${state.filters.sort === 'score' ? 'selected' : ''}>Score</option>
+          <option value="priority" ${state.filters.sort === 'priority' ? 'selected' : ''}>Excitement</option>
+          <option value="title" ${state.filters.sort === 'title' ? 'selected' : ''}>Title</option>
+          <option value="year" ${state.filters.sort === 'year' ? 'selected' : ''}>Year</option>
+        </select>
+      </div>
+
+      <!-- Library grid -->
+      ${state.library.length === 0 ? `
+        <div class="text-center py-20 text-gray-500">
+          <div class="text-4xl mb-4">📭</div>
+          <p class="text-lg">Your library is empty</p>
+          <p class="text-sm mt-2">Search for shows or import your watchlist to get started</p>
+          <button onclick="navigate('search')" class="mt-4 px-4 py-2 bg-brand-600 hover:bg-brand-700 rounded-lg text-sm font-medium transition">🔍 Search Shows</button>
+        </div>
+      ` : `
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          ${state.library.map(item => renderCard(item, 'library')).join('')}
+        </div>
+      `}
+    </div>`;
+}
+
+function renderCard(item, context) {
+  const genres = (() => { try { return JSON.parse(item.genres || '[]'); } catch { return []; } })();
+  const userTags = (() => { try { return JSON.parse(item.user_tags || '[]'); } catch { return []; } })();
+  const scoreColor = !item.score ? '#6b7280' : item.score >= 8 ? '#22c55e' : item.score >= 6 ? '#eab308' : item.score >= 4 ? '#f97316' : '#ef4444';
+  const tagClass = { 'Me': 'tag-me', 'Tato': 'tag-tato', 'Both': 'tag-both' };
+
+  return `
+    <div class="cover-card bg-gray-900 rounded-xl overflow-hidden border border-gray-800 cursor-pointer relative group" onclick="showDetail(${JSON.stringify(item).replace(/"/g, '&quot;')}, '${context}')">
+      <div class="aspect-[3/4] bg-gray-800 relative overflow-hidden">
+        ${item.cover_url ? `<img src="${item.cover_url}" alt="${item.title}" class="w-full h-full object-cover" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="w-full h-full items-center justify-center text-4xl absolute inset-0" style="display:none">🎬</div>` : `<div class="w-full h-full flex items-center justify-center text-4xl">🎬</div>`}
+        ${item.score ? `<div class="score-badge absolute top-2 right-2" style="background:${scoreColor};color:#fff;">${item.score}</div>` : ''}
+        ${item.status === 'plan' && item.priority ? `<div class="score-badge absolute top-2 left-2" style="background:#8b5cf6;color:#fff;font-size:10px;" title="Excitement: ${item.priority}/10">🔥${item.priority}</div>` : ''}
+        ${userTags.length ? `<div class="absolute bottom-8 left-1 flex gap-1">${userTags.map(t => `<span class="user-tag ${tagClass[t] || 'tag-me'}">${t === 'Me' ? '🙋' : t === 'Tato' ? '💜' : '👫'} ${t}</span>`).join('')}</div>` : ''}
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+          <div class="text-xs text-gray-300 capitalize">${item.media_type || 'anime'}</div>
+        </div>
+      </div>
+      <div class="p-2">
+        <h3 class="text-sm font-semibold truncate">${item.title}</h3>
+        <div class="text-xs text-gray-400">${item.year ? item.year : ''}${item.year && genres.length ? ' · ' : ''}${genres.slice(0, 2).join(', ')}</div>
+      </div>
+    </div>`;
+}
+
+// ── Search ──
+function renderSearch() {
+  return `
+    <div class="p-3">
+      <div class="flex flex-col sm:flex-row gap-2 mb-4">
+        <input id="search-input" type="text" value="${state.searchQuery}" placeholder="Search anime, TV shows, movies..."
+          class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm"
+          onkeydown="if(event.key==='Enter')doSearch()" />
+        <div class="flex gap-2">
+          <select id="search-type" class="text-xs bg-gray-800 border border-gray-700 rounded-lg px-2 py-2 text-white flex-1 sm:flex-none">
+            <option value="anime">Anime</option>
+            <option value="tv">TV Show</option>
+            <option value="movie">Movie</option>
+          </select>
+          <button onclick="doSearch()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 rounded-lg text-sm font-medium transition whitespace-nowrap">Search</button>
+        </div>
+      </div>
+      ${state.searchError ? `<div class="bg-yellow-900/30 border border-yellow-700 rounded-lg p-3 mb-3 text-sm text-yellow-300">⚠️ ${state.searchError}</div>` : ''}
+      <div id="search-status" class="text-gray-400 text-sm mb-3"></div>
+      <div class="grid grid-cols-1 gap-3" id="search-results">
+        ${state.searchResults.map(r => renderSearchResult(r)).join('')}
+      </div>
+    </div>`;
+}
+
+function renderSearchResult(r) {
+  const genres = (r.genres || []).slice(0, 4);
+  const streaming = (r.streaming || []).slice(0, 3);
+  const meta = [r.format, r.episodes ? r.episodes + ' eps' : '', r.seasons > 1 ? r.seasons + ' seasons' : '', r.year ? r.year : '', r.score ? '⭐ ' + r.score + '/10' : ''].filter(Boolean).join(' · ');
+
+  return `
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 flex gap-3">
+      <div class="w-16 h-24 sm:w-20 sm:h-28 shrink-0 rounded-lg overflow-hidden bg-gray-800">
+        ${r.cover_url ? `<img src="${r.cover_url}" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="w-full h-full items-center justify-center text-2xl hidden">🎬</div>` : `<div class="w-full h-full flex items-center justify-center">🎬</div>`}
+      </div>
+      <div class="flex-1 min-w-0">
+        <h3 class="font-semibold text-sm leading-tight">${r.title} ${r.year ? `<span class="text-xs text-gray-500 font-normal">(${r.year})</span>` : ''}</h3>
+        ${r.title_alt ? `<div class="text-xs text-gray-500 truncate">${r.title_alt}</div>` : ''}
+        <div class="text-xs text-gray-400 mt-0.5">${meta}</div>
+        <div class="flex flex-wrap gap-1 mt-1">${genres.map(g => `<span class="genre-pill">${g}</span>`).join('')}</div>
+        ${streaming.length ? `<div class="flex flex-wrap gap-1 mt-1">${streaming.map(s => `<a href="${s.url}" target="_blank" class="streaming-link">${s.site}</a>`).join('')}</div>` : ''}
+        <div class="flex flex-wrap gap-1.5 mt-2">
+          <button onclick='addAsWatched(${JSON.stringify(r).replace(/'/g, "&#39;")})' class="text-xs px-2.5 py-1 bg-blue-700 hover:bg-blue-600 rounded-lg transition">👁 Watched</button>
+          <button onclick='addToWatchlist(${JSON.stringify(r).replace(/'/g, "&#39;")})' class="text-xs px-2.5 py-1 bg-green-700 hover:bg-green-600 rounded-lg transition">📋 Watchlist</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Import ──
+function renderImport() {
+  return `
+    <div class="p-3">
+      <h2 class="text-xl font-bold mb-4">📋 Import Watchlist</h2>
+      <div class="space-y-6">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">📝 Paste Title List</h3>
+          <p class="text-xs text-gray-400 mb-3">One title per line. We'll search each one and add the best match.</p>
+          <textarea id="import-text" rows="8" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm" placeholder="Attack on Titan\nDemon Slayer\nOne Punch Man\n..."></textarea>
+          <button onclick="doImport('text')" class="mt-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 rounded-lg text-sm font-medium transition">Import Text List</button>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">📄 MAL XML Export</h3>
+          <p class="text-xs text-gray-400 mb-3">Go to MyAnimeList → Profile → Export → Download XML. Paste the contents below.</p>
+          <textarea id="import-mal" rows="6" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm font-mono" placeholder="Paste MAL XML here..."></textarea>
+          <button onclick="doImport('mal-xml')" class="mt-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 rounded-lg text-sm font-medium transition">Import MAL</button>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">🔗 AniList / JSON Export</h3>
+          <p class="text-xs text-gray-400 mb-3">Paste JSON array of titles with optional scores.</p>
+          <textarea id="import-json" rows="6" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm font-mono" placeholder='[{"title": "Attack on Titan", "score": 9}, ...]'></textarea>
+          <button onclick="doImport('json')" class="mt-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 rounded-lg text-sm font-medium transition">Import JSON</button>
+        </div>
+      </div>
+      <div id="import-status" class="mt-4 text-sm"></div>
+    </div>`;
+}
+
+// ── Taste Profile ──
+function renderTaste() {
+  const p = state.tasteProfile;
+
+  const filterBar = `
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+      <h2 class="text-lg font-bold mr-2">📊 Taste Profile</h2>
+      <select onchange="setTasteFilter('type', this.value)" class="text-xs bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white">
+        <option value="">All Types</option>
+        <option value="anime" ${state.tasteFilters.type === 'anime' ? 'selected' : ''}>Anime</option>
+        <option value="tv" ${state.tasteFilters.type === 'tv' ? 'selected' : ''}>TV Shows</option>
+        <option value="movie" ${state.tasteFilters.type === 'movie' ? 'selected' : ''}>Movies</option>
+      </select>
+      <select onchange="setTasteFilter('user_tag', this.value)" class="text-xs bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white">
+        <option value="">👥 Everyone</option>
+        <option value="Me" ${state.tasteFilters.user_tag === 'Me' ? 'selected' : ''}>🙋 Just Me</option>
+        <option value="Tato" ${state.tasteFilters.user_tag === 'Tato' ? 'selected' : ''}>💜 Just Tato</option>
+        <option value="Both" ${state.tasteFilters.user_tag === 'Both' ? 'selected' : ''}>👫 Both of Us</option>
+      </select>
+    </div>`;
+
+  if (!p) return `<div class="p-3">${filterBar}<div class="text-center py-16 text-gray-500"><div class="text-4xl mb-4">📊</div><p>No rated titles match these filters</p></div></div>`;
+
+  return `
+    <div class="p-3">
+      ${filterBar}
+      <p class="text-gray-400 text-sm mb-4">Based on ${p.totalRated} rated titles${state.tasteFilters.type ? ` (${state.tasteFilters.type})` : ''}${state.tasteFilters.user_tag ? ` · ${state.tasteFilters.user_tag}` : ''}</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="font-semibold mb-3">🎯 Genre Preferences</h3>
+          <div class="space-y-2">
+            ${(p.genreAvg || []).slice(0, 12).map(g => `
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-400 w-24 truncate">${g.genre}</span>
+                <div class="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden">
+                  <div class="h-full rounded-full" style="width:${g.avg * 10}%;background:${g.avg >= 8 ? '#22c55e' : g.avg >= 6 ? '#eab308' : '#ef4444'}"></div>
+                </div>
+                <span class="text-xs font-semibold w-8 text-right">${g.avg}</span>
+                <span class="text-xs text-gray-500 w-6">(${g.count})</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="font-semibold mb-3">🏷️ Top Tags</h3>
+          <div class="flex flex-wrap gap-2">
+            ${(p.tagAvg || []).slice(0, 15).map(t => `
+              <span class="px-2 py-1 rounded-lg text-xs" style="background:${t.avg >= 8 ? '#14532d' : t.avg >= 6 ? '#422006' : '#450a0a'};color:${t.avg >= 8 ? '#4ade80' : t.avg >= 6 ? '#fbbf24' : '#f87171'}">
+                ${t.tag} <span class="font-bold">${t.avg}</span>
+              </span>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="font-semibold mb-3">⭐ Top Rated</h3>
+          <div class="space-y-2">
+            ${(p.topRated || []).map(t => `
+              <div class="flex items-center gap-2 text-sm">
+                <span class="score-badge text-xs" style="background:${t.score >= 8 ? '#22c55e' : '#eab308'};width:24px;height:24px;font-size:11px;">${t.score}</span>
+                <span class="truncate">${t.title}${t.year ? ` (${t.year})` : ''}</span>
+                <span class="text-xs text-gray-500 capitalize ml-auto shrink-0">${t.media_type}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="font-semibold mb-3">📉 Least Favorite</h3>
+          <div class="space-y-2">
+            ${(p.bottomRated || []).map(t => `
+              <div class="flex items-center gap-2 text-sm">
+                <span class="score-badge text-xs" style="background:#ef4444;width:24px;height:24px;font-size:11px;">${t.score}</span>
+                <span class="truncate">${t.title}${t.year ? ` (${t.year})` : ''}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Recommendations ──
+function renderRecs() {
+  return `
+    <div class="p-3">
+      <div class="flex flex-wrap items-center gap-2 mb-3">
+        <h2 class="text-lg font-bold">🧠 AI Recs</h2>
+        <span id="rec-lang-badge" class="text-xs px-2 py-0.5 rounded-full bg-green-900/50 border border-green-700 text-green-400">🎙️ English Only</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2 mb-3 sm:flex sm:flex-wrap sm:gap-2">
+        <select id="rec-type" onchange="updateRecGenres()" class="text-xs bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white w-full sm:w-auto">
+          <option value="anime">Anime</option>
+          <option value="tv">TV Shows</option>
+          <option value="movie">Movies</option>
+        </select>
+        <select id="rec-tag" class="text-xs bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-white w-full sm:w-auto">
+          <option value="">👥 All History</option>
+          <option value="Me">🙋 My Taste</option>
+          <option value="Tato">💜 Tato's Taste</option>
+          <option value="Both">👫 Our Taste</option>
+        </select>
+        <button onclick="getRecommendations()" id="rec-btn" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 rounded-lg text-xs font-medium transition w-full sm:w-auto">
+          ✨ Get Recs
+        </button>
+      </div>
+      <div class="mb-3">
+        <div class="text-xs text-gray-500 mb-1.5">Genres <span class="text-gray-600">(tap to filter — none = all)</span></div>
+        <div class="flex flex-wrap gap-1.5" id="rec-genre-pills"></div>
+      </div>
+      <div class="flex flex-wrap gap-2 mb-4">
+        ${state.recommendations.length ? `<button onclick="clearAllRecs()" class="text-xs px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg transition">🗑 Clear &amp; Start Fresh</button>` : ''}
+        <button onclick="toggleSkipped()" class="text-xs px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg transition" id="skipped-toggle-btn">🚫 Not For Me List</button>
+      </div>
+      <div id="rec-status" class="text-sm mb-3"></div>
+      <div id="skipped-section" class="hidden mb-4">
+        <h3 class="text-sm font-semibold text-gray-400 mb-2">🚫 Not For Me (tap restore to bring back)</h3>
+        <div class="grid grid-cols-1 gap-2" id="skipped-list"></div>
+      </div>
+      <div class="grid grid-cols-1 gap-3" id="rec-list">
+        ${state.recommendations.map(r => renderRecCard(r)).join('')}
+      </div>
+      ${state.recommendations.length === 0 ? `
+        <div class="text-center py-12 text-gray-500">
+          <div class="text-4xl mb-3">🧠</div>
+          <p class="text-sm">Tap "Get Recs" for personalized suggestions</p>
+          <p class="text-xs mt-1">Need 3+ rated shows and an OpenAI API key</p>
+        </div>
+      ` : ''}
+    </div>`;
+}
+
+function renderRecCard(r) {
+  const genres = (() => { try { return JSON.parse(r.genres || '[]'); } catch { return []; } })();
+  const streaming = (() => { try { return JSON.parse(r.streaming || '[]'); } catch { return []; } })();
+
+  return `
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 flex gap-3">
+      <div class="w-16 h-24 sm:w-20 sm:h-28 shrink-0 rounded-lg overflow-hidden bg-gray-800">
+        ${r.cover_url ? `<img src="${r.cover_url}" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="w-full h-full items-center justify-center text-2xl hidden">🎬</div>` : `<div class="w-full h-full flex items-center justify-center text-2xl">🎬</div>`}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-start justify-between gap-1">
+          <h3 class="font-semibold text-sm leading-tight">${r.title}${r.year ? ` <span class="text-xs text-gray-500 font-normal">(${r.year})</span>` : ''}</h3>
+          ${r.score_pred ? `<span class="score-badge ml-1 shrink-0" style="background:#8b5cf6;font-size:10px;width:24px;height:24px;">~${r.score_pred}</span>` : ''}
+        </div>
+        <p class="text-xs text-gray-400 mt-0.5 line-clamp-2">${r.reason || ''}</p>
+        <div class="flex flex-wrap gap-1 mt-1">
+          ${r.media_type === 'anime' ? '<span class="genre-pill" style="background:#064e3b;color:#6ee7b7;">🎙️ Dub</span>' : ''}
+          ${genres.slice(0, 2).map(g => `<span class="genre-pill">${g}</span>`).join('')}
+        </div>
+        ${r.dub_platform ? `<div class="text-xs text-green-400 mt-0.5">📺 ${r.dub_platform}</div>` : ''}
+        ${streaming.length ? `<div class="flex flex-wrap gap-1 mt-0.5">${streaming.map(s => `<a href="${s.url}" target="_blank" class="streaming-link">${s.site}</a>`).join('')}</div>` : ''}
+        <div class="flex flex-wrap gap-1.5 mt-2">
+          <button onclick="recAlreadyWatched(${r.id})" class="text-xs px-2 py-1 bg-blue-700 hover:bg-blue-600 rounded-lg transition">👁 Watched</button>
+          <button onclick="recAddToWatchlist(${r.id})" class="text-xs px-2 py-1 bg-green-700 hover:bg-green-600 rounded-lg transition">📋 Watchlist</button>
+          <button onclick="skipRec(${r.id})" class="text-xs px-2 py-1 bg-red-900/60 hover:bg-red-800 rounded-lg transition" title="Not for me — hide permanently">🚫</button>
+          <button onclick="dismissRec(${r.id})" class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg transition" title="Hide for now">✕</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Settings ──
+function renderSettings() {
+  return `
+    <div class="p-3 max-w-lg mx-auto">
+      <h2 class="text-xl font-bold mb-6">⚙️ Settings</h2>
+      <div class="space-y-6">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="font-semibold mb-3">🔑 OpenAI API Key</h3>
+          <p class="text-xs text-gray-400 mb-3">Required for AI recommendations. Your key is encrypted and stored locally on the server.</p>
+          <div class="relative">
+            <input id="openai-key" type="password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm" placeholder="${state.settings.hasOpenAIKey ? '••••••••• (key saved)' : 'sk-...'}" />
+            <button onclick="togglePw('openai-key')" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-sm">👁</button>
+          </div>
+          <button onclick="saveApiKey()" class="mt-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 rounded-lg text-sm font-medium transition">Save Key</button>
+          <div id="key-status" class="text-sm mt-2"></div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="font-semibold mb-3">🎬 TMDB API Key</h3>
+          <p class="text-xs text-gray-400 mb-3">Required for TV show & movie search. Free at <a href="https://www.themoviedb.org/settings/api" target="_blank" class="text-brand-500 underline">themoviedb.org</a> — sign up → Settings → API.</p>
+          <div class="relative">
+            <input id="tmdb-key" type="password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm" placeholder="${state.settings.hasTMDBKey ? '••••••••• (key saved)' : 'Enter TMDB API key...'}" />
+            <button onclick="togglePw('tmdb-key')" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-sm">👁</button>
+          </div>
+          <button onclick="saveTMDBKey()" class="mt-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 rounded-lg text-sm font-medium transition">Save Key</button>
+          <div id="tmdb-status" class="text-sm mt-2"></div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="font-semibold mb-3">🔒 Change Password</h3>
+          <div class="space-y-3">
+            <div class="relative">
+              <input id="cur-pw" type="password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm" placeholder="Current password" />
+              <button onclick="togglePw('cur-pw')" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-sm">👁</button>
+            </div>
+            <div class="relative">
+              <input id="new-pw" type="password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm" placeholder="New password" />
+              <button onclick="togglePw('new-pw')" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-sm">👁</button>
+            </div>
+          </div>
+          <button onclick="changePassword()" class="mt-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 rounded-lg text-sm font-medium transition">Change Password</button>
+          <div id="pw-status" class="text-sm mt-2"></div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">📊 Library Stats</h3>
+          <div class="text-sm text-gray-400 space-y-1">
+            <div>Total titles: <span class="text-white font-semibold">${state.stats.total || 0}</span></div>
+            <div>Average score: <span class="text-white font-semibold">${state.stats.avgScore || '—'}</span></div>
+          </div>
+        </div>
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <h3 class="font-semibold mb-2">🔄 Refresh Metadata</h3>
+          <p class="text-xs text-gray-400 mb-3">Fetches missing release dates, thumbnails, and IDs from AniList/TMDB for titles that are incomplete.</p>
+          <button onclick="refreshMetadata()" id="refresh-meta-btn" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 rounded-lg text-sm font-medium transition">🔄 Fetch Missing Data</button>
+          <div id="refresh-status" class="text-sm mt-2"></div>
+        </div>
+        <button onclick="doLogout()" class="w-full py-2 bg-red-900/50 hover:bg-red-900 border border-red-800 text-red-400 rounded-lg text-sm transition">Sign Out</button>
+      </div>
+    </div>`;
+}
+
+// ── Detail Modal ──
+function showDetail(item, context) {
+  const genres = (() => { try { return JSON.parse(item.genres || '[]'); } catch { return []; } })();
+  const streaming = (() => { try { return JSON.parse(item.streaming || '[]'); } catch { return []; } })();
+  const synopsis = item.synopsis || 'No synopsis available.';
+
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 z-50 modal-bg flex items-center justify-center p-4';
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+  modal.innerHTML = `
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6 mx-2">
+      <div class="flex gap-3 mb-3">
+        <div class="w-20 h-28 shrink-0 rounded-lg overflow-hidden bg-gray-800">
+          ${item.cover_url ? `<img src="${item.cover_url}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-4xl\\'>🎬</div>'" />` : `<div class="w-full h-full flex items-center justify-center text-4xl">🎬</div>`}
+        </div>
+        <div class="flex-1 min-w-0">
+          <h2 class="text-base font-bold leading-tight">${item.title}${item.year ? ` <span class="text-sm text-gray-500 font-normal">(${item.year})</span>` : ''}</h2>
+          ${item.title_alt ? `<div class="text-sm text-gray-500">${item.title_alt}</div>` : ''}
+          <div class="text-xs text-gray-400 mt-1">${[item.media_type, item.format, item.episodes ? item.episodes + ' eps' : ''].filter(Boolean).join(' · ')}</div>
+          <div class="flex flex-wrap gap-1 mt-2">${genres.map(g => `<span class="genre-pill">${g}</span>`).join('')}</div>
+          ${streaming.length ? `<div class="flex flex-wrap gap-1 mt-2">${streaming.map(s => `<a href="${s.url}" target="_blank" class="streaming-link">${s.site}</a>`).join('')}</div>` : ''}
+        </div>
+      </div>
+      <p class="text-sm text-gray-300 mb-4">${synopsis}</p>
+      ${context === 'library' ? `
+        <div class="space-y-3 border-t border-gray-800 pt-4">
+          <div>
+            <label class="text-xs text-gray-400 uppercase">Type</label>
+            <select id="detail-media-type" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm mt-1">
+              <option value="anime" ${item.media_type === 'anime' ? 'selected' : ''}>Anime</option>
+              <option value="tv" ${item.media_type === 'tv' ? 'selected' : ''}>TV Show</option>
+              <option value="movie" ${item.media_type === 'movie' ? 'selected' : ''}>Movie</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 uppercase">Score (1-10)</label>
+            <input type="range" min="1" max="10" value="${item.score || 5}" id="detail-score" class="w-full mt-1"
+              oninput="$('#score-val').textContent=this.value" />
+            <span id="score-val" class="text-sm font-bold">${item.score || 5}</span>
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 uppercase">Status</label>
+            <select id="detail-status" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm mt-1" onchange="togglePrioritySlider()">
+              <option value="watched" ${item.status === 'watched' ? 'selected' : ''}>Watched</option>
+              <option value="watching" ${item.status === 'watching' ? 'selected' : ''}>Watching</option>
+              <option value="plan" ${item.status === 'plan' ? 'selected' : ''}>Plan to Watch</option>
+              <option value="dropped" ${item.status === 'dropped' ? 'selected' : ''}>Dropped</option>
+            </select>
+          </div>
+          <div id="priority-section" class="${item.status === 'plan' ? '' : 'hidden'}">
+            <label class="text-xs text-gray-400 uppercase">Excitement Level (1 = meh, 10 = can't wait)</label>
+            <input type="range" min="1" max="10" value="${item.priority || 5}" id="detail-priority" class="w-full mt-1"
+              oninput="$('#priority-val').textContent=this.value + '/10'" />
+            <span id="priority-val" class="text-sm font-bold">${item.priority || 5}/10</span>
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 uppercase mb-2 block">Who's Watching</label>
+            <div class="flex gap-2" id="detail-user-tags">
+              ${['Me', 'Tato', 'Both'].map(t => {
+                const active = ((() => { try { return JSON.parse(item.user_tags || '[]'); } catch { return []; } })()).includes(t);
+                const cls = t === 'Me' ? 'tag-me' : t === 'Tato' ? 'tag-tato' : 'tag-both';
+                const emoji = t === 'Me' ? '🙋' : t === 'Tato' ? '💜' : '👫';
+                return `<button type="button" onclick="this.dataset.on=this.dataset.on==='1'?'0':'1';this.className=this.dataset.on==='1'?'user-tag ${cls} ring-2 ring-white/50':'user-tag ${cls} opacity-40'" data-tag="${t}" data-on="${active ? '1' : '0'}" class="user-tag ${cls} ${active ? 'ring-2 ring-white/50' : 'opacity-40'}">${emoji} ${t}</button>`;
+              }).join('')}
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="updateItem(${item.id})" class="flex-1 py-2 bg-brand-600 hover:bg-brand-700 rounded-lg text-sm font-medium transition">Save Changes</button>
+            <button onclick="deleteItem(${item.id})" class="px-4 py-2 bg-red-900/50 hover:bg-red-900 border border-red-800 text-red-400 rounded-lg text-sm transition">🗑</button>
+          </div>
+        </div>
+      ` : ''}
+      <button onclick="this.closest('.fixed').remove()" class="mt-4 w-full py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-400 transition">Close</button>
+    </div>`;
+
+  document.body.appendChild(modal);
+}
+
+// ── Actions ──
+function togglePw(id) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+async function doSetup() {
+  const pw = $('#setup-pw').value;
+  const pw2 = $('#setup-pw2').value;
+  const err = $('#setup-err');
+  if (pw !== pw2) { err.textContent = 'Passwords don\'t match'; err.classList.remove('hidden'); return; }
+  const res = await api('/auth/setup', { method: 'POST', body: { password: pw } });
+  if (res.error) { err.textContent = res.error; err.classList.remove('hidden'); return; }
+  state.view = 'library';
+  await loadLibrary();
+  render();
+}
+
+async function doLogin() {
+  const pw = $('#login-pw').value;
+  const err = $('#login-err');
+  const res = await api('/auth/login', { method: 'POST', body: { password: pw } });
+  if (res.error) { err.textContent = res.error; err.classList.remove('hidden'); return; }
+  state.view = 'library';
+  await loadLibrary();
+  render();
+}
+
+async function doLogout() {
+  await api('/auth/logout', { method: 'POST' });
+  state.view = 'login';
+  render();
+}
+
+async function navigate(view) {
+  state.view = view;
+  if (view === 'library') await loadLibrary();
+  if (view === 'taste') { const tp = new URLSearchParams(); if (state.tasteFilters.type) tp.set('type', state.tasteFilters.type); if (state.tasteFilters.user_tag) tp.set('user_tag', state.tasteFilters.user_tag); const p = await api(`/taste?${tp}`); state.tasteProfile = p.error ? null : p; }
+  if (view === 'recs') { const r = await api('/recommendations'); state.recommendations = r.recommendations || []; }
+  if (view === 'settings') await loadSettings();
+  render();
+}
+
+async function setFilter(key, val) {
+  state.filters[key] = val;
+  await loadLibrary();
+  render();
+}
+
+async function setTasteFilter(key, val) {
+  state.tasteFilters[key] = val;
+  await navigate('taste');
+}
+
+async function doSearch() {
+  const q = $('#search-input').value.trim();
+  const type = $('#search-type').value;
+  if (!q) return;
+  state.searchQuery = q;
+  state.searchError = null;
+  $('#search-status').textContent = 'Searching...';
+  const res = await api(`/search?q=${encodeURIComponent(q)}&type=${type}`);
+  state.searchResults = res.results || [];
+  state.searchError = res.error || null;
+  render();
+}
+
+function showAddModal(title, mode, callback) {
+  const m = document.createElement('div');
+  m.className = 'fixed inset-0 z-50 modal-bg flex items-center justify-center p-4';
+  m.onclick = (e) => { if (e.target === m) m.remove(); };
+  m.innerHTML = `
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-sm w-full p-6">
+      <h3 class="font-bold text-lg mb-1">${mode === 'watched' ? '👁 Already Watched' : '📋 Add to Watchlist'}</h3>
+      <p class="text-sm text-gray-400 mb-4 truncate">${title}</p>
+      ${mode === 'watched' ? `
+        <label class="text-xs text-gray-400 uppercase">Score (1-10)</label>
+        <div class="flex items-center gap-3 mt-1 mb-3">
+          <input type="range" min="1" max="10" value="7" id="add-score" class="flex-1" oninput="$('#add-score-val').textContent=this.value" />
+          <span id="add-score-val" class="text-sm font-bold w-4">7</span>
+        </div>
+      ` : `
+        <label class="text-xs text-gray-400 uppercase">Excitement (1 = meh, 10 = can't wait)</label>
+        <div class="flex items-center gap-3 mt-1 mb-3">
+          <input type="range" min="1" max="10" value="7" id="add-priority" class="flex-1" oninput="$('#add-pri-val').textContent=this.value+'/10'" />
+          <span id="add-pri-val" class="text-sm font-bold w-8">7/10</span>
+        </div>
+      `}
+      <label class="text-xs text-gray-400 uppercase mb-2 block">Who's Watching</label>
+      <div class="flex gap-2 mb-4" id="add-tags">
+        <button type="button" onclick="this.dataset.on=this.dataset.on==='1'?'0':'1';this.className=this.dataset.on==='1'?'user-tag tag-me ring-2 ring-white/50':'user-tag tag-me opacity-40'" data-tag="Me" data-on="0" class="user-tag tag-me opacity-40">🙋 Me</button>
+        <button type="button" onclick="this.dataset.on=this.dataset.on==='1'?'0':'1';this.className=this.dataset.on==='1'?'user-tag tag-tato ring-2 ring-white/50':'user-tag tag-tato opacity-40'" data-tag="Tato" data-on="0" class="user-tag tag-tato opacity-40">💜 Tato</button>
+        <button type="button" onclick="this.dataset.on=this.dataset.on==='1'?'0':'1';this.className=this.dataset.on==='1'?'user-tag tag-both ring-2 ring-white/50':'user-tag tag-both opacity-40'" data-tag="Both" data-on="0" class="user-tag tag-both opacity-40">👫 Both</button>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="document.getElementById('add-confirm').click()" class="flex-1 py-2 bg-brand-600 hover:bg-brand-700 rounded-lg text-sm font-medium transition">✅ Add</button>
+        <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-400 transition">Cancel</button>
+      </div>
+      <button id="add-confirm" class="hidden"></button>
+    </div>`;
+  document.body.appendChild(m);
+  m.querySelector('#add-confirm').onclick = () => {
+    const tags = [...m.querySelectorAll('#add-tags button')].filter(b => b.dataset.on === '1').map(b => b.dataset.tag);
+    const score = m.querySelector('#add-score') ? parseInt(m.querySelector('#add-score').value) : null;
+    const priority = m.querySelector('#add-priority') ? parseInt(m.querySelector('#add-priority').value) : null;
+    m.remove();
+    callback({ score, priority, user_tags: tags });
+  };
+}
+
+async function addAsWatched(item) {
+  showAddModal(item.title, 'watched', async ({ score, user_tags }) => {
+    await api('/library', { method: 'POST', body: { ...item, score, status: 'watched', priority: null, user_tags, genres: item.genres || [], tags: item.tags || [], streaming: item.streaming || [] } });
+    await loadLibrary(); render();
+  });
+}
+
+async function addToWatchlist(item) {
+  showAddModal(item.title, 'plan', async ({ priority, user_tags }) => {
+    await api('/library', { method: 'POST', body: { ...item, score: null, status: 'plan', priority: priority || 5, user_tags, genres: item.genres || [], tags: item.tags || [], streaming: item.streaming || [] } });
+    await loadLibrary(); render();
+  });
+}
+
+function togglePrioritySlider() {
+  const status = $('#detail-status').value;
+  const section = $('#priority-section');
+  if (section) {
+    if (status === 'plan') section.classList.remove('hidden');
+    else section.classList.add('hidden');
+  }
+}
+
+async function recAlreadyWatched(recId) {
+  const rec = state.recommendations.find(r => r.id === recId);
+  if (!rec) return;
+  showAddModal(rec.title, 'watched', async ({ score, user_tags }) => {
+    await api('/library', { method: 'POST', body: {
+      external_id: rec.external_id, source: rec.source, media_type: rec.media_type,
+      title: rec.title, cover_url: rec.cover_url, synopsis: rec.synopsis,
+      genres: JSON.parse(rec.genres || '[]'), streaming: JSON.parse(rec.streaming || '[]'),
+      score, status: 'watched', priority: null, user_tags,
+    }});
+    await api(`/recommendations/${recId}/add`, { method: 'POST' });
+    state.recommendations = state.recommendations.filter(r => r.id !== recId);
+    render();
+  });
+}
+
+async function recAddToWatchlist(recId) {
+  const rec = state.recommendations.find(r => r.id === recId);
+  if (!rec) return;
+  showAddModal(rec.title, 'plan', async ({ priority, user_tags }) => {
+    await api('/library', { method: 'POST', body: {
+      external_id: rec.external_id, source: rec.source, media_type: rec.media_type,
+      title: rec.title, cover_url: rec.cover_url, synopsis: rec.synopsis,
+      genres: JSON.parse(rec.genres || '[]'), streaming: JSON.parse(rec.streaming || '[]'),
+      score: null, status: 'plan', priority: priority || 5, user_tags,
+    }});
+    await api(`/recommendations/${recId}/add`, { method: 'POST' });
+    state.recommendations = state.recommendations.filter(r => r.id !== recId);
+    render();
+  });
+}
+
+async function doImport(format) {
+  const statusEl = $('#import-status');
+  let data;
+  if (format === 'text') data = $('#import-text').value;
+  else if (format === 'mal-xml') data = $('#import-mal').value;
+  else if (format === 'json') data = $('#import-json').value;
+
+  if (!data || !data.trim()) { statusEl.innerHTML = '<span class="text-red-400">Paste some data first</span>'; return; }
+
+  statusEl.innerHTML = '<span class="text-yellow-400">⏳ Importing... this may take a while (searching each title)</span>';
+  const res = await api('/import', { method: 'POST', body: { format, data } });
+  if (res.error) { statusEl.innerHTML = `<span class="text-red-400">${res.error}</span>`; return; }
+  statusEl.innerHTML = `<span class="text-green-400">✅ Imported ${res.imported} titles!</span>`;
+  await loadLibrary();
+}
+
+async function updateItem(id) {
+  const score = parseInt($('#detail-score').value);
+  const status = $('#detail-status').value;
+  const media_type = $('#detail-media-type').value;
+  const priority = $('#detail-priority') ? parseInt($('#detail-priority').value) : null;
+  const user_tags = [...$$('#detail-user-tags button')].filter(b => b.dataset.on === '1').map(b => b.dataset.tag);
+  await api(`/library/${id}`, { method: 'PUT', body: { score, status, media_type, priority, user_tags } });
+  document.querySelector('.fixed.z-50')?.remove();
+  await loadLibrary();
+  render();
+}
+
+async function deleteItem(id) {
+  if (!confirm('Remove from library?')) return;
+  await api(`/library/${id}`, { method: 'DELETE' });
+  document.querySelector('.fixed.z-50')?.remove();
+  await loadLibrary();
+  render();
+}
+
+const GENRE_MAP = {
+  anime: ['Action','Adventure','Comedy','Drama','Fantasy','Horror','Mecha','Mystery','Psychological','Romance','Sci-Fi','Slice of Life','Sports','Supernatural','Thriller'],
+  tv: ['Action','Adventure','Comedy','Crime','Documentary','Drama','Family','Fantasy','Horror','Mystery','Reality','Romance','Sci-Fi','Thriller','Western'],
+  movie: ['Action','Adventure','Animation','Comedy','Crime','Documentary','Drama','Family','Fantasy','Horror','Musical','Mystery','Romance','Sci-Fi','Thriller','War'],
+};
+
+function updateRecGenres() {
+  state.selectedRecGenres = [];
+  const container = $('#rec-genre-pills');
+  if (!container) return;
+  const type = $('#rec-type')?.value || 'anime';
+  const genres = GENRE_MAP[type] || GENRE_MAP.anime;
+  container.innerHTML = genres.map(g => `<button onclick="toggleRecGenre('${g}')" class="rec-genre-pill text-xs px-2.5 py-1 rounded-full border transition" data-genre="${g}" style="background:transparent;border-color:#374151;color:#9ca3af;">${g}</button>`).join('');
+}
+
+function toggleRecGenre(genre) {
+  const idx = state.selectedRecGenres.indexOf(genre);
+  if (idx >= 0) state.selectedRecGenres.splice(idx, 1);
+  else state.selectedRecGenres.push(genre);
+  document.querySelectorAll('.rec-genre-pill').forEach(el => {
+    const g = el.dataset.genre;
+    const active = state.selectedRecGenres.includes(g);
+    el.style.background = active ? '#7c3aed' : 'transparent';
+    el.style.borderColor = active ? '#7c3aed' : '#374151';
+    el.style.color = active ? '#fff' : '#9ca3af';
+  });
+}
+
+function postRenderRecs() {
+  updateRecGenres();
+  // Re-highlight any previously selected genres
+  document.querySelectorAll('.rec-genre-pill').forEach(el => {
+    const g = el.dataset.genre;
+    const active = state.selectedRecGenres.includes(g);
+    if (active) {
+      el.style.background = '#7c3aed';
+      el.style.borderColor = '#7c3aed';
+      el.style.color = '#fff';
+    }
+  });
+}
+
+async function getRecommendations() {
+  const btn = $('#rec-btn');
+  const status = $('#rec-status');
+  const type = $('#rec-type').value;
+  const tag = $('#rec-tag').value;
+  const genres = state.selectedRecGenres.length ? state.selectedRecGenres : undefined;
+  btn.disabled = true;
+  btn.textContent = '⏳ Thinking...';
+  status.innerHTML = '<span class="text-yellow-400">AI is analyzing taste profile...</span>';
+
+  const res = await api('/recommend', { method: 'POST', body: { media_type: type, user_tag: tag || undefined, genres } });
+  btn.disabled = false;
+  btn.textContent = '✨ Get Recs';
+
+  if (res.error) { status.innerHTML = `<span class="text-red-400">${res.error}</span>`; return; }
+  state.recommendations = res.recommendations || [];
+  status.innerHTML = '';
+  render();
+}
+
+async function addRecToLibrary(recId) {
+  const rec = state.recommendations.find(r => r.id === recId);
+  if (!rec) return;
+  const score = prompt('Score (1-10, or blank if not watched yet):', '');
+  await api('/library', { method: 'POST', body: {
+    external_id: rec.external_id, source: rec.source, media_type: rec.media_type,
+    title: rec.title, cover_url: rec.cover_url, synopsis: rec.synopsis,
+    genres: JSON.parse(rec.genres || '[]'), streaming: JSON.parse(rec.streaming || '[]'),
+    score: score ? parseInt(score) : null, status: score ? 'watched' : 'plan',
+  }});
+  await api(`/recommendations/${recId}/add`, { method: 'POST' });
+  state.recommendations = state.recommendations.filter(r => r.id !== recId);
+  render();
+}
+
+async function dismissRec(recId) {
+  state.recommendations = state.recommendations.filter(r => r.id !== recId);
+  render();
+}
+
+async function skipRec(recId) {
+  await api(`/recommendations/${recId}/dismiss`, { method: 'POST' });
+  state.recommendations = state.recommendations.filter(r => r.id !== recId);
+  render();
+}
+
+async function clearAllRecs() {
+  if (!confirm('Clear all current recs? You can then tap "Get Recs" for a fresh batch.')) return;
+  await api('/recommendations/clear', { method: 'POST' });
+  state.recommendations = [];
+  render();
+}
+
+async function toggleSkipped() {
+  const section = $('#skipped-section');
+  if (!section) return;
+  if (!section.classList.contains('hidden')) {
+    section.classList.add('hidden');
+    return;
+  }
+  const res = await api('/recommendations/skipped');
+  const list = res.recommendations || [];
+  section.classList.remove('hidden');
+  const container = $('#skipped-list');
+  if (!list.length) {
+    container.innerHTML = '<p class="text-xs text-gray-500">No skipped titles yet</p>';
+    return;
+  }
+  container.innerHTML = list.map(r => `
+    <div class="bg-gray-800 border border-gray-700 rounded-lg p-2 flex items-center gap-2">
+      <div class="w-10 h-14 shrink-0 rounded overflow-hidden bg-gray-700">
+        ${r.cover_url ? `<img src="${r.cover_url}" class="w-full h-full object-cover" onerror="this.style.display='none'" />` : '🎬'}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="text-sm font-medium truncate">${r.title}${r.year ? ` <span class="text-xs text-gray-500">(${r.year})</span>` : ''}</div>
+        <div class="text-xs text-gray-500">${r.media_type || 'anime'}</div>
+      </div>
+      <button onclick="restoreRec(${r.id})" class="text-xs px-2 py-1 bg-green-800 hover:bg-green-700 rounded-lg transition shrink-0">↩ Restore</button>
+    </div>
+  `).join('');
+}
+
+async function restoreRec(recId) {
+  await api(`/recommendations/${recId}/undismiss`, { method: 'POST' });
+  const res = await api('/recommendations');
+  state.recommendations = res.recommendations || [];
+  render();
+  setTimeout(() => {
+    const section = $('#skipped-section');
+    if (section && !section.classList.contains('hidden')) toggleSkipped();
+  }, 100);
+}
+
+async function saveApiKey() {
+  const key = $('#openai-key').value.trim();
+  if (!key) return;
+  const res = await api('/settings/openai-key', { method: 'POST', body: { key } });
+  const el = $('#key-status');
+  if (res.error) { el.innerHTML = `<span class="text-red-400">${res.error}</span>`; return; }
+  el.innerHTML = '<span class="text-green-400">✅ Key saved</span>';
+  await loadSettings();
+}
+
+async function saveTMDBKey() {
+  const key = $('#tmdb-key').value.trim();
+  if (!key) return;
+  const res = await api('/settings/tmdb-key', { method: 'POST', body: { key } });
+  const el = $('#tmdb-status');
+  if (res.error) { el.innerHTML = `<span class="text-red-400">${res.error}</span>`; return; }
+  el.innerHTML = '<span class="text-green-400">✅ TMDB key saved — TV & movie search enabled</span>';
+  await loadSettings();
+}
+
+async function changePassword() {
+  const cur = $('#cur-pw').value;
+  const newPw = $('#new-pw').value;
+  const res = await api('/settings/change-password', { method: 'POST', body: { current: cur, newPassword: newPw } });
+  const el = $('#pw-status');
+  if (res.error) { el.innerHTML = `<span class="text-red-400">${res.error}</span>`; return; }
+  el.innerHTML = '<span class="text-green-400">✅ Password changed</span>';
+}
+
+async function refreshMetadata() {
+  const btn = $('#refresh-meta-btn');
+  const el = $('#refresh-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ Fetching...';
+  el.innerHTML = '<span class="text-yellow-400">Checking AniList & TMDB for missing data...</span>';
+  const res = await api('/library/refresh-metadata', { method: 'POST' });
+  btn.disabled = false;
+  btn.textContent = '🔄 Fetch Missing Data';
+  if (res.error) { el.innerHTML = `<span class="text-red-400">${res.error}</span>`; return; }
+  el.innerHTML = `<span class="text-green-400">✅ Updated ${res.updated}/${res.total} titles</span>${res.errors ? `<div class="text-xs text-red-400 mt-1">${res.errors.join('<br>')}</div>` : ''}`;
+  await loadLibrary();
+}
+
+// Boot
+init();
+</script>
+</body>
+</html>
