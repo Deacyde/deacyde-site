@@ -1,10 +1,19 @@
 <!DOCTYPE html>
-<html><head><title>RealVNC Install</title>
+<html><head><title>Steam Deck Debug</title>
 <style>body{background:#111;color:#0f0;font-family:monospace;padding:20px}
-a{color:#0ff;font-size:18px;display:block;margin:15px 0;padding:10px;background:#222;border:1px solid #0f0;text-decoration:none}
-a:hover{background:#333}</style>
+code{background:#222;padding:8px 12px;display:block;margin:10px 0;font-size:14px;cursor:pointer;border:1px solid #0f0;user-select:all}
+h3{color:#ff0;margin-top:20px}</style>
 </head><body>
-<h2>Click to download RealVNC Server:</h2>
-<a href="https://www.realvnc.com/en/connect/download/vnc/windows/" target="_blank">📥 Download RealVNC Server for Windows (Official)</a>
-<p style="color:yellow">Install it, sign in with your RealVNC account, and you're done!</p>
+<h2>On Steam Deck Desktop Mode - Open Konsole and run:</h2>
+
+<h3>Step 1: Check eqclient.ini for ConnectionType</h3>
+<code>grep -i "connection" ~/Games/EverQuest/Full_RoF2/eqclient.ini</code>
+
+<h3>Step 2: Test if you can reach zone port</h3>
+<code>echo "test" | nc -u -w2 192.168.1.90 7003</code>
+
+<h3>Step 3: Check eqhost.txt is correct</h3>
+<code>cat ~/Games/EverQuest/Full_RoF2/eqhost.txt</code>
+
+<p style="color:yellow">Tell me what each command outputs!</p>
 </body></html>
