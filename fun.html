@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html><head><title>EQ Server Start</title>
+<html><head><title>Steam Deck EQ Fix</title>
 <style>body{background:#111;color:#0f0;font-family:monospace;padding:20px}
-code{background:#222;padding:8px 12px;display:block;margin:10px 0;font-size:15px;cursor:pointer;border:1px solid #0f0;user-select:all}
+code{background:#222;padding:8px 12px;display:block;margin:10px 0;font-size:16px;cursor:pointer;border:1px solid #0f0;user-select:all}
 h3{color:#ff0;margin-top:20px}</style>
 </head><body>
-<h2>Paste this WHOLE block into CMD (as Admin):</h2>
-<code>cd /d C:\Users\deacyde-minipc\server && bin\shared_memory.exe && start "World" bin\world.exe && timeout /t 5 && start "Login" bin\loginserver.exe && start "UCS" bin\ucs.exe && start "QueryServ" bin\queryserv.exe && start "Zones" bin\eqlaunch.exe zones && echo ALL STARTED</code>
-<p style="color:yellow">This runs shared_memory first, then opens each server in its own window.</p>
-<h3>Or try Spire launcher:</h3>
-<code>cd /d C:\Users\deacyde-minipc\server && spire.exe eqemu-server:launcher start</code>
+<h2>On Steam Deck - Update eqhost.txt</h2>
+<p>File location:</p>
+<code>/home/deck/Games/EverQuest/Full_RoF2/eqhost.txt</code>
+<p>Replace contents with:</p>
+<code>[LoginServer]
+Host=192.168.1.90:5999</code>
+<h3>Login Credentials:</h3>
+<p style="color:#0ff">Username: deacyde<br>Password: Password</p>
+<p style="color:yellow">Account auto-creates on first login!</p>
 </body></html>
