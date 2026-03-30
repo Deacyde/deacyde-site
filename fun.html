@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html><head><title>Commands</title>
+<style>
+body { background: #1a1a2e; color: #eee; font-family: monospace; padding: 20px; }
+pre { background: #0d1117; padding: 15px; border-radius: 8px; font-size: 14px; user-select: all; cursor: pointer; word-wrap: break-word; white-space: pre-wrap; }
+h3 { color: #7c3aed; }
+p { color: #aaa; font-size: 14px; }
+</style></head><body>
+<h2>Fix SSH Key Permissions</h2>
+<p>Run in PowerShell as Admin on Beelink.</p>
+
+<h3>Paste this:</h3>
+<pre>icacls C:\Users\deacyde-minipc\.ssh\authorized_keys /inheritance:r /grant "deacyde-minipc:F"</pre>
+
+<p>Tell me when done.</p>
+</body></html>
