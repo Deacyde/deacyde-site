@@ -533,7 +533,9 @@
 
     <!-- Paste pane -->
     <div class="input-pane" id="pane-paste">
-      <label class="field-label" style="margin-top:0">Raw HTML</label>
+      <label class="field-label" style="margin-top:0">Site Domain <span style="color:var(--muted);font-weight:400">(for internal link detection)</span></label>
+      <input type="text" id="paste-domain" placeholder="e.g. insightsoftware.com" style="margin-bottom:8px;width:100%">
+      <label class="field-label">Raw HTML</label>
       <textarea id="paste-input" rows="12" placeholder="Paste raw HTML here..."></textarea>
     </div>
 
@@ -1667,6 +1669,29 @@ async function runAnalysis() {
       html = document.getElementById('paste-input').value;
       if (!html.trim()) { showError('Please paste some HTML'); return; }
       setLoading(true);
+      // Use domain field or auto-detect from links in pasted HTML
+      const domainVal = document.getElementById('paste-domain').value.trim().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*/, '');
+      if (domainVal) {
+        pageUrl = 'https://' + domainVal;
+        window._pageUrl = pageUrl;
+      } else {
+        // Auto-detect: find the most common domain in <a href="..."> tags
+        const hrefMatches = html.match(/href=["'](https?:\/\/[^"']+)["']/gi) || [];
+        const domainCounts = {};
+        for (const m of hrefMatches) {
+          try {
+            const u = new URL(m.replace(/^href=["']/, '').replace(/["']$/, ''));
+            const d = u.hostname.replace(/^www\./, '');
+            domainCounts[d] = (domainCounts[d] || 0) + 1;
+          } catch {}
+        }
+        const topDomain = Object.entries(domainCounts).sort((a,b) => b[1] - a[1])[0];
+        if (topDomain) {
+          pageUrl = 'https://' + topDomain[0];
+          window._pageUrl = pageUrl;
+          document.getElementById('paste-domain').value = topDomain[0];
+        }
+      }
 
     } else {
       const rawText = document.getElementById('text-input').value;
