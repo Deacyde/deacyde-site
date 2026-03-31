@@ -1,0 +1,680 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EQUI_ContainerWindow.xml - RoF2 - 40 Slot (8x5) -->
+<XML ID="EQContainerWnd">
+  <Schema xmlns="EverQuestData" xmlns:dt="EverQuestDataTypes" />
+
+  <Window item="ContainerWindow">
+    <ScreenID>ContainerWindow</ScreenID>
+    <Font>3</Font>
+    <RelativePosition>true</RelativePosition>
+    <Location>
+      <X>300</X>
+      <Y>300</Y>
+    </Location>
+    <Size>
+      <CX>370</CX>
+      <CY>302</CY>
+    </Size>
+    <Style>0x00C00A22</Style>
+    <AutoStretchV>true</AutoStretchV>
+    <AutoStretchH>true</AutoStretchH>
+    <TooltipReference>Container</TooltipReference>
+    <WindowTitle>Container</WindowTitle>
+    <BackgroundTextureTint>0xFF585858</BackgroundTextureTint>
+
+    <!-- Close Button -->
+    <Button item="CW_CloseButton">
+      <ScreenID>CW_CloseButton</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>345</X>
+        <Y>3</Y>
+      </Location>
+      <Size>
+        <CX>20</CX>
+        <CY>20</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <Template>WDT_CloseBox</Template>
+      <TooltipReference>Close</TooltipReference>
+    </Button>
+
+    <!-- Inventory Slots: 8 columns x 5 rows = 40 slots -->
+    <InvSlot item="InvSlot00">
+      <ScreenID>InvSlot0</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>11</X>
+        <Y>35</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot01">
+      <ScreenID>InvSlot1</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>55</X>
+        <Y>35</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot02">
+      <ScreenID>InvSlot2</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>99</X>
+        <Y>35</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot03">
+      <ScreenID>InvSlot3</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>143</X>
+        <Y>35</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot04">
+      <ScreenID>InvSlot4</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>187</X>
+        <Y>35</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot05">
+      <ScreenID>InvSlot5</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>231</X>
+        <Y>35</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot06">
+      <ScreenID>InvSlot6</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>275</X>
+        <Y>35</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot07">
+      <ScreenID>InvSlot7</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>319</X>
+        <Y>35</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot08">
+      <ScreenID>InvSlot8</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>11</X>
+        <Y>79</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot09">
+      <ScreenID>InvSlot9</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>55</X>
+        <Y>79</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot10">
+      <ScreenID>InvSlot10</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>99</X>
+        <Y>79</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot11">
+      <ScreenID>InvSlot11</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>143</X>
+        <Y>79</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot12">
+      <ScreenID>InvSlot12</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>187</X>
+        <Y>79</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot13">
+      <ScreenID>InvSlot13</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>231</X>
+        <Y>79</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot14">
+      <ScreenID>InvSlot14</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>275</X>
+        <Y>79</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot15">
+      <ScreenID>InvSlot15</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>319</X>
+        <Y>79</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot16">
+      <ScreenID>InvSlot16</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>11</X>
+        <Y>123</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot17">
+      <ScreenID>InvSlot17</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>55</X>
+        <Y>123</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot18">
+      <ScreenID>InvSlot18</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>99</X>
+        <Y>123</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot19">
+      <ScreenID>InvSlot19</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>143</X>
+        <Y>123</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot20">
+      <ScreenID>InvSlot20</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>187</X>
+        <Y>123</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot21">
+      <ScreenID>InvSlot21</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>231</X>
+        <Y>123</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot22">
+      <ScreenID>InvSlot22</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>275</X>
+        <Y>123</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot23">
+      <ScreenID>InvSlot23</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>319</X>
+        <Y>123</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot24">
+      <ScreenID>InvSlot24</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>11</X>
+        <Y>167</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot25">
+      <ScreenID>InvSlot25</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>55</X>
+        <Y>167</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot26">
+      <ScreenID>InvSlot26</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>99</X>
+        <Y>167</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot27">
+      <ScreenID>InvSlot27</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>143</X>
+        <Y>167</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot28">
+      <ScreenID>InvSlot28</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>187</X>
+        <Y>167</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot29">
+      <ScreenID>InvSlot29</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>231</X>
+        <Y>167</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot30">
+      <ScreenID>InvSlot30</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>275</X>
+        <Y>167</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot31">
+      <ScreenID>InvSlot31</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>319</X>
+        <Y>167</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot32">
+      <ScreenID>InvSlot32</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>11</X>
+        <Y>211</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot33">
+      <ScreenID>InvSlot33</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>55</X>
+        <Y>211</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot34">
+      <ScreenID>InvSlot34</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>99</X>
+        <Y>211</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot35">
+      <ScreenID>InvSlot35</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>143</X>
+        <Y>211</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot36">
+      <ScreenID>InvSlot36</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>187</X>
+        <Y>211</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot37">
+      <ScreenID>InvSlot37</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>231</X>
+        <Y>211</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot38">
+      <ScreenID>InvSlot38</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>275</X>
+        <Y>211</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <InvSlot item="InvSlot39">
+      <ScreenID>InvSlot39</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>319</X>
+        <Y>211</Y>
+      </Location>
+      <Size>
+        <CX>40</CX>
+        <CY>40</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <TooltipReference>Slot</TooltipReference>
+    </InvSlot>
+
+    <!-- Combine Button -->
+    <Button item="CombineButton">
+      <ScreenID>CombineButton</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>11</X>
+        <Y>263</Y>
+      </Location>
+      <Size>
+        <CX>80</CX>
+        <CY>25</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <Text>Combine</Text>
+      <Template>BDT_Normal</Template>
+      <TooltipReference>Combine items</TooltipReference>
+    </Button>
+
+    <!-- Done Button -->
+    <Button item="DoneButton">
+      <ScreenID>DoneButton</ScreenID>
+      <RelativePosition>true</RelativePosition>
+      <Location>
+        <X>279</X>
+        <Y>263</Y>
+      </Location>
+      <Size>
+        <CX>80</CX>
+        <CY>25</CY>
+      </Size>
+      <Style>0x00C00A20</Style>
+      <Text>Done</Text>
+      <Template>BDT_Normal</Template>
+      <TooltipReference>Close container</TooltipReference>
+    </Button>
+
+  </Window>
+</XML>
