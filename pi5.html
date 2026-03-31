@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <base href="/">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Raspberry Pi 5 setup guide — M.2 HAT+, Samsung NVMe SSD, Argon NEO case, and SSD boot config.">
+    <meta name="description" content="Raspberry Pi 5 hardware assembly guide — M.2 HAT+, Samsung NVMe SSD, Argon NEO case.">
     <meta name="author" content="Deacyde">
     <title>Pi 5 Setup Guide | Deacyde</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -165,8 +165,9 @@
     <section class="page-hero">
         <div class="container">
             <p class="hero-tag">Personal Lab Docs</p>
-            <h1>Raspberry Pi 5<br><span class="accent">Setup Guide</span></h1>
-            <p>M.2 HAT+ · Samsung 1TB NVMe · Argon NEO Case · SSD Boot</p>
+            <h1>Raspberry Pi 5<br><span class="accent">Hardware Assembly</span></h1>
+            <p>M.2 HAT+ · Samsung 1TB NVMe · Argon NEO Case</p>
+            <p style="margin-top:1rem; font-size:0.9rem; color:var(--text-muted);">Hardware only — software config (OS flash, boot order, drivers) handled separately by Copilot.</p>
         </div>
     </section>
 
@@ -220,175 +221,108 @@
                 <div class="step">
                     <div class="step-num">1</div>
                     <div class="step-body">
-                        <h3>Start with a Working SD Card Boot</h3>
-                        <p>Before touching any hardware, make sure your Pi 5 boots normally from an SD card with a fresh Raspberry Pi OS (64-bit, Bookworm). You need this to update firmware and configure boot order. If you don't have one set up yet, flash the SD card first using <strong>Raspberry Pi Imager</strong> on any PC.</p>
-                        <div class="tip">💡 Do not attach the M.2 HAT+ yet. Get the Pi running on SD first.</div>
+                        <h3>Power Off the Pi Completely</h3>
+                        <p>Make sure the Pi is fully shut down and the power cord is unplugged before touching anything. Not just restarted — fully off and unplugged.</p>
+                        <div class="warn">⚠️ Never attach or remove the HAT, SSD, or FPC cable while the Pi is powered on.</div>
                     </div>
                 </div>
 
                 <div class="step">
                     <div class="step-num">2</div>
                     <div class="step-body">
-                        <h3>Update Everything &amp; Flash the EEPROM</h3>
-                        <p>Boot from SD, open a terminal, and run:</p>
-                        <pre><code>sudo apt update && sudo apt full-upgrade -y
-sudo rpi-eeprom-update -a
-sudo reboot</code></pre>
-                        <p style="margin-top:0.75rem;">After the reboot, verify the EEPROM is current:</p>
-                        <pre><code>sudo rpi-eeprom-update</code></pre>
-                        <p style="margin-top:0.5rem;">Should say <code>BOOTLOADER: up to date</code>. This is required before NVMe boot will work reliably.</p>
+                        <h3>Seat the Samsung NVMe into the M.2 HAT+</h3>
+                        <p>Hold the HAT board. You'll see the M-key M.2 slot (the longer notched slot). Insert the Samsung NVMe at a slight angle (~30°), slide it in all the way until it's fully seated, then press it flat down.</p>
+                        <ul>
+                            <li>Secure it with the included standoff screw — don't overtighten, just snug</li>
+                            <li>The SSD should lie flat and not wiggle</li>
+                        </ul>
+                        <div class="tip">💡 The Samsung NVMe is M-key — it only fits one way. If it doesn't slide in cleanly, check the notch alignment.</div>
                     </div>
                 </div>
 
                 <div class="step">
                     <div class="step-num">3</div>
                     <div class="step-body">
-                        <h3>Set Boot Order to NVMe First</h3>
-                        <pre><code>sudo raspi-config</code></pre>
+                        <h3>Connect the FPC Ribbon Cable</h3>
+                        <p>This flat ribbon cable connects the HAT to the Pi 5's PCIe slot. It's the most important and most fragile part of the build.</p>
                         <ul>
-                            <li>Go to <strong>Advanced Options</strong></li>
-                            <li>Select <strong>Boot Order</strong></li>
-                            <li>Choose <strong>NVMe/USB Boot</strong> (puts NVMe before SD)</li>
-                            <li>Finish &amp; reboot (stay on SD for now)</li>
+                            <li>Both ends have a locking tab — lift it up gently before inserting</li>
+                            <li>Slide the cable all the way into the connector (gold contacts face down)</li>
+                            <li>Press the locking tab down firmly to secure — you should feel/hear a click</li>
+                            <li>Do <strong>both ends</strong> — the HAT end and the Pi 5 board end</li>
                         </ul>
-                        <div class="tip">💡 This just sets the order — Pi will still boot from SD if no NVMe is present.</div>
+                        <div class="warn">⚠️ This cable is the #1 cause of NVMe not being detected. If the Pi can't find the drive after boot, this is the first thing to reseat. Make sure both tabs are fully locked and the cable is flush.</div>
                     </div>
                 </div>
 
                 <div class="step">
                     <div class="step-num">4</div>
                     <div class="step-body">
-                        <h3>Optionally Enable PCIe Gen 3 <span class="badge">Optional</span></h3>
-                        <p>The official Pi 5 PCIe runs at Gen 2 by default (~450 MB/s). Gen 3 (~900 MB/s) is unofficial but works great with Samsung NVMe drives. To enable it:</p>
-                        <pre><code>sudo nano /boot/firmware/config.txt</code></pre>
-                        <p style="margin-top:0.75rem;">Add this line at the bottom:</p>
-                        <pre><code>dtparam=pciex1_gen=3</code></pre>
-                        <p style="margin-top:0.5rem;">Save with <code>Ctrl+O</code>, exit with <code>Ctrl+X</code>, then reboot.</p>
-                        <div class="warn">⚠️ Gen 3 is not officially supported — some Pi units are more stable than others at Gen 3. If you get random crashes or boot issues, remove this line and stick with Gen 2.</div>
+                        <h3>Stack the M.2 HAT+ onto the Pi 5</h3>
+                        <p>The HAT connects to the Pi via the 40-pin GPIO header on the top of the Pi board.</p>
+                        <ul>
+                            <li>Line up the HAT's header pins over the Pi's GPIO header</li>
+                            <li>Press down <strong>firmly and evenly</strong> — all 40 pins need to seat at once</li>
+                            <li>The HAT should sit flush with no gap on either side</li>
+                            <li>Use the included standoffs to secure the HAT to the Pi board (prevents flex)</li>
+                        </ul>
                     </div>
                 </div>
 
                 <div class="step">
                     <div class="step-num">5</div>
                     <div class="step-body">
-                        <h3>Power Off &amp; Attach the M.2 HAT+</h3>
-                        <p><strong>Shut down completely</strong> — not just reboot:</p>
-                        <pre><code>sudo shutdown -h now</code></pre>
-                        <p style="margin-top:0.75rem;">Unplug the power cord. Then:</p>
+                        <h3>Fit the Pi + HAT into the Argon NEO Case</h3>
+                        <p>The Argon NEO 5 M.2 case is designed for exactly this sandwich — Pi on top, HAT underneath. The SSD slot in the case base lines up with the NVMe on the HAT.</p>
                         <ul>
-                            <li>Seat the Samsung NVMe SSD into the M-key M.2 slot on the HAT</li>
-                            <li>Secure it with the included standoff screw</li>
-                            <li>Connect the <strong>FPC ribbon cable</strong> between the HAT and the Pi 5's PCIe connector — lift the locking tab fully, push the cable all the way in, press the tab down to lock. Do both ends.</li>
-                            <li>Stack the HAT onto the Pi's 40-pin GPIO header — press down firmly and evenly</li>
+                            <li>Lower the Pi + HAT assembly into the case base, HAT facing down</li>
+                            <li>Line up the ports (USB, HDMI, Ethernet) with the cutouts on the case</li>
+                            <li>Press the assembly down into the case until it sits flush</li>
+                            <li>Screw the board into the case standoffs (usually 4 screws)</li>
                         </ul>
-                        <div class="warn">⚠️ The FPC ribbon cable is the most fragile part. If the Pi won't detect the NVMe after boot, this cable is the first thing to reseat. Make sure both ends are fully locked.</div>
                     </div>
                 </div>
 
                 <div class="step">
                     <div class="step-num">6</div>
                     <div class="step-body">
-                        <h3>Assemble the Argon NEO Case</h3>
-                        <p>The Argon NEO 5 case is designed to fit the Pi 5 with the M.2 HAT+ underneath. Assembly order:</p>
+                        <h3>Connect the Fan Header</h3>
+                        <p>The Argon NEO has a small fan. There's a JST fan connector on the Pi 5 board — connect the fan cable to it before closing the case.</p>
                         <ul>
-                            <li>Fit the Pi + HAT sandwich into the case base — HAT faces down into the case, Pi on top</li>
-                            <li>Attach the fan header to the Pi's fan connector (small JST connector on the Pi 5 board)</li>
-                            <li>Secure the case lid — screws go through the top plate into the standoffs</li>
-                            <li>The NVMe SSD slot in the case aligns with the HAT below</li>
+                            <li>The Pi 5 fan connector is a small 2-pin or 4-pin JST on the board near the USB ports</li>
+                            <li>The Argon fan cable plugs straight in — only goes one way</li>
+                            <li>Make sure the cable is tucked and won't catch on the case lid</li>
                         </ul>
-                        <div class="tip">💡 The Argon NEO has a built-in fan controller. After setup, install the Argon daemon to control fan speed via software.</div>
-                        <pre><code>curl -L https://download.argon40.com/argon-neo-5.sh | bash</code></pre>
+                        <div class="tip">💡 Without the fan daemon software (set up by Copilot later), the fan will either run full blast or not at all. That's fine for now.</div>
                     </div>
                 </div>
 
                 <div class="step">
                     <div class="step-num">7</div>
                     <div class="step-body">
-                        <h3>Flash Raspberry Pi OS to the NVMe</h3>
-                        <p>Power the Pi back on — it will boot from SD since nothing is on the NVMe yet. Once booted, open a terminal and launch the imager:</p>
-                        <pre><code>sudo apt install rpi-imager -y
-rpi-imager</code></pre>
-                        <ul style="margin-top:0.75rem;">
-                            <li><strong>Choose OS:</strong> Raspberry Pi OS (64-bit) — Bookworm</li>
-                            <li><strong>Choose Storage:</strong> your NVMe drive — shows as <code>/dev/nvme0n1</code></li>
-                            <li>Click the ⚙️ gear icon to pre-configure hostname, SSH, WiFi, and your username/password before flashing</li>
-                            <li>Flash it</li>
+                        <h3>Close the Case</h3>
+                        <ul>
+                            <li>Place the case lid on top</li>
+                            <li>Secure with the included screws — usually 4 screws on the corners or sides</li>
+                            <li>Don't overtighten — the case is aluminum and threads strip easily</li>
+                            <li>Give the assembled unit a gentle shake — nothing should rattle</li>
                         </ul>
-                        <div class="tip">💡 Pre-configure SSH and your WiFi credentials in the imager's advanced settings — saves hassle after first NVMe boot.</div>
                     </div>
                 </div>
 
                 <div class="step">
                     <div class="step-num">8</div>
                     <div class="step-body">
-                        <h3>Boot from NVMe</h3>
-                        <p>Remove the SD card, then power cycle the Pi. It should now boot directly from the Samsung NVMe.</p>
-                        <p style="margin-top:0.5rem;">Confirm you're running from NVMe:</p>
-                        <pre><code>lsblk</code></pre>
-                        <p style="margin-top:0.5rem;">You should see <code>nvme0n1</code> with partitions and your root <code>/</code> mounted on it. SD card should show nothing (it's removed).</p>
-                        <pre><code># Also check read speed - Samsung should hit 400-900 MB/s
-sudo hdparm -Tt /dev/nvme0n1</code></pre>
-                        <div class="warn">⚠️ If it boots to a blank screen or loops — reinsert the SD card, boot from it, and reseat the FPC cable on the HAT. That's the #1 cause of NVMe detection failure.</div>
-                    </div>
-                </div>
-
-                <div class="step">
-                    <div class="step-num">9</div>
-                    <div class="step-body">
-                        <h3>First-Time NVMe OS Setup</h3>
-                        <p>Once booted from NVMe, run a full update and configure your system:</p>
-                        <pre><code>sudo apt update && sudo apt full-upgrade -y
-
-# Set hostname
-sudo hostnamectl set-hostname pi
-
-# Enable SSH if not already on
-sudo systemctl enable --now ssh
-
-# Check your IP
-hostname -I</code></pre>
-                        <p style="margin-top:0.75rem;">If you use SSH from other machines, add your key:</p>
-                        <pre><code>mkdir -p ~/.ssh
-echo "YOUR_PUBLIC_KEY" >> ~/.ssh/authorized_keys
-chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys</code></pre>
-                    </div>
-                </div>
-
-                <div class="step">
-                    <div class="step-num">10</div>
-                    <div class="step-body">
-                        <h3>Install Argon NEO Fan Daemon</h3>
-                        <p>The Argon NEO 5 case has a fan that needs software to control it. Without this, the fan either runs full speed or not at all:</p>
-                        <pre><code>curl -L https://download.argon40.com/argon-neo-5.sh | bash</code></pre>
-                        <p style="margin-top:0.75rem;">This installs <code>argonone-config</code>. To adjust fan curve:</p>
-                        <pre><code>argonone-config</code></pre>
-                        <p style="margin-top:0.5rem;">Default curve kicks the fan on around 55°C. You can tune it to stay quiet until higher temps.</p>
-                        <div class="tip">💡 Check temps anytime with: <code>vcgencmd measure_temp</code></div>
-                    </div>
-                </div>
-
-                <div class="step">
-                    <div class="step-num">11</div>
-                    <div class="step-body">
-                        <h3>Verify Everything is Working</h3>
-                        <pre><code># NVMe detected and mounted
-lsblk
-
-# PCIe device visible
-lspci | grep -i samsung
-
-# SSD speed test
-sudo hdparm -Tt /dev/nvme0n1
-
-# CPU temp
-vcgencmd measure_temp
-
-# Disk space (1TB should show ~930GB usable)
-df -h /
-
-# Uptime
-uptime</code></pre>
-                        <p style="margin-top:0.75rem;">If <code>lspci</code> shows your Samsung drive and <code>df -h</code> shows ~900GB free on <code>/</code>, you're fully set up.</p>
+                        <h3>Plug In &amp; Hand Off to Copilot</h3>
+                        <p>Hardware is done. Plug in the official Pi 5 27W USB-C power supply and let Copilot handle the rest:</p>
+                        <ul>
+                            <li>EEPROM firmware update</li>
+                            <li>PCIe boot order configuration</li>
+                            <li>OS flash to NVMe</li>
+                            <li>Argon fan daemon install</li>
+                            <li>SSH, hostname, and software setup</li>
+                        </ul>
+                        <div class="tip">💡 If nothing appears on screen at first — that's expected if there's no OS on the NVMe yet. Copilot will walk through flashing it.</div>
                     </div>
                 </div>
 
@@ -396,78 +330,111 @@ uptime</code></pre>
         </div>
     </section>
 
-    <!-- Troubleshooting -->
+    <!-- Hardware Troubleshooting -->
     <section class="section section-alt">
         <div class="container">
             <div class="section-header">
-                <h2>Troubleshooting</h2>
-                <p class="section-sub">Most common issues with this exact setup</p>
+                <h2>Hardware Troubleshooting</h2>
+                <p class="section-sub">Physical issues only — software problems handled by Copilot</p>
             </div>
             <div class="card-grid">
                 <div class="card">
                     <div class="card-icon">🔌</div>
-                    <h3>Pi won't detect the NVMe at all</h3>
-                    <p>99% of the time this is the FPC ribbon cable. Power off, unplug, open the case, and reseat both ends of the flat cable. Make sure the locking tabs are fully closed. Also confirm the SSD standoff screw is tight.</p>
+                    <h3>NVMe not detected at all</h3>
+                    <p>Almost always the FPC ribbon cable. Power off, unplug, open the case, and reseat both ends of the flat cable. Lift the tab, push cable fully in, press tab down until it clicks. Also check the SSD standoff screw is snug.</p>
                 </div>
                 <div class="card">
-                    <div class="card-icon">🖥️</div>
-                    <h3>Blank screen / boot loop after removing SD</h3>
-                    <p>Either the NVMe wasn't flashed correctly, or boot order wasn't saved. Re-insert SD, boot, re-run <code>sudo raspi-config</code> to set boot order again, and verify the NVMe shows up in <code>lsblk</code> while booted from SD.</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon">⚡</div>
-                    <h3>Random crashes / instability</h3>
-                    <p>If you enabled PCIe Gen 3, try removing <code>dtparam=pciex1_gen=3</code> from <code>/boot/firmware/config.txt</code>. Gen 3 is unofficial — some Pi units don't like it. Gen 2 is stable and still fast (~450 MB/s).</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon">🌡️</div>
-                    <h3>Pi running hot</h3>
-                    <p>Make sure the Argon daemon is installed and running (<code>argonone-config</code>). The NEO case is passive by default — the daemon activates the fan when temps rise. Check temp with <code>vcgencmd measure_temp</code>. Under 70°C is fine for the Pi 5.</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon">📶</div>
-                    <h3>Can't SSH in after NVMe boot</h3>
-                    <p>SSH settings don't carry over automatically if you flashed a fresh OS image to NVMe. Either pre-configure SSH in Raspberry Pi Imager's advanced settings before flashing, or plug in a keyboard/monitor for first boot and run <code>sudo systemctl enable --now ssh</code>.</p>
+                    <div class="card-icon">📡</div>
+                    <h3>HAT feels loose or wobbly</h3>
+                    <p>The 40-pin GPIO header wasn't fully pressed down. Power off, remove the HAT, line up the pins carefully, and press down firmly and evenly in one go. Use the HAT's standoff screws to lock it to the Pi board.</p>
                 </div>
                 <div class="card">
                     <div class="card-icon">💾</div>
-                    <h3>Only 1 partition visible on NVMe</h3>
-                    <p>After first boot from NVMe, the OS auto-expands the filesystem to fill the drive. If it hasn't happened yet, run: <code>sudo raspi-config</code> → Advanced → Expand Filesystem. The full ~930GB should be available after a reboot.</p>
+                    <h3>SSD not sitting flat</h3>
+                    <p>The NVMe wasn't inserted at the right angle. Remove the standoff screw, pull the SSD out, re-insert at ~30° until fully seated in the slot, then press flat and re-secure the screw. It should lie completely flat with no flex.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🌡️</div>
+                    <h3>Fan not spinning</h3>
+                    <p>Hardware-side: check that the fan JST connector is fully plugged into the Pi 5's fan port. It's a small connector near the USB ports — it should click in. If connected and still not spinning, that's a software/daemon config issue for Copilot.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔧</div>
+                    <h3>Case won't close flush</h3>
+                    <p>Usually the FPC cable is bunched up or a standoff isn't seated right. Make sure the ribbon cable is routed flat and not folded. Check all 4 board standoffs are in before trying to seat the lid.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⚡</div>
+                    <h3>Pi powers on but nothing on screen</h3>
+                    <p>Hardware check: confirm the HDMI cable is in the <strong>HDMI 0</strong> port (the one closest to the USB-C power port). The Pi 5 requires HDMI 0 for initial output. This is a hardware/port issue — not software.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Quick Reference -->
+    <!-- Resources -->
     <section class="section">
         <div class="container">
             <div class="section-header">
-                <h2>Quick Reference</h2>
-                <p class="section-sub">Commands you'll use repeatedly</p>
+                <h2>Visual References</h2>
+                <p class="section-sub">Guides with photos and video for this exact build</p>
             </div>
             <div class="card-grid">
                 <div class="card">
+                    <div class="card-icon">📸</div>
+                    <h3>Cytron In-Depth Photo Guide</h3>
+                    <p>Best photo walkthrough — covers every step of the Argon NEO 5 assembly with real pictures including FPC cable seating and NVMe installation.</p>
+                    <p style="margin-top:1rem;"><a href="https://www.cytron.io/tutorial/in-depth-review-raspberry-pi-5-argon-neo-5-case" target="_blank" rel="noopener">cytron.io → Argon NEO 5 Review ↗</a></p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📋</div>
+                    <h3>Official Argon Manual</h3>
+                    <p>Argon's own step-by-step with exploded diagrams, thermal pad placement, screw locations, and port layout for the NEO 5 M.2 case.</p>
+                    <p style="margin-top:1rem;"><a href="https://argon40.com/blogs/argon-resources/argon-neo-5-m-2-nvme-pcie-case-for-rpi-5-manual" target="_blank" rel="noopener">argon40.com → NEO 5 Manual ↗</a></p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📄</div>
+                    <h3>PDF Instruction Manual</h3>
+                    <p>The physical booklet that came in the box, digitized. Full exploded assembly diagrams showing exactly how every piece fits together.</p>
+                    <p style="margin-top:1rem;"><a href="https://raspberrypi.dk/wp-content/uploads/2024/01/INSTRUCTION_MANUAL_NEO_5_M.2_NVMe_20240222.pdf" target="_blank" rel="noopener">raspberrypi.dk → NEO 5 PDF ↗</a></p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">▶️</div>
+                    <h3>ExplainingComputers — YouTube</h3>
+                    <p>Hands-on video assembly of the Argon NEO 5 NVMe case. Shows the full physical build in real time including the FPC cable and case closing.</p>
+                    <p style="margin-top:1rem;"><a href="https://www.youtube.com/watch?v=5Su4u4G-VIk" target="_blank" rel="noopener">youtube.com → Watch Assembly Video ↗</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Copilot Handoff -->
+    <section class="section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <h2>Copilot Software Handoff</h2>
+                <p class="section-sub">Once hardware is assembled, Copilot handles all of this</p>
+            </div>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">💿</div>
+                    <h3>1. Flash OS to NVMe</h3>
+                    <p>Flash Raspberry Pi OS (64-bit Bookworm) to the Samsung NVMe using rpi-imager, with SSH, hostname, and WiFi pre-configured.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⚙️</div>
+                    <h3>2. EEPROM &amp; Boot Order</h3>
+                    <p>Update Pi 5 firmware, set boot order to NVMe-first via raspi-config, and optionally enable PCIe Gen 3 for full Samsung NVMe speed.</p>
+                </div>
+                <div class="card">
                     <div class="card-icon">🌡️</div>
-                    <h3>System Health</h3>
-                    <pre><code>vcgencmd measure_temp    # CPU temp
-vcgencmd get_throttled  # 0x0 = good
-htop                    # CPU/RAM usage
-df -h /                 # Disk space</code></pre>
+                    <h3>3. Argon Fan Daemon</h3>
+                    <p>Install the Argon NEO software daemon to control fan curve — quiet at low temps, spins up when needed. Tune it to your preference.</p>
                 </div>
                 <div class="card">
-                    <div class="card-icon">💾</div>
-                    <h3>Storage</h3>
-                    <pre><code>lsblk                         # List drives
-lspci | grep -i samsung       # NVMe on PCIe
-sudo hdparm -Tt /dev/nvme0n1  # Speed test</code></pre>
-                </div>
-                <div class="card">
-                    <div class="card-icon">🔧</div>
-                    <h3>Maintenance</h3>
-                    <pre><code>sudo apt update && sudo apt upgrade -y
-sudo rpi-eeprom-update     # Firmware check
-argonone-config            # Fan settings
-sudo raspi-config          # Pi settings</code></pre>
+                    <div class="card-icon">🔐</div>
+                    <h3>4. SSH &amp; System Setup</h3>
+                    <p>Configure SSH keys, set hostname, set up any services (web dashboard, EQ server monitor, etc.) and verify everything is running from NVMe.</p>
                 </div>
             </div>
         </div>
