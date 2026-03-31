@@ -13,8 +13,10 @@ Host=192.168.1.66:5999</code>
 <h3>Then in Konsole run these debug commands:</h3>
 <p>Step 1: Check ConnectionType</p>
 <code>grep -i "connection" ~/Games/EverQuest/Full_RoF2/eqclient.ini</code>
-<p>Step 2: Test zone port</p>
-<code>echo "test" | nc -u -w2 192.168.1.66 7003</code>
-<p>Step 3: Verify eqhost</p>
+<p>Step 2: Test UDP to zone port (paste this whole block)</p>
+<code>python3 -c "import socket; s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); s.settimeout(2); s.sendto(b'test',('192.168.1.66',7007)); print('UDP sent OK')"</code>
+<p>Step 3: Test TCP to zone port</p>
+<code>bash -c 'echo > /dev/tcp/192.168.1.66/7007 && echo "TCP OK" || echo "TCP FAIL"'</code>
+<p>Step 4: Verify eqhost</p>
 <code>cat ~/Games/EverQuest/Full_RoF2/eqhost.txt</code>
 </body></html>
