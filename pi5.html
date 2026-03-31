@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+    <script>document.documentElement.classList.remove('no-js');</script>
+    <meta charset="utf-8">
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Raspberry Pi 5 setup guide — M.2 HAT+, Samsung NVMe SSD, Argon NEO case, and SSD boot config.">
+    <meta name="author" content="Deacyde">
+    <title>Pi 5 Setup Guide | Deacyde</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="shortcut icon" href="https://deacyde.com/images/ico/favicon.ico">
+    <style>
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .step {
+            display: flex;
+            gap: 1.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.75rem;
+            transition: border-color var(--transition);
+        }
+        .step:hover { border-color: var(--accent); }
+        .step-num {
+            flex-shrink: 0;
+            width: 42px;
+            height: 42px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 800;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .step-body h3 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .step-body p, .step-body li {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+            line-height: 1.7;
+        }
+        .step-body ul {
+            margin: 0.5rem 0 0 1.25rem;
+        }
+        .step-body li { margin-bottom: 0.25rem; }
+        pre {
+            background: #0d0d14;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1rem 1.25rem;
+            margin-top: 0.75rem;
+            overflow-x: auto;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--success);
+        }
+        .warn {
+            background: rgba(255, 180, 0, 0.08);
+            border: 1px solid rgba(255, 180, 0, 0.3);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 1rem;
+            margin-top: 0.75rem;
+            color: #f5c842;
+            font-size: 0.875rem;
+        }
+        .tip {
+            background: rgba(108, 99, 255, 0.08);
+            border: 1px solid rgba(108, 99, 255, 0.3);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 1rem;
+            margin-top: 0.75rem;
+            font-size: 0.875rem;
+            color: var(--text);
+        }
+        .gear-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .gear-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .gear-card .gear-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .gear-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem; }
+        .gear-card p { color: var(--text-muted); font-size: 0.875rem; }
+        .badge {
+            display: inline-block;
+            background: var(--accent-glow);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .page-hero {
+            padding: 8rem 0 4rem;
+            text-align: center;
+        }
+        .page-hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 1rem;
+        }
+        .page-hero p {
+            color: var(--text-muted);
+            font-size: 1.125rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        @media (max-width: 640px) {
+            .step { flex-direction: column; gap: 1rem; }
+            .page-hero h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="nav-brand"><img src="logo.png" alt="Deacyde" class="nav-logo"></a>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html#services">Services</a></li>
+                <li><a href="index.html#portfolio">Portfolio</a></li>
+                <li><a href="index.html#games">Games</a></li>
+                <li><a href="index.html#skills">Skills</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
+                <li><a href="eqserver.md">EQ Server</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="page-hero">
+        <div class="container">
+            <p class="hero-tag">Personal Lab Docs</p>
+            <h1>Raspberry Pi 5<br><span class="accent">Setup Guide</span></h1>
+            <p>M.2 HAT+ · Samsung 1TB NVMe · Argon NEO Case · SSD Boot</p>
+        </div>
+    </section>
+
+    <!-- Gear -->
+    <section class="section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <h2>Your Hardware</h2>
+                <p class="section-sub">Everything in this build</p>
+            </div>
+            <div class="gear-grid">
+                <div class="gear-card">
+                    <div class="gear-icon">🍓</div>
+                    <h4>Raspberry Pi 5</h4>
+                    <p>4GB or 8GB — PCIe 2.0 x1 onboard</p>
+                </div>
+                <div class="gear-card">
+                    <div class="gear-icon">🔌</div>
+                    <h4>Official Pi 5 PSU</h4>
+                    <p>27W / 5V 5A USB-C — exactly what you need</p>
+                </div>
+                <div class="gear-card">
+                    <div class="gear-icon">📡</div>
+                    <h4>Raspberry Pi M.2 HAT+</h4>
+                    <p>Official HAT — PCIe FPC connector, M-key slot</p>
+                </div>
+                <div class="gear-card">
+                    <div class="gear-icon">💾</div>
+                    <h4>Samsung NVMe 1TB</h4>
+                    <p>M.2 M-key — fast, well supported on Pi 5</p>
+                </div>
+                <div class="gear-card">
+                    <div class="gear-icon">🧊</div>
+                    <h4>Argon NEO 5 Case</h4>
+                    <p>Passive + active cooling, fits M.2 HAT+ underneath</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Steps -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Step-by-Step Setup</h2>
+                <p class="section-sub">Do these in order — some steps require a reboot</p>
+            </div>
+
+            <div class="step-list">
+
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-body">
+                        <h3>Start with a Working SD Card Boot</h3>
+                        <p>Before touching any hardware, make sure your Pi 5 boots normally from an SD card with a fresh Raspberry Pi OS (64-bit, Bookworm). You need this to update firmware and configure boot order. If you don't have one set up yet, flash the SD card first using <strong>Raspberry Pi Imager</strong> on any PC.</p>
+                        <div class="tip">💡 Do not attach the M.2 HAT+ yet. Get the Pi running on SD first.</div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-body">
+                        <h3>Update Everything &amp; Flash the EEPROM</h3>
+                        <p>Boot from SD, open a terminal, and run:</p>
+                        <pre><code>sudo apt update && sudo apt full-upgrade -y
+sudo rpi-eeprom-update -a
+sudo reboot</code></pre>
+                        <p style="margin-top:0.75rem;">After the reboot, verify the EEPROM is current:</p>
+                        <pre><code>sudo rpi-eeprom-update</code></pre>
+                        <p style="margin-top:0.5rem;">Should say <code>BOOTLOADER: up to date</code>. This is required before NVMe boot will work reliably.</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-body">
+                        <h3>Set Boot Order to NVMe First</h3>
+                        <pre><code>sudo raspi-config</code></pre>
+                        <ul>
+                            <li>Go to <strong>Advanced Options</strong></li>
+                            <li>Select <strong>Boot Order</strong></li>
+                            <li>Choose <strong>NVMe/USB Boot</strong> (puts NVMe before SD)</li>
+                            <li>Finish &amp; reboot (stay on SD for now)</li>
+                        </ul>
+                        <div class="tip">💡 This just sets the order — Pi will still boot from SD if no NVMe is present.</div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">4</div>
+                    <div class="step-body">
+                        <h3>Optionally Enable PCIe Gen 3 <span class="badge">Optional</span></h3>
+                        <p>The official Pi 5 PCIe runs at Gen 2 by default (~450 MB/s). Gen 3 (~900 MB/s) is unofficial but works great with Samsung NVMe drives. To enable it:</p>
+                        <pre><code>sudo nano /boot/firmware/config.txt</code></pre>
+                        <p style="margin-top:0.75rem;">Add this line at the bottom:</p>
+                        <pre><code>dtparam=pciex1_gen=3</code></pre>
+                        <p style="margin-top:0.5rem;">Save with <code>Ctrl+O</code>, exit with <code>Ctrl+X</code>, then reboot.</p>
+                        <div class="warn">⚠️ Gen 3 is not officially supported — some Pi units are more stable than others at Gen 3. If you get random crashes or boot issues, remove this line and stick with Gen 2.</div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">5</div>
+                    <div class="step-body">
+                        <h3>Power Off &amp; Attach the M.2 HAT+</h3>
+                        <p><strong>Shut down completely</strong> — not just reboot:</p>
+                        <pre><code>sudo shutdown -h now</code></pre>
+                        <p style="margin-top:0.75rem;">Unplug the power cord. Then:</p>
+                        <ul>
+                            <li>Seat the Samsung NVMe SSD into the M-key M.2 slot on the HAT</li>
+                            <li>Secure it with the included standoff screw</li>
+                            <li>Connect the <strong>FPC ribbon cable</strong> between the HAT and the Pi 5's PCIe connector — lift the locking tab fully, push the cable all the way in, press the tab down to lock. Do both ends.</li>
+                            <li>Stack the HAT onto the Pi's 40-pin GPIO header — press down firmly and evenly</li>
+                        </ul>
+                        <div class="warn">⚠️ The FPC ribbon cable is the most fragile part. If the Pi won't detect the NVMe after boot, this cable is the first thing to reseat. Make sure both ends are fully locked.</div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">6</div>
+                    <div class="step-body">
+                        <h3>Assemble the Argon NEO Case</h3>
+                        <p>The Argon NEO 5 case is designed to fit the Pi 5 with the M.2 HAT+ underneath. Assembly order:</p>
+                        <ul>
+                            <li>Fit the Pi + HAT sandwich into the case base — HAT faces down into the case, Pi on top</li>
+                            <li>Attach the fan header to the Pi's fan connector (small JST connector on the Pi 5 board)</li>
+                            <li>Secure the case lid — screws go through the top plate into the standoffs</li>
+                            <li>The NVMe SSD slot in the case aligns with the HAT below</li>
+                        </ul>
+                        <div class="tip">💡 The Argon NEO has a built-in fan controller. After setup, install the Argon daemon to control fan speed via software.</div>
+                        <pre><code>curl -L https://download.argon40.com/argon-neo-5.sh | bash</code></pre>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">7</div>
+                    <div class="step-body">
+                        <h3>Flash Raspberry Pi OS to the NVMe</h3>
+                        <p>Power the Pi back on — it will boot from SD since nothing is on the NVMe yet. Once booted, open a terminal and launch the imager:</p>
+                        <pre><code>sudo apt install rpi-imager -y
+rpi-imager</code></pre>
+                        <ul style="margin-top:0.75rem;">
+                            <li><strong>Choose OS:</strong> Raspberry Pi OS (64-bit) — Bookworm</li>
+                            <li><strong>Choose Storage:</strong> your NVMe drive — shows as <code>/dev/nvme0n1</code></li>
+                            <li>Click the ⚙️ gear icon to pre-configure hostname, SSH, WiFi, and your username/password before flashing</li>
+                            <li>Flash it</li>
+                        </ul>
+                        <div class="tip">💡 Pre-configure SSH and your WiFi credentials in the imager's advanced settings — saves hassle after first NVMe boot.</div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">8</div>
+                    <div class="step-body">
+                        <h3>Boot from NVMe</h3>
+                        <p>Remove the SD card, then power cycle the Pi. It should now boot directly from the Samsung NVMe.</p>
+                        <p style="margin-top:0.5rem;">Confirm you're running from NVMe:</p>
+                        <pre><code>lsblk</code></pre>
+                        <p style="margin-top:0.5rem;">You should see <code>nvme0n1</code> with partitions and your root <code>/</code> mounted on it. SD card should show nothing (it's removed).</p>
+                        <pre><code># Also check read speed - Samsung should hit 400-900 MB/s
+sudo hdparm -Tt /dev/nvme0n1</code></pre>
+                        <div class="warn">⚠️ If it boots to a blank screen or loops — reinsert the SD card, boot from it, and reseat the FPC cable on the HAT. That's the #1 cause of NVMe detection failure.</div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">9</div>
+                    <div class="step-body">
+                        <h3>First-Time NVMe OS Setup</h3>
+                        <p>Once booted from NVMe, run a full update and configure your system:</p>
+                        <pre><code>sudo apt update && sudo apt full-upgrade -y
+
+# Set hostname
+sudo hostnamectl set-hostname pi
+
+# Enable SSH if not already on
+sudo systemctl enable --now ssh
+
+# Check your IP
+hostname -I</code></pre>
+                        <p style="margin-top:0.75rem;">If you use SSH from other machines, add your key:</p>
+                        <pre><code>mkdir -p ~/.ssh
+echo "YOUR_PUBLIC_KEY" >> ~/.ssh/authorized_keys
+chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys</code></pre>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">10</div>
+                    <div class="step-body">
+                        <h3>Install Argon NEO Fan Daemon</h3>
+                        <p>The Argon NEO 5 case has a fan that needs software to control it. Without this, the fan either runs full speed or not at all:</p>
+                        <pre><code>curl -L https://download.argon40.com/argon-neo-5.sh | bash</code></pre>
+                        <p style="margin-top:0.75rem;">This installs <code>argonone-config</code>. To adjust fan curve:</p>
+                        <pre><code>argonone-config</code></pre>
+                        <p style="margin-top:0.5rem;">Default curve kicks the fan on around 55°C. You can tune it to stay quiet until higher temps.</p>
+                        <div class="tip">💡 Check temps anytime with: <code>vcgencmd measure_temp</code></div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-num">11</div>
+                    <div class="step-body">
+                        <h3>Verify Everything is Working</h3>
+                        <pre><code># NVMe detected and mounted
+lsblk
+
+# PCIe device visible
+lspci | grep -i samsung
+
+# SSD speed test
+sudo hdparm -Tt /dev/nvme0n1
+
+# CPU temp
+vcgencmd measure_temp
+
+# Disk space (1TB should show ~930GB usable)
+df -h /
+
+# Uptime
+uptime</code></pre>
+                        <p style="margin-top:0.75rem;">If <code>lspci</code> shows your Samsung drive and <code>df -h</code> shows ~900GB free on <code>/</code>, you're fully set up.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Troubleshooting -->
+    <section class="section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <h2>Troubleshooting</h2>
+                <p class="section-sub">Most common issues with this exact setup</p>
+            </div>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">🔌</div>
+                    <h3>Pi won't detect the NVMe at all</h3>
+                    <p>99% of the time this is the FPC ribbon cable. Power off, unplug, open the case, and reseat both ends of the flat cable. Make sure the locking tabs are fully closed. Also confirm the SSD standoff screw is tight.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🖥️</div>
+                    <h3>Blank screen / boot loop after removing SD</h3>
+                    <p>Either the NVMe wasn't flashed correctly, or boot order wasn't saved. Re-insert SD, boot, re-run <code>sudo raspi-config</code> to set boot order again, and verify the NVMe shows up in <code>lsblk</code> while booted from SD.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⚡</div>
+                    <h3>Random crashes / instability</h3>
+                    <p>If you enabled PCIe Gen 3, try removing <code>dtparam=pciex1_gen=3</code> from <code>/boot/firmware/config.txt</code>. Gen 3 is unofficial — some Pi units don't like it. Gen 2 is stable and still fast (~450 MB/s).</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🌡️</div>
+                    <h3>Pi running hot</h3>
+                    <p>Make sure the Argon daemon is installed and running (<code>argonone-config</code>). The NEO case is passive by default — the daemon activates the fan when temps rise. Check temp with <code>vcgencmd measure_temp</code>. Under 70°C is fine for the Pi 5.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📶</div>
+                    <h3>Can't SSH in after NVMe boot</h3>
+                    <p>SSH settings don't carry over automatically if you flashed a fresh OS image to NVMe. Either pre-configure SSH in Raspberry Pi Imager's advanced settings before flashing, or plug in a keyboard/monitor for first boot and run <code>sudo systemctl enable --now ssh</code>.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">💾</div>
+                    <h3>Only 1 partition visible on NVMe</h3>
+                    <p>After first boot from NVMe, the OS auto-expands the filesystem to fill the drive. If it hasn't happened yet, run: <code>sudo raspi-config</code> → Advanced → Expand Filesystem. The full ~930GB should be available after a reboot.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Reference -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Quick Reference</h2>
+                <p class="section-sub">Commands you'll use repeatedly</p>
+            </div>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">🌡️</div>
+                    <h3>System Health</h3>
+                    <pre><code>vcgencmd measure_temp    # CPU temp
+vcgencmd get_throttled  # 0x0 = good
+htop                    # CPU/RAM usage
+df -h /                 # Disk space</code></pre>
+                </div>
+                <div class="card">
+                    <div class="card-icon">💾</div>
+                    <h3>Storage</h3>
+                    <pre><code>lsblk                         # List drives
+lspci | grep -i samsung       # NVMe on PCIe
+sudo hdparm -Tt /dev/nvme0n1  # Speed test</code></pre>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔧</div>
+                    <h3>Maintenance</h3>
+                    <pre><code>sudo apt update && sudo apt upgrade -y
+sudo rpi-eeprom-update     # Firmware check
+argonone-config            # Fan settings
+sudo raspi-config          # Pi settings</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="text-align:center; padding: 3rem 1.5rem; color: var(--text-muted); font-size: 0.875rem; border-top: 1px solid var(--border);">
+        <p>Personal lab notes — <a href="index.html">deacyde.com</a></p>
+    </footer>
+
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 20);
+        });
+        // Mobile nav toggle
+        const navToggle = document.getElementById('navToggle');
+        const navLinks = document.getElementById('navLinks');
+        navToggle.addEventListener('click', () => {
+            navToggle.classList.toggle('active');
+            navLinks.classList.toggle('open');
+        });
+    </script>
+</body>
+</html>
