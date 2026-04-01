@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EQEmu Merchant Bug — Unresolved Questions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.7;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #00d4ff;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #222;
+            padding-bottom: 1rem;
+        }
+        .question-card {
+            background: #141414;
+            border: 1px solid #222;
+            border-left: 4px solid #00d4ff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: border-color 0.2s;
+        }
+        .question-card:hover { border-left-color: #ff6b35; }
+        .question-card.hot { border-left-color: #ff4444; }
+        .question-card.hot:hover { border-left-color: #ff6b35; }
+        .q-number {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #00d4ff;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+        .question-card.hot .q-number { color: #ff4444; }
+        .q-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.75rem;
+        }
+        .q-detail {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+        .q-detail strong { color: #ccc; }
+        code {
+            background: #1a1a2e;
+            color: #00d4ff;
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-family: 'Courier New', monospace;
+        }
+        .tag {
+            display: inline-block;
+            background: #1a1a2e;
+            color: #888;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2em 0.6em;
+            border-radius: 4px;
+            margin-right: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .tag.lead { background: #2a1a0a; color: #ff6b35; }
+        .tag.source { background: #0a2a1a; color: #00cc66; }
+        .tag.shared-mem { background: #2a0a2a; color: #cc66ff; }
+        .tag.logging { background: #0a1a2a; color: #6699ff; }
+
+        .context-box {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .context-box h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ff6b35;
+            margin-bottom: 0.75rem;
+        }
+        .context-box ul {
+            list-style: none;
+            padding: 0;
+        }
+        .context-box li {
+            color: #aaa;
+            font-size: 0.85rem;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        .context-box li:last-child { border-bottom: none; }
+        .context-box li strong { color: #ccc; }
+
+        .sql-box {
+            background: #0d1117;
+            border: 1px solid #222;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 0.75rem;
+            overflow-x: auto;
+        }
+        .sql-box code {
+            background: none;
+            color: #c9d1d9;
+            padding: 0;
+            font-size: 0.8rem;
+            white-space: pre;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #00d4ff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+        .priority-banner {
+            background: linear-gradient(135deg, #1a0a0a, #2a1010);
+            border: 1px solid #441111;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: #ff8888;
+        }
+        .priority-banner strong { color: #ff4444; }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← Back to Deacyde.com</a>
+
+    <h1>🔧 EQEmu Merchant Bug — Unresolved Questions</h1>
+    <p class="subtitle">Server Of Deacyde &bull; EQEmu v23.10.3 &bull; RoF2 Client &bull; Last updated: March 31, 2026</p>
+
+    <div class="priority-banner">
+        <strong>🔥 Strongest leads:</strong> Content/expansion filtering (#3) and UNK132 field length mismatch (#5). These are the most likely root causes remaining.
+    </div>
+
+    <div class="context-box">
+        <h2>What We Know So Far</h2>
+        <ul>
+            <li><strong>Bug:</strong> Buying from custom merchant NPCs gives "That item has already been sold" error</li>
+            <li><strong>Working:</strong> Unmodified PEQ items (Short Sword 5001, Water Flask 13006) CAN be bought from custom NPCs ✅</li>
+            <li><strong>Working:</strong> Bags from Baggins (itemclass=1, itemtype=11) CAN be bought ✅</li>
+            <li><strong>Working:</strong> All items from stock PEQ merchants (e.g. Bubar) work ✅</li>
+            <li><strong>Broken:</strong> ALL our custom/modified items (weapons, armor, caster gear, monk gear, fabled) CANNOT be bought ✗</li>
+            <li><strong>Ruled out:</strong> nodrop/norent flags (fixed to 1/1, didn't help)</li>
+            <li><strong>Ruled out:</strong> Stale shared memory (deleted + rebuilt, didn't help)</li>
+            <li><strong>Ruled out:</strong> merchantlist_temp (table is empty for our merchants)</li>
+            <li><strong>Ruled out:</strong> Duplicate/bad slots (all clean, sequential)</li>
+            <li><strong>Ruled out:</strong> NPC config issues (class=41, merchant_id matches, identical to working NPCs)</li>
+            <li><strong>Confirmed path:</strong> Packet logs show <code>database.GetItem(item_id)</code> returning null → ALREADY_SOLD</li>
+        </ul>
+    </div>
+
+    <!-- Question 1 -->
+    <div class="question-card">
+        <div class="q-number">Question 1</div>
+        <div class="q-title">Why does Short Sword (5001) work but Soul Devourer (11001) doesn't?</div>
+        <p class="q-detail">
+            Both items now have identical critical flags: <code>nodrop=1</code>, <code>norent=1</code>, <code>itemclass=0</code>, <code>itemtype=0</code>, <code>loregroup=0</code>.
+            Short Sword is an unmodified PEQ database item (id 5001). Soul Devourer was modified by us (originally a PEQ item, id 11001).
+            The buy handler calls <code>database.GetItem(item_id)</code> which reads from shared memory — it returns the item for 5001 but null for 11001.
+        </p>
+        <p class="q-detail">
+            <strong>Key difference:</strong> Soul Devourer has <code>proceffect=995</code> (a spell proc) and <code>magic=1</code>. Short Sword has <code>proceffect=-1</code> and <code>magic=0</code>.
+            Could a bad proc spell reference cause shared_memory to skip the item?
+        </p>
+        <span class="tag shared-mem">shared memory</span>
+        <span class="tag source">source code</span>
+    </div>
+
+    <!-- Question 2 -->
+    <div class="question-card">
+        <div class="q-number">Question 2</div>
+        <div class="q-title">Why do bags (containers) work with any flags?</div>
+        <p class="q-detail">
+            Baggins' items (<code>itemclass=1</code>, <code>itemtype=11</code>) buy fine — even when they had <code>nodrop=0, norent=0</code>.
+            Weapons/armor (<code>itemclass=0</code>, <code>itemtype=0/3/4/10</code>) fail with the same flags.
+        </p>
+        <p class="q-detail">
+            In the source code, bags use <code>cursor=false</code> (placed directly into inventory) while equipment uses <code>cursor=true</code> (placed on cursor).
+            But the failure happens BEFORE this — at the <code>GetItem()</code> call. So the cursor logic shouldn't matter.
+        </p>
+        <p class="q-detail">
+            <strong>Research angle:</strong> Does the shared_memory loader or content filtering system treat <code>itemclass=1</code> (containers) differently than <code>itemclass=0</code> (common items)?
+        </p>
+        <span class="tag shared-mem">shared memory</span>
+        <span class="tag source">source code</span>
+    </div>
+
+    <!-- Question 3 -->
+    <div class="question-card hot">
+        <div class="q-number">Question 3 — Strong Lead 🔥</div>
+        <div class="q-title">Is content/expansion filtering excluding our items?</div>
+        <p class="q-detail">
+            The zone boot log shows: <strong>"Loaded [939] of [1152] merchant list entries"</strong> — meaning 213 items were filtered out.
+            EQEmu has a content filtering system that can exclude items based on expansion settings.
+        </p>
+        <p class="q-detail">
+            Server config: <code>Expansion:CurrentExpansion = 9</code> (Shadows of Luclin), <code>World:ExpansionSettings = 524287</code>.
+            If our items have expansion metadata that puts them beyond Luclin, they'd be filtered from merchant lists at zone load time — meaning they'd appear in the merchant window (client-side) but <code>GetItem()</code> would return null (server-side).
+        </p>
+        <p class="q-detail">
+            <strong>Research angle:</strong> How does EQEmu's content filter decide which items to exclude?
+            Check the <code>items</code> table for any expansion-related columns. The column <code>min_expansion</code> didn't exist in our schema — 
+            what column DOES v23.10.3 use? Could it be in the item ID range itself, or in a separate content_flags table?
+        </p>
+        <div class="sql-box"><code>-- Check if there's a content filtering table
+SHOW TABLES LIKE '%content%';
+
+-- Check all columns that might relate to expansion filtering
+SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE TABLE_SCHEMA='peq' AND TABLE_NAME='items' 
+AND COLUMN_NAME LIKE '%exp%' OR COLUMN_NAME LIKE '%content%' 
+OR COLUMN_NAME LIKE '%era%' OR COLUMN_NAME LIKE '%flag%';</code></div>
+        <span class="tag lead">strongest lead</span>
+        <span class="tag source">source code</span>
+    </div>
+
+    <!-- Question 4 -->
+    <div class="question-card">
+        <div class="q-number">Question 4</div>
+        <div class="q-title">Does database.GetItem() fail for certain items in shared memory?</div>
+        <p class="q-detail">
+            The packet logs confirm the exact failure: <code>OP_ShopPlayerBuy</code> → <code>OP_SimpleMessage</code> (already sold) → <code>OP_ShopDelItem</code> → <code>OP_ShopEndConfirm</code>.
+            This matches the code path where <code>database.GetItem(item_id)</code> returns null.
+        </p>
+        <p class="q-detail">
+            The item EXISTS in the MySQL <code>items</code> table. Shared memory was rebuilt fresh. Yet <code>GetItem()</code> can't find it.
+            This means either: (a) shared_memory.exe skipped loading the item, or (b) the lookup key/index doesn't match.
+        </p>
+        <p class="q-detail">
+            <strong>Research angle:</strong> Look at EQEmu's <code>shared_memory.cpp</code> — does it load ALL items from the DB, or does it filter?
+            Check <code>common/shared_tasks.cpp</code> or <code>common/items.cpp</code> for the loading query. Does it have a WHERE clause that excludes certain items?
+        </p>
+        <span class="tag shared-mem">shared memory</span>
+        <span class="tag source">source code</span>
+    </div>
+
+    <!-- Question 5 -->
+    <div class="question-card hot">
+        <div class="q-number">Question 5 — Strong Lead 🔥</div>
+        <div class="q-title">UNK132 field length mismatch — 19 vs 20 characters</div>
+        <p class="q-detail">
+            Comparing working vs broken items in the database:
+        </p>
+        <p class="q-detail">
+            <strong>Working items</strong> (Short Sword 5001, Water Flask 13006): <code>UNK132 = '00000000000000000000'</code> (20 characters)<br>
+            <strong>Broken items</strong> (Soul Devourer 11001, Big Soul Devourer 11000, Ancient Frostreaver 32801): <code>UNK132 = '0000000000000000000'</code> (19 characters)<br>
+            <strong>Bags</strong> (Annihilator's Satchel 139831): <code>UNK132 = NULL</code>
+        </p>
+        <p class="q-detail">
+            If shared_memory.exe parses UNK132 as a fixed-width binary field and expects exactly 20 characters, 
+            a 19-character value could cause a parsing error that makes the item fail to load — or corrupt the index so <code>GetItem()</code> can't find it.
+        </p>
+        <div class="sql-box"><code>-- Check UNK132 lengths across ALL our merchant items
+SELECT i.id, i.Name, LENGTH(i.UNK132) as unk132_len, i.UNK132
+FROM items i
+JOIN merchantlist ml ON ml.item = i.id
+WHERE ml.merchantid IN (104901,104902,104903,104908,104909,104910)
+ORDER BY LENGTH(i.UNK132), i.id;
+
+-- Quick fix attempt: pad all to 20 chars
+UPDATE items SET UNK132 = '00000000000000000000' 
+WHERE id IN (
+  SELECT item FROM merchantlist 
+  WHERE merchantid IN (104901,104902,104903,104908,104909,104910)
+) AND (LENGTH(UNK132) != 20 OR UNK132 IS NULL);</code></div>
+        <span class="tag lead">strongest lead</span>
+        <span class="tag shared-mem">shared memory</span>
+    </div>
+
+    <!-- Question 6 -->
+    <div class="question-card">
+        <div class="q-number">Question 6</div>
+        <div class="q-title">Why didn't Trading/Merchant log categories produce output?</div>
+        <p class="q-detail">
+            We enabled verbose logging: set <code>log_to_file=3</code> and <code>log_to_gmsay=3</code> for Trading (category 29) and Merchants (category 67) in <code>logsys_categories</code>.
+            Ran <code>#logs reload</code> in-game. No merchant-level debug messages appeared in logs.
+        </p>
+        <p class="q-detail">
+            Only packet-level logs were visible in the zone log file. The Trading/Merchant categories may not have any log statements in v23.10.3, 
+            or the category IDs may have shifted between versions.
+        </p>
+        <p class="q-detail">
+            <strong>Research angle:</strong> Check if EQEmu v23.10.3 actually has <code>LogTrading</code> or <code>LogMerchants</code> calls in the merchant buy handler. 
+            If not, those categories are useless and we need packet-level debugging or custom source code builds.
+        </p>
+        <span class="tag logging">logging</span>
+    </div>
+
+    <!-- Question 7 -->
+    <div class="question-card">
+        <div class="q-number">Question 7</div>
+        <div class="q-title">Could the item ID range affect shared memory loading?</div>
+        <p class="q-detail">
+            <strong>Working items:</strong> Short Sword (5001), Water Flask (13006) — low IDs from base EverQuest.<br>
+            <strong>Broken items:</strong> Soul Devourer (11001), Ancient Frostreaver (32801), items up to 147494 — spanning many expansion ranges.
+        </p>
+        <p class="q-detail">
+            Shared memory uses a binary file (<code>C:\Users\deacyde-minipc\server\shared\items</code>, 157MB). 
+            If it uses a fixed-size array indexed by item ID, there could be an upper bound. Or if it uses a hash table, 
+            collisions could cause certain IDs to be unreachable.
+        </p>
+        <p class="q-detail">
+            <strong>Counter-evidence:</strong> Bags work and include high IDs like 139831. But bags might use a different lookup path.
+        </p>
+        <span class="tag shared-mem">shared memory</span>
+    </div>
+
+    <div class="context-box">
+        <h2>Suggested Next Steps</h2>
+        <ul>
+            <li><strong>1. Quick win — Fix UNK132:</strong> Pad all merchant items' UNK132 to 20 chars, rebuild shared memory, test. (5 min)</li>
+            <li><strong>2. Check content filtering:</strong> Find the content_flags or expansion filtering query in EQEmu source. See if our items are being excluded at zone load.</li>
+            <li><strong>3. Test a brand new item:</strong> INSERT a completely new item (not modifying existing PEQ item) with all correct flags. If it works, the issue is with modifying existing items.</li>
+            <li><strong>4. Binary diff shared memory:</strong> Hex dump the shared\items file and search for item IDs 5001 (working) vs 11001 (broken) to confirm whether broken items exist in shared memory at all.</li>
+            <li><strong>5. Check EQEmu source for GetItem():</strong> Find the shared memory lookup code to understand exactly how items are indexed and retrieved.</li>
+        </ul>
+    </div>
+
+    <div class="context-box">
+        <h2>Server Details (for reference)</h2>
+        <ul>
+            <li><strong>Server:</strong> Beelink SER5 MAX, Windows 11, IP 192.168.1.66</li>
+            <li><strong>EQEmu:</strong> v23.10.3</li>
+            <li><strong>Client:</strong> RoF2</li>
+            <li><strong>Database:</strong> MariaDB, db=peq</li>
+            <li><strong>Zone:</strong> East Commonlands (ecommons, zone 22)</li>
+            <li><strong>Expansion:</strong> CurrentExpansion=9 (Shadows of Luclin)</li>
+            <li><strong>Shared memory:</strong> C:\Users\deacyde-minipc\server\shared\items (157MB)</li>
+            <li><strong>Merchant NPCs:</strong> 104901 (weapons), 104902 (armor), 104903 (bags), 104908 (caster), 104909 (monk), 104910 (fabled)</li>
+        </ul>
+    </div>
+
+</body>
+</html>
