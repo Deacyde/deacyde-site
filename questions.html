@@ -335,14 +335,196 @@ WHERE id IN (
         <span class="tag shared-mem">shared memory</span>
     </div>
 
-    <div class="context-box">
-        <h2>Suggested Next Steps</h2>
+    <!-- ============================================================ -->
+    <!-- UPDATE LOG -->
+    <!-- ============================================================ -->
+
+    <hr style="border: none; border-top: 2px solid #333; margin: 3rem 0;">
+
+    <h1 style="font-size: 1.5rem; color: #ff6b35;">📋 Update Log</h1>
+    <p class="subtitle">Running record of changes, results, and new questions as we debug.</p>
+
+    <!-- Update 1 -->
+    <div class="context-box" style="border-left: 4px solid #ff6b35;">
+        <h2>April 1, 2026 — ~8:10 AM ET</h2>
         <ul>
-            <li><strong>1. Quick win — Fix UNK132:</strong> Pad all merchant items' UNK132 to 20 chars, rebuild shared memory, test. (5 min)</li>
-            <li><strong>2. Check content filtering:</strong> Find the content_flags or expansion filtering query in EQEmu source. See if our items are being excluded at zone load.</li>
-            <li><strong>3. Test a brand new item:</strong> INSERT a completely new item (not modifying existing PEQ item) with all correct flags. If it works, the issue is with modifying existing items.</li>
-            <li><strong>4. Binary diff shared memory:</strong> Hex dump the shared\items file and search for item IDs 5001 (working) vs 11001 (broken) to confirm whether broken items exist in shared memory at all.</li>
-            <li><strong>5. Check EQEmu source for GetItem():</strong> Find the shared memory lookup code to understand exactly how items are indexed and retrieved.</li>
+            <li><strong>Action:</strong> Queried UNK132 lengths for all 87 merchant items across all 6 custom merchants</li>
+            <li><strong>Finding:</strong> Clear pattern confirmed:
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li>✅ <strong>20 chars</strong> → items that CAN be bought (Short Sword, Water Flask, Windblade, Fabled Blade of War, etc.)</li>
+                    <li>✗ <strong>19 chars</strong> → items that CANNOT be bought (Soul Devourer, Ancient Frostreaver, Hammer of Striking, all broken items)</li>
+                    <li>❓ <strong>NULL</strong> → bags + newer expansion items (bags work, others untested)</li>
+                </ul>
+            </li>
+            <li><strong>Action:</strong> Fixed UNK132 for all affected items:</li>
+        </ul>
+        <div class="sql-box"><code>UPDATE items SET UNK132 = '00000000000000000000'
+WHERE id IN (
+  SELECT item FROM merchantlist
+  WHERE merchantid IN (104901,104902,104903,104908,104909,104910)
+) AND (LENGTH(UNK132) != 20 OR UNK132 IS NULL);
+
+-- Result: 67 items updated</code></div>
+        <ul style="margin-top: 0.75rem;">
+            <li><strong>Next step:</strong> StopEQ → delete shared\items → StartEQ → test buying Soul Devourer from Stabby</li>
+        </ul>
+    </div>
+
+    <!-- Update 2 -->
+    <div class="context-box" style="border-left: 4px solid #ff4444;">
+        <h2>April 1, 2026 — ~8:25 AM ET</h2>
+        <ul>
+            <li><strong>Result: UNK132 fix DID NOT solve the merchant buy bug.</strong> Still getting "already been sold" error.</li>
+            <li><strong>Status of Question #5 (UNK132):</strong> ❌ Ruled out as root cause. The 19 vs 20 char difference was a red herring — or at least not the sole cause.</li>
+        </ul>
+    </div>
+
+    <!-- Update 3 — New Discovery -->
+    <div class="question-card hot" style="margin-top: 1.5rem;">
+        <div class="q-number">🆕 New Discovery — April 1, 2026 ~8:25 AM ET</div>
+        <div class="q-title">Items are NOT saving through server restarts</div>
+        <p class="q-detail">
+            After restarting the server, some items in character inventory are <strong>gone</strong>. Specifically:
+        </p>
+        <p class="q-detail">
+            <strong>Items that disappeared:</strong><br>
+            — 40-slot bags<br>
+            — Fungi Covered Scale Tunic (first one obtained)<br>
+            — Various armor pieces
+        </p>
+        <p class="q-detail">
+            <strong>Items that survived restart:</strong><br>
+            — Some items did persist (not all lost)
+        </p>
+        <p class="q-detail">
+            <strong>This may be directly related to the merchant bug.</strong> If an item can't be properly resolved by the server 
+            (because <code>GetItem()</code> returns null from shared memory), the server may also fail to save/load that item 
+            in character inventory. Both problems point to the same root cause: <strong>certain items don't exist in shared memory</strong>.
+        </p>
+        <p class="q-detail">
+            <strong>Key connection:</strong> In EQEmu, character inventory is stored in the <code>inventory</code> table by item_id.
+            When the server loads a character, it calls <code>GetItem()</code> for each inventory slot. If that returns null, 
+            the item effectively doesn't exist — it can't be loaded, rendered, or saved. This is the same <code>GetItem()</code> 
+            that fails during merchant purchases.
+        </p>
+        <span class="tag lead">critical clue</span>
+        <span class="tag shared-mem">shared memory</span>
+    </div>
+
+    <!-- New Question 8 -->
+    <div class="question-card hot" style="margin-top: 1.5rem;">
+        <div class="q-number">Question 8 — New 🔥</div>
+        <div class="q-title">Which items vanish on restart vs which survive? Is there a pattern?</div>
+        <p class="q-detail">
+            We need to check: do the items that vanish from inventory match the same items that can't be bought from merchants?
+            If so, this confirms that certain items simply <strong>do not load into shared memory</strong> — affecting both 
+            merchant purchases AND inventory persistence.
+        </p>
+        <p class="q-detail">
+            <strong>Research angle:</strong> Check the <code>character_data</code> or <code>inventory</code> table before and after restart. 
+            Which item IDs are present? Do the missing ones match our broken merchant items?
+        </p>
+        <div class="sql-box"><code>-- Check what's in character inventory right now
+SELECT * FROM inventory WHERE charid = (
+  SELECT id FROM character_data WHERE name = 'Deacyde'
+) ORDER BY slotid;
+
+-- Or check sharedbank + inventory
+SELECT * FROM sharedbank WHERE acctid = (
+  SELECT account_id FROM character_data WHERE name = 'Deacyde'
+);</code></div>
+        <span class="tag lead">strongest lead</span>
+        <span class="tag shared-mem">shared memory</span>
+    </div>
+
+    <!-- New Question 9 -->
+    <div class="question-card hot" style="margin-top: 1.5rem;">
+        <div class="q-number">Question 9 — New 🔥</div>
+        <div class="q-title">What does shared_memory.exe actually load? Does it filter or skip items?</div>
+        <p class="q-detail">
+            The merchant bug AND the inventory loss both point to the same thing: <code>GetItem(item_id)</code> returns null for certain items.
+            This means shared_memory.exe either <strong>skips loading</strong> those items, or <strong>loads them with corrupted indices</strong>.
+        </p>
+        <p class="q-detail">
+            <strong>Research angles:</strong>
+        </p>
+        <p class="q-detail">
+            1. <strong>Check shared_memory.exe output:</strong> Does it log how many items it loaded? Does it report errors or skipped items?
+            Look at server logs from startup for shared_memory output.<br><br>
+            2. <strong>Find the loading query:</strong> In EQEmu source, what SQL query does shared_memory use to load items? Does it have a WHERE clause 
+            that filters by expansion, content_flags, or any other column?<br><br>
+            3. <strong>Binary verification:</strong> Search the shared\items binary file for a known working item ID (5001) and a known broken item ID (11001). 
+            If 11001 isn't in the file at all, we know shared_memory skipped it.<br><br>
+            4. <strong>Check for a content_flags system:</strong> Some EQEmu versions have a <code>content_flags</code> column on items or a separate 
+            content filtering table. Does v23.10.3 use this?
+        </p>
+        <div class="sql-box"><code>-- Check for content-related tables
+SHOW TABLES LIKE '%content%';
+
+-- Check for content_flags column on items
+SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA='peq' AND TABLE_NAME='items'
+AND COLUMN_NAME LIKE '%content%';
+
+-- Check for expansion-related columns on items  
+SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA='peq' AND TABLE_NAME='items'
+AND (COLUMN_NAME LIKE '%exp%' OR COLUMN_NAME LIKE '%era%');
+
+-- Check merchantlist for content filtering columns
+SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA='peq' AND TABLE_NAME='merchantlist';</code></div>
+        <span class="tag lead">strongest lead</span>
+        <span class="tag shared-mem">shared memory</span>
+        <span class="tag source">source code</span>
+    </div>
+
+    <!-- New Question 10 -->
+    <div class="question-card" style="margin-top: 1.5rem;">
+        <div class="q-number">Question 10 — New</div>
+        <div class="q-title">Are our item modifications causing shared_memory to reject them?</div>
+        <p class="q-detail">
+            We've been modifying existing PEQ database items (changing stats, flags, etc.). The original PEQ items worked fine.
+            Could our modifications introduce values that shared_memory.exe can't parse?
+        </p>
+        <p class="q-detail">
+            <strong>Test idea:</strong> INSERT a completely brand-new item (fresh ID like 200001) with minimal, clean fields — 
+            copy every field exactly from Short Sword (5001) but change the name and ID. Add it to Stabby's merchantlist. 
+            If it works, the problem is with how we modified existing items. If it fails, the problem is elsewhere.
+        </p>
+        <p class="q-detail">
+            <strong>Second test:</strong> RESTORE Soul Devourer (11001) to its exact original PEQ values (undo all our modifications). 
+            If it works after restore, we know one of our modifications broke it.
+        </p>
+        <span class="tag source">source code</span>
+        <span class="tag shared-mem">shared memory</span>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid #222; margin: 2rem 0;">
+
+    <!-- Updated Summary -->
+    <div class="context-box">
+        <h2>Current Status — April 1, 2026</h2>
+        <ul>
+            <li>❌ <strong>nodrop/norent fix</strong> — did not solve merchant bug</li>
+            <li>❌ <strong>UNK132 padding fix</strong> — did not solve merchant bug</li>
+            <li>❌ <strong>Shared memory rebuild</strong> — did not solve merchant bug</li>
+            <li>❌ <strong>merchantlist_temp cleanup</strong> — table was already empty</li>
+            <li>❌ <strong>Slot conflicts</strong> — all clean and sequential</li>
+            <li>🆕 <strong>Items vanishing from inventory on restart</strong> — new symptom, likely same root cause</li>
+            <li>🔥 <strong>Leading theory:</strong> Certain items simply do not exist in shared memory. Both merchant buys and inventory persistence rely on <code>GetItem()</code>, which returns null for affected items.</li>
+        </ul>
+    </div>
+
+    <div class="context-box">
+        <h2>Suggested Next Steps (Updated)</h2>
+        <ul>
+            <li><strong>1. Check shared_memory startup logs</strong> — see if it reports errors or item counts during loading</li>
+            <li><strong>2. Search for content filtering system</strong> — check DB for content_flags tables or columns</li>
+            <li><strong>3. Verify items in shared memory binary</strong> — hex search for working vs broken item IDs</li>
+            <li><strong>4. Test a brand-new item</strong> — INSERT fresh item copied from working Short Sword, test buying it</li>
+            <li><strong>5. Restore an original item</strong> — revert Soul Devourer to PEQ defaults, test if it works unmodified</li>
+            <li><strong>6. Check which inventory items survived restart</strong> — compare against merchant broken/working lists</li>
         </ul>
     </div>
 
