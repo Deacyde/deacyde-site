@@ -158,8 +158,13 @@
     <h1>🔧 EQEmu Merchant Bug — Unresolved Questions</h1>
     <p class="subtitle">Server Of Deacyde &bull; EQEmu v23.10.3 &bull; RoF2 Client &bull; Last updated: March 31, 2026</p>
 
-    <div class="priority-banner">
-        <strong>🔥 Strongest leads:</strong> Content/expansion filtering (#3) and UNK132 field length mismatch (#5). These are the most likely root causes remaining.
+    <div class="priority-banner" style="background: linear-gradient(135deg, #0a1a0a, #102a10); border-color: #114411; color: #88ff88;">
+        <strong>✅ RESOLVED — April 1, 2026 ~9:45 AM ET</strong><br>
+        Root cause: Adding items via raw SQL bypasses the data validation and formatting that Spire (EQEmu's web admin) handles properly.
+        Items added through Spire work immediately. Items added via direct SQL INSERTs/UPDATEs to the <code style="background:#1a2a1a;color:#88ff88;">items</code> and <code style="background:#1a2a1a;color:#88ff88;">merchantlist</code> tables 
+        produced records that shared_memory.exe couldn't properly load.
+        <br><br>
+        <strong>Lesson learned:</strong> Always use Spire to manage items and merchant lists. Don't raw-SQL the items table.
     </div>
 
     <div class="context-box">
@@ -379,10 +384,64 @@ WHERE id IN (
         </ul>
     </div>
 
-    <!-- Update 3 — New Discovery -->
-    <div class="question-card hot" style="margin-top: 1.5rem;">
-        <div class="q-number">🆕 New Discovery — April 1, 2026 ~8:25 AM ET</div>
-        <div class="q-title">Items are NOT saving through server restarts</div>
+    <!-- Update 3 — RESOLUTION -->
+    <div class="context-box" style="border-left: 4px solid #00cc66;">
+        <h2>✅ April 1, 2026 — ~9:45 AM ET — BUG RESOLVED</h2>
+        <ul>
+            <li><strong>Fix:</strong> Used <strong>Spire</strong> (EQEmu web admin panel) to add items to merchants instead of raw SQL</li>
+            <li><strong>Result:</strong> Items added via Spire can be purchased immediately — no "already been sold" error ✅</li>
+            <li><strong>Root cause:</strong> Direct SQL INSERTs/UPDATEs to the <code>items</code> and <code>merchantlist</code> tables produced records that 
+                <code>shared_memory.exe</code> couldn't properly parse. Spire handles the correct data formatting, field validation, 
+                and serialization that raw SQL skips.</li>
+            <li><strong>Additional finding:</strong> Soul Devourer was removed from Stabby's merchant window entirely — the server recognized it as invalid 
+                and stripped it from the merchant list on load. Other raw-SQL items that happened to have valid formatting survived, 
+                but Soul Devourer's record was too malformed to load.</li>
+            <li><strong>Items vanishing on restart:</strong> Same root cause — items that <code>GetItem()</code> can't resolve from shared memory 
+                get dropped from inventory on character load. The server can't persist what it can't parse.</li>
+        </ul>
+        <p class="q-detail" style="margin-top: 1rem;">
+            <strong>How we were doing it (broken):</strong>
+        </p>
+        <div class="sql-box"><code>-- Direct SQL — bypasses validation, produces malformed records
+INSERT INTO merchantlist (merchantid, slot, item) VALUES (104901, 0, 11001);
+UPDATE items SET damage=100, delay=10, nodrop=1, norent=1 WHERE id=11001;</code></div>
+        <p class="q-detail" style="margin-top: 0.75rem;">
+            <strong>How to do it correctly:</strong> Use Spire's item editor and merchant list manager. 
+            Spire URL is typically <code>http://192.168.1.66:3010</code> (or whatever port Spire runs on).
+            Search for items, edit properties through the UI, and add to merchant lists through the merchant editor.
+        </p>
+        <p class="q-detail">
+            <strong>Lesson learned:</strong> Never raw-SQL the <code>items</code> table. The EQEmu item format has many interdependent fields, 
+            unknown columns (UNK012, UNK132, etc.), serialization fields, and binary expectations. 
+            Spire knows all of these. We don't.
+        </p>
+    </div>
+
+    <!-- Update 4 — Remaining question -->
+    <div class="question-card" style="margin-top: 1.5rem;">
+        <div class="q-number">Remaining Question</div>
+        <div class="q-title">Which specific fields does Spire set differently than raw SQL?</div>
+        <p class="q-detail">
+            Now that we know Spire works and raw SQL doesn't, the academic question is: which fields exactly were wrong?
+            Candidates include <code>UNK132</code>, <code>serialized</code>, <code>serialization</code>, the various <code>UNK</code> fields, 
+            or possibly the <code>updated</code>/<code>verified</code> timestamps that shared_memory uses to index items.
+        </p>
+        <p class="q-detail">
+            <strong>Not urgent</strong> — we have a working workflow now (use Spire). But understanding the exact failure field 
+            would let us safely use SQL for bulk operations in the future.
+        </p>
+        <span class="tag source">source code</span>
+        <span class="tag shared-mem">shared memory</span>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid #222; margin: 2rem 0;">
+
+    <!-- Prior discovery — kept for history -->
+    <h2 style="color: #666; font-size: 1rem; margin-bottom: 1rem;">📜 Prior Investigation Notes (kept for reference)</h2>
+
+    <div class="question-card" style="border-left-color: #333; opacity: 0.7;">
+        <div class="q-number" style="color: #666;">Prior Discovery — April 1, 2026 ~8:25 AM ET</div>
+        <div class="q-title" style="color: #999;">Items not saving through server restarts</div>
         <p class="q-detail">
             After restarting the server, some items in character inventory are <strong>gone</strong>. Specifically:
         </p>
@@ -502,29 +561,29 @@ WHERE TABLE_SCHEMA='peq' AND TABLE_NAME='merchantlist';</code></div>
 
     <hr style="border: none; border-top: 1px solid #222; margin: 2rem 0;">
 
-    <!-- Updated Summary -->
-    <div class="context-box">
-        <h2>Current Status — April 1, 2026</h2>
+    <div class="context-box" style="border: 1px solid #114411;">
+        <h2 style="color: #00cc66;">Current Status — April 1, 2026 ✅ RESOLVED</h2>
         <ul>
-            <li>❌ <strong>nodrop/norent fix</strong> — did not solve merchant bug</li>
-            <li>❌ <strong>UNK132 padding fix</strong> — did not solve merchant bug</li>
-            <li>❌ <strong>Shared memory rebuild</strong> — did not solve merchant bug</li>
-            <li>❌ <strong>merchantlist_temp cleanup</strong> — table was already empty</li>
-            <li>❌ <strong>Slot conflicts</strong> — all clean and sequential</li>
-            <li>🆕 <strong>Items vanishing from inventory on restart</strong> — new symptom, likely same root cause</li>
-            <li>🔥 <strong>Leading theory:</strong> Certain items simply do not exist in shared memory. Both merchant buys and inventory persistence rely on <code>GetItem()</code>, which returns null for affected items.</li>
+            <li>✅ <strong>FIX: Use Spire to manage items and merchant lists</strong> — works immediately</li>
+            <li>❌ <s>nodrop/norent fix</s> — did not solve it</li>
+            <li>❌ <s>UNK132 padding fix</s> — did not solve it</li>
+            <li>❌ <s>Shared memory rebuild</s> — did not solve it</li>
+            <li>❌ <s>merchantlist_temp cleanup</s> — table was already empty</li>
+            <li>❌ <s>Slot conflicts</s> — all clean and sequential</li>
+            <li>✅ <strong>Root cause:</strong> Raw SQL to the items/merchantlist tables produces records that shared_memory can't parse. Spire handles proper formatting.</li>
+            <li>✅ <strong>Items vanishing:</strong> Same cause — malformed items can't be loaded by <code>GetItem()</code> on character load</li>
+            <li>ℹ️ <strong>Soul Devourer:</strong> Server recognized it as invalid and removed it from merchant window entirely</li>
         </ul>
     </div>
 
     <div class="context-box">
-        <h2>Suggested Next Steps (Updated)</h2>
+        <h2>Going Forward</h2>
         <ul>
-            <li><strong>1. Check shared_memory startup logs</strong> — see if it reports errors or item counts during loading</li>
-            <li><strong>2. Search for content filtering system</strong> — check DB for content_flags tables or columns</li>
-            <li><strong>3. Verify items in shared memory binary</strong> — hex search for working vs broken item IDs</li>
-            <li><strong>4. Test a brand-new item</strong> — INSERT fresh item copied from working Short Sword, test buying it</li>
-            <li><strong>5. Restore an original item</strong> — revert Soul Devourer to PEQ defaults, test if it works unmodified</li>
-            <li><strong>6. Check which inventory items survived restart</strong> — compare against merchant broken/working lists</li>
+            <li><strong>Use Spire</strong> for ALL item creation, editing, and merchant list management</li>
+            <li><strong>Safe to raw SQL:</strong> merchantlist slot assignments, NPC spawns, quest scripts, zone configs</li>
+            <li><strong>NOT safe to raw SQL:</strong> items table (creation or modification), anything shared_memory caches</li>
+            <li><strong>After any item changes:</strong> Delete <code>shared\items</code> → restart server to rebuild shared memory</li>
+            <li><strong>Re-add removed items:</strong> Soul Devourer and any other items that got stripped need to be re-added via Spire</li>
         </ul>
     </div>
 
