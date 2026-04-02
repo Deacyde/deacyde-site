@@ -204,6 +204,83 @@
             .cmd { grid-template-columns: 1fr; gap: 0.25rem; }
             .container { padding: 1rem; }
         }
+
+        /* Tabs */
+        .tab-nav {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid #1a1a1a;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 0.75rem 1.25rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #555;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+            margin-bottom: -2px;
+            white-space: nowrap;
+        }
+        .tab-btn:hover { color: #aaa; }
+        .tab-btn.active { color: #fff; border-bottom-color: #00d4ff; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .cmd-example {
+            background: #0d0d1a;
+            border: 1px solid #1a1a33;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin: 0.75rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.82rem;
+            color: #9999dd;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .cmd-tip {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        .cmd-tip code {
+            background: #1a1a1a;
+            color: #00d4ff;
+            padding: 0.1em 0.35em;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+        .tip-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        .ini-grid { display: grid; grid-template-columns: 1fr; gap: 0.4rem; margin-bottom: 1rem; }
+        .ini-field {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 1rem;
+            padding: 0.5rem 0.8rem;
+            background: #111;
+            border-radius: 6px;
+            border-left: 3px solid #333;
+            align-items: start;
+        }
+        .ini-key {
+            font-family: 'Courier New', monospace;
+            color: #7b2fff;
+            font-size: 0.85rem;
+        }
+        .ini-desc { color: #aaa; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -221,24 +298,15 @@
         <div class="search-count" id="searchCount"></div>
     </div>
 
-    <!-- TOC -->
-    <div class="toc" id="toc">
-        <a href="#quick-ref">⚡ Quick Reference (Daily Use) <span class="count"></span></a>
-        <a href="#bot-essential">🤖 Bot Commands — Essential <span class="count"></span></a>
-        <a href="#bot-management">🤖 Bot Management <span class="count"></span></a>
-        <a href="#bot-combat">🤖 Bot Combat & AI <span class="count"></span></a>
-        <a href="#bot-inventory">🤖 Bot Inventory & Appearance <span class="count"></span></a>
-        <a href="#bot-spells">🤖 Bot Spells & Healing <span class="count"></span></a>
-        <a href="#mercs">🛡️ Mercenaries <span class="count"></span></a>
-        <a href="#gm-character">👤 GM — Character <span class="count"></span></a>
-        <a href="#gm-items">🎒 GM — Items & Money <span class="count"></span></a>
-        <a href="#gm-npc">👹 GM — NPC & Spawns <span class="count"></span></a>
-        <a href="#gm-zone">🗺️ GM — Zone & Teleport <span class="count"></span></a>
-        <a href="#gm-spells">✨ GM — Spells & Discs <span class="count"></span></a>
-        <a href="#gm-appearance">🎭 GM — Appearance <span class="count"></span></a>
-        <a href="#gm-server">🖥️ GM — Server Admin <span class="count"></span></a>
-        <a href="#gm-utility">🔧 GM — Utility & Debug <span class="count"></span></a>
+    <!-- Tab Nav -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('tab-quick', this)">⚡ Quick Ref</button>
+        <button class="tab-btn" onclick="switchTab('tab-bots', this)">🤖 Bots</button>
+        <button class="tab-btn" onclick="switchTab('tab-gm', this)">⚔️ GM Commands</button>
+        <button class="tab-btn" onclick="switchTab('tab-mq2', this)">🔧 MacroQuest2</button>
     </div>
+
+    <div class="tab-panel active" id="tab-quick">
 
     <!-- ============================================================ -->
     <!-- QUICK REFERENCE -->
@@ -334,6 +402,10 @@
             </div>
         </div>
     </div>
+
+    </div><!-- /tab-quick -->
+
+    <div class="tab-panel" id="tab-bots">
 
     <!-- ============================================================ -->
     <!-- BOT COMMANDS — ESSENTIAL -->
@@ -838,6 +910,10 @@
             Their spawn expansion requirement has been set to always spawn regardless of server expansion.
         </div>
     </div>
+
+    </div><!-- /tab-bots -->
+
+    <div class="tab-panel" id="tab-gm">
 
     <!-- ============================================================ -->
     <!-- GM — CHARACTER -->
@@ -1532,40 +1608,349 @@
         </div>
     </div>
 
+    </div><!-- /tab-gm -->
+
+    <div class="tab-panel" id="tab-mq2">
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — GETTING STARTED -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-start">
+        <div class="section-header">
+            <span class="section-icon">🚀</span>
+            <span class="section-title">Getting Started</span>
+        </div>
+        <div class="info-box">
+            <strong>MacroQuest2 launches automatically before EQ via the Steam launch wrapper.</strong>
+            Press <code>~</code> (tilde) to open the MQ2 command window in-game.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="mq2 help commands list all">
+                <div class="cmd-name">/help</div>
+                <div><div class="cmd-desc">List all MQ2 commands</div></div>
+            </div>
+            <div class="cmd" data-search="mq2 version show loaded build">
+                <div class="cmd-name">/mqversion</div>
+                <div><div class="cmd-desc">Show MQ2 version loaded</div></div>
+            </div>
+            <div class="cmd" data-search="plugin list loaded all active">
+                <div class="cmd-name">/plugin list</div>
+                <div><div class="cmd-desc">List all loaded plugins</div></div>
+            </div>
+            <div class="cmd" data-search="plugin load manual name enable">
+                <div class="cmd-name">/plugin [name] load</div>
+                <div><div class="cmd-desc">Load a plugin manually</div>
+                <div class="cmd-syntax">/plugin MQ2Map load</div></div>
+            </div>
+            <div class="cmd" data-search="plugin unload disable remove">
+                <div class="cmd-name">/plugin [name] unload</div>
+                <div><div class="cmd-desc">Unload a plugin</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — MAP -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-map">
+        <div class="section-header">
+            <span class="section-icon">🗺️</span>
+            <span class="section-title">MQ2Map</span>
+        </div>
+        <div class="info-box">
+            <strong>MQ2Map adds a fully featured overhead map overlay.</strong> Toggle with <code>/mapshow</code> and customize with <code>/mapfilter</code>.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="map show toggle visible display">
+                <div class="cmd-name">/mapshow</div>
+                <div><div class="cmd-desc">Toggle map visibility</div></div>
+            </div>
+            <div class="cmd" data-search="map hide close invisible">
+                <div class="cmd-name">/maphide</div>
+                <div><div class="cmd-desc">Hide the map</div></div>
+            </div>
+            <div class="cmd" data-search="map filter type npc pc item corpse on off">
+                <div class="cmd-name">/mapfilter [type] [on|off]</div>
+                <div><div class="cmd-desc">Filter what shows on map</div>
+                <div class="cmd-syntax">/mapfilter npc on &nbsp;| /mapfilter corpse off</div></div>
+            </div>
+            <div class="cmd" data-search="map names labels pc npc both toggle">
+                <div class="cmd-name">/mapnames [pc|npc|both]</div>
+                <div><div class="cmd-desc">Toggle name labels on map</div></div>
+            </div>
+            <div class="cmd" data-search="map location marker waypoint add y x z">
+                <div class="cmd-name">/maploc [y] [x] [z]</div>
+                <div><div class="cmd-desc">Add a location marker on the map</div></div>
+            </div>
+            <div class="cmd" data-search="map click behavior details action">
+                <div class="cmd-name">/mapclick</div>
+                <div><div class="cmd-desc">Details on map click behavior</div></div>
+            </div>
+        </div>
+        <div class="info-box" style="margin-top:0.75rem;">
+            💡 Middle-click on map to add a waypoint. Map auto-centers on you.
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — NAVIGATION -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-nav">
+        <div class="section-header">
+            <span class="section-icon">🧭</span>
+            <span class="section-title">MQ2MoveUtils / Navigation</span>
+        </div>
+        <div class="info-box">
+            <strong>MQ2MoveUtils enables automated movement, following, and navigation.</strong>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="stick on off follow target close">
+                <div class="cmd-name">/stick [on|off]</div>
+                <div><div class="cmd-desc">Stick to your current target (follow closely)</div></div>
+            </div>
+            <div class="cmd" data-search="stick id spawn specific target">
+                <div class="cmd-name">/stick id [id]</div>
+                <div><div class="cmd-desc">Stick to a specific spawn ID</div></div>
+            </div>
+            <div class="cmd" data-search="stick off stop cancel detach">
+                <div class="cmd-name">/stick off</div>
+                <div><div class="cmd-desc">Stop sticking</div></div>
+            </div>
+            <div class="cmd" data-search="moveto loc coordinates y x move">
+                <div class="cmd-name">/moveto loc [y] [x]</div>
+                <div><div class="cmd-desc">Move to coordinates</div></div>
+            </div>
+            <div class="cmd" data-search="moveto id spawn move go">
+                <div class="cmd-name">/moveto id [id]</div>
+                <div><div class="cmd-desc">Move to a spawn</div></div>
+            </div>
+            <div class="cmd" data-search="moveto off stop cancel movement">
+                <div class="cmd-name">/moveto off</div>
+                <div><div class="cmd-desc">Cancel movement</div></div>
+            </div>
+            <div class="cmd" data-search="circle on off rotate around target">
+                <div class="cmd-name">/circle [on|off]</div>
+                <div><div class="cmd-desc">Circle around target</div></div>
+            </div>
+            <div class="cmd" data-search="makecamp camp point on off set return">
+                <div class="cmd-name">/makecamp [on|off]</div>
+                <div><div class="cmd-desc">Set a camp point and return to it</div></div>
+            </div>
+            <div class="cmd" data-search="makecamp radius distance return range">
+                <div class="cmd-name">/makecamp radius [n]</div>
+                <div><div class="cmd-desc">Set camp return radius</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — USEFUL COMMANDS -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-cmds">
+        <div class="section-header">
+            <span class="section-icon">⚡</span>
+            <span class="section-title">MQ2 Useful Macros &amp; Commands</span>
+        </div>
+        <div class="info-box">
+            <strong>General MQ2 commands and built-in features useful for solo play.</strong>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="target name npc player find">
+                <div class="cmd-name">/target [name]</div>
+                <div><div class="cmd-desc">Target an NPC or player by name</div></div>
+            </div>
+            <div class="cmd" data-search="cast slot spell spellbar number">
+                <div class="cmd-name">/cast [slot#]</div>
+                <div><div class="cmd-desc">Cast a spell from your spellbar slot</div></div>
+            </div>
+            <div class="cmd" data-search="cast spell name by name cast">
+                <div class="cmd-name">/cast "[Spell Name]"</div>
+                <div><div class="cmd-desc">Cast a spell by name</div></div>
+            </div>
+            <div class="cmd" data-search="memspell memorize slot gem spell name">
+                <div class="cmd-name">/memspell [slot] "[Spell Name]"</div>
+                <div><div class="cmd-desc">Memorize a spell into a slot</div></div>
+            </div>
+            <div class="cmd" data-search="sit stand rest macro utility">
+                <div class="cmd-name">/sit &nbsp;/ /stand</div>
+                <div><div class="cmd-desc">Sit or stand (useful in macros)</div></div>
+            </div>
+            <div class="cmd" data-search="autoskill on off toggle autofire skill">
+                <div class="cmd-name">/autoskill [on|off]</div>
+                <div><div class="cmd-desc">Toggle autofire/autoskill</div></div>
+            </div>
+            <div class="cmd" data-search="doability hotbar ability number activate">
+                <div class="cmd-name">/doability [#]</div>
+                <div><div class="cmd-desc">Activate a hotbar ability by number</div></div>
+            </div>
+            <div class="cmd" data-search="hotkey slot command bind keybind">
+                <div class="cmd-name">/hotkey [slot] [command]</div>
+                <div><div class="cmd-desc">Bind a command to a hotkey</div></div>
+            </div>
+            <div class="cmd" data-search="echo print text chat window output">
+                <div class="cmd-name">/echo [text]</div>
+                <div><div class="cmd-desc">Print text to your chat window (useful in macros)</div></div>
+            </div>
+            <div class="cmd" data-search="delay ms milliseconds pause wait macro">
+                <div class="cmd-name">/delay [ms]</div>
+                <div><div class="cmd-desc">Delay execution in macros (milliseconds)</div></div>
+            </div>
+            <div class="cmd" data-search="return macro subroutine sub end">
+                <div class="cmd-name">/return</div>
+                <div><div class="cmd-desc">Return from a macro subroutine</div></div>
+            </div>
+            <div class="cmd" data-search="end macro stop running terminate">
+                <div class="cmd-name">/end</div>
+                <div><div class="cmd-desc">End a running macro</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — AUTOLOGIN -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-autologin">
+        <div class="section-header">
+            <span class="section-icon">🤖</span>
+            <span class="section-title">MQ2AutoLogin</span>
+        </div>
+        <div class="info-box">
+            <strong>MQ2AutoLogin is already configured with your credentials.</strong> It auto-fills and submits the login screen.
+        </div>
+        <div class="ini-grid">
+            <div class="ini-field">
+                <div class="ini-key">[Settings]</div>
+                <div class="ini-desc">StationName, Password, Character, Server entries</div>
+            </div>
+        </div>
+        <div class="info-box">
+            💡 Your <code>MQ2AutoLogin.ini</code> in the EQ folder already has your login. Edit it to add character auto-select.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="autologin status show current login">
+                <div class="cmd-name">/autologin</div>
+                <div><div class="cmd-desc">Show current autologin status</div></div>
+            </div>
+            <div class="cmd" data-search="relog relog character reconnect">
+                <div class="cmd-name">/relog</div>
+                <div><div class="cmd-desc">Relog current character</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — WRITING MACROS -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-macros">
+        <div class="section-header">
+            <span class="section-icon">📜</span>
+            <span class="section-title">Writing Macros</span>
+        </div>
+        <div class="info-box">
+            <strong>Macros are .mac files stored in the <code>Macros/</code> folder.</strong> Run them with <code>/mac [filename]</code>.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="mac run macro filename execute">
+                <div class="cmd-name">/mac [filename]</div>
+                <div><div class="cmd-desc">Run a macro (no .mac extension needed)</div></div>
+            </div>
+            <div class="cmd" data-search="mac run macro arguments arg1 arg2">
+                <div class="cmd-name">/mac [filename] [arg1] [arg2]</div>
+                <div><div class="cmd-desc">Run a macro with arguments</div></div>
+            </div>
+            <div class="cmd" data-search="endmac stop end running macro">
+                <div class="cmd-name">/endmac</div>
+                <div><div class="cmd-desc">Stop the currently running macro</div></div>
+            </div>
+            <div class="cmd" data-search="listmacros list available macros show">
+                <div class="cmd-name">/listmacros</div>
+                <div><div class="cmd-desc">List available macros</div></div>
+            </div>
+        </div>
+        <div class="cmd-example">Sub Main
+  /echo Starting macro
+  /target goblin
+  /delay 500
+  /cast 1
+  /delay 3000
+  /endmac
+End Sub</div>
+        <div class="info-box">
+            💡 Macros in <code>Macros/autoplay.mac</code> and <code>Macros/setup.mac</code> are included — look at them as examples.
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — TIPS & TRICKS -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-tips">
+        <div class="section-header">
+            <span class="section-icon">🔧</span>
+            <span class="section-title">Tips &amp; Tricks</span>
+        </div>
+        <div class="tip-grid">
+            <div class="cmd-tip">Press <code>~</code> to open MQ2 chat window — type commands there or in normal chat</div>
+            <div class="cmd-tip">MQ2 commands work in the normal EQ chat box too — just prefix with / as usual</div>
+            <div class="cmd-tip"><code>/stick</code> is great for melee — target a mob and <code>/stick</code> to auto-follow it in combat</div>
+            <div class="cmd-tip">Use <code>/mapfilter npc on</code> and <code>/mapfilter npc_corpse off</code> to only show living NPCs</div>
+            <div class="cmd-tip">MQ2Map shows your exact coordinates — great with <code>#goto</code> GM commands</div>
+            <div class="cmd-tip">If MQ2 didn't inject, check that MacroQuest2.exe launched — look for it in Task Manager via Proton</div>
+            <div class="cmd-tip"><code>/mqpause</code> pauses macro execution without ending it</div>
+            <div class="cmd-tip">The <code>Macros/setup.mac</code> included can auto-equip and buff your character on login</div>
+        </div>
+    </div>
+    </div><!-- /tab-mq2 -->
+
 </div>
 
 <script>
+let activeTab = 'tab-quick';
+
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+    activeTab = tabId;
+    // Re-apply search if active
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) filterCommands();
+}
+
 function filterCommands() {
     const query = document.getElementById('searchInput').value.toLowerCase().trim();
     const allCmds = document.querySelectorAll('.cmd');
     let visible = 0;
-    let total = allCmds.length;
-    
+    const total = allCmds.length;
+
+    if (!query) {
+        // Restore normal tab view
+        allCmds.forEach(cmd => { cmd.style.display = ''; });
+        document.querySelectorAll('.section').forEach(s => { s.style.display = ''; });
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(activeTab).classList.add('active');
+        document.getElementById('searchCount').textContent = '';
+        return;
+    }
+
+    // Show all panels while searching
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('active'));
+
     allCmds.forEach(cmd => {
-        if (!query) {
-            cmd.style.display = '';
-            visible++;
-            return;
-        }
         const text = (cmd.textContent + ' ' + (cmd.dataset.search || '')).toLowerCase();
         const match = query.split(' ').every(term => text.includes(term));
         cmd.style.display = match ? '' : 'none';
         if (match) visible++;
     });
-    
-    // Show/hide sections with no visible commands
+
     document.querySelectorAll('.section').forEach(section => {
         const cmds = section.querySelectorAll('.cmd');
         const anyCmdVisible = Array.from(cmds).some(c => c.style.display !== 'none');
         section.style.display = (cmds.length === 0 || anyCmdVisible) ? '' : 'none';
     });
-    
+
     const countEl = document.getElementById('searchCount');
-    if (query) {
-        countEl.textContent = `Showing ${visible} of ${total} commands`;
-    } else {
-        countEl.textContent = '';
-    }
+    countEl.textContent = `Showing ${visible} of ${total} commands`;
 }
 </script>
 
