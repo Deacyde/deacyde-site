@@ -164,11 +164,13 @@ Use "minutesAgo" dimension to see activity broken down by minute (0 = current mi
 - **date**: Date of the search
 - **searchAppearance**: How the result appeared (e.g. "RICH_RESULT", "AMP_BLUE_LINK")
 
-## Metrics (always returned)
+## Metrics (always returned, cannot be filtered at API level)
 - **clicks**: Number of clicks from search results
 - **impressions**: Number of times the page appeared in results
 - **ctr**: Click-through rate (clicks / impressions)
 - **position**: Average ranking position in search results (1 = top)
+
+**CRITICAL**: GSC does NOT support filtering by metric values (clicks, impressions, CTR, position). Filters only work on dimensions (query, page, country, device). To filter by metrics like "over 100 impressions", you MUST: set a high rowLimit (e.g. 1000), fetch all results, then filter the returned data yourself in your response. NEVER put "impressions", "clicks", "ctr", or "position" in dimensionFilterGroups.
 
 ## Date Ranges
 - Relative: "7daysAgo", "28daysAgo", "90daysAgo", "NdaysAgo", "today", "3daysAgo"
@@ -284,8 +286,8 @@ async function executeTool(toolName, args, clientConfig) {
   const { service_account_json, ga4_property_id, gsc_site_url } = clientConfig;
 
   // Cap row limits to prevent massive responses
-  if (args.rowLimit) args.rowLimit = Math.min(args.rowLimit, 50);
-  if (args.limit) args.limit = Math.min(args.limit, 50);
+  if (args.rowLimit) args.rowLimit = Math.min(args.rowLimit, 500);
+  if (args.limit) args.limit = Math.min(args.limit, 100);
 
   let result;
   switch (toolName) {
@@ -363,6 +365,7 @@ IMPORTANT RULES:
 - When the user asks for data above or below a threshold (e.g. "over 10,000 clicks"), you MUST use metricFilter to filter at the API level, or filter the returned results. Only show rows matching the criteria. If no rows match, say so clearly.
 - When the user asks about what's happening "right now" or "currently", use query_ga4_realtime instead of query_ga4.
 - When querying GSC data, use endDate "3daysAgo" for reliable data unless the user specifies otherwise.
+- GSC does NOT support metric filtering. NEVER put clicks, impressions, ctr, or position in GSC dimensionFilterGroups. Instead, set a high rowLimit (e.g. 500) and filter the returned results yourself before presenting to the user.
 - For dimension filters with OR logic (e.g. "from US or Canada"), use the advanced orGroup format.
 - Always pick the most specific dimensions for the question. E.g. "top landing pages" → landingPage dimension, "traffic sources" → sessionSourceMedium dimension.
 
@@ -425,6 +428,7 @@ IMPORTANT RULES:
 - When the user asks for data above or below a threshold (e.g. "over 10,000 clicks"), you MUST use metricFilter to filter at the API level, or filter the returned results. Only show rows matching the criteria. If no rows match, say so clearly.
 - When the user asks about what's happening "right now" or "currently", use query_ga4_realtime instead of query_ga4.
 - When querying GSC data, use endDate "3daysAgo" for reliable data unless the user specifies otherwise.
+- GSC does NOT support metric filtering. NEVER put clicks, impressions, ctr, or position in GSC dimensionFilterGroups. Instead, set a high rowLimit (e.g. 500) and filter the returned results yourself before presenting to the user.
 - For dimension filters with OR logic (e.g. "from US or Canada"), use the advanced orGroup format.
 - Always pick the most specific dimensions for the question. E.g. "top landing pages" → landingPage dimension, "traffic sources" → sessionSourceMedium dimension.
 
