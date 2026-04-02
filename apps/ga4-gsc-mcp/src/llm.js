@@ -314,11 +314,44 @@ async function executeTool(toolName, args, clientConfig) {
     }
     case "query_ga4_realtime": {
       if (!ga4_property_id) return { error: "GA4 property ID not configured for this client" };
-      result = await runRealtimeReport({
-        serviceAccountJson: service_account_json,
-        propertyId: ga4_property_id,
-        ...args,
-      });
+      console.log("[realtime] dims:", args.dimensions, "metrics:", args.metrics);
+      try {
+        result = await runRealtimeReport({
+          serviceAccountJson: service_account_json,
+          propertyId: ga4_property_id,
+          ...args,
+        });
+      } catch (err) {
+        if (err.code === 3 || (err.message && err.message.includes("cannot be queried together"))) {
+          // Retry with each dimension individually and merge results
+          console.log("[realtime] Combo failed, trying dimensions individually");
+          const allRows = [];
+          for (const dim of args.dimensions) {
+            for (const met of args.metrics) {
+              try {
+                const partial = await runRealtimeReport({
+                  serviceAccountJson: service_account_json,
+                  propertyId: ga4_property_id,
+                  dimensions: [dim],
+                  metrics: [met],
+                  limit: args.limit,
+                });
+                partial.rows.forEach((r) => { r._query = `${dim} × ${met}`; });
+                allRows.push(...partial.rows);
+              } catch (e2) {
+                console.log(`[realtime] ${dim}+${met} also failed:`, e2.message);
+              }
+            }
+          }
+          if (allRows.length > 0) {
+            result = { rows: allRows, rowCount: allRows.length, metadata: { type: "realtime", note: "Some dimension+metric combos are incompatible; showing available results." } };
+          } else {
+            return { error: "Realtime query failed: the requested dimensions and metrics cannot be queried together. Try simpler combos like eventName+eventCount or deviceCategory+activeUsers." };
+          }
+        } else {
+          throw err;
+        }
+      }
       break;
     }
     case "query_gsc": {
