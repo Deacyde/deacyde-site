@@ -460,7 +460,7 @@ The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga
       }
     } else {
       return {
-        content: choice.message.content,
+        content: stripMarkdown(choice.message.content),
         toolCalls: extractToolCallsFromConversation(conversation),
       };
     }
@@ -546,7 +546,7 @@ The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga
     } else {
       const textContent = response.content.find((b) => b.type === "text");
       return {
-        content: textContent ? textContent.text : "No response generated.",
+        content: stripMarkdown(textContent ? textContent.text : "No response generated."),
         toolCalls: [],
       };
     }
@@ -565,6 +565,19 @@ function extractToolCallsFromConversation(conversation) {
     }
   }
   return calls;
+}
+
+// Strip markdown formatting from LLM responses
+function stripMarkdown(text) {
+  if (!text) return text;
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '$1')       // **bold** → bold
+    .replace(/\*(.+?)\*/g, '$1')            // *italic* → italic
+    .replace(/__(.+?)__/g, '$1')            // __bold__ → bold
+    .replace(/_(.+?)_/g, '$1')              // _italic_ → italic
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$2')  // [text](url) → url
+    .replace(/^#{1,6}\s+/gm, '')            // # headers → plain text
+    .replace(/`([^`]+)`/g, '$1');           // `code` → code
 }
 
 // ── Main chat function ──
