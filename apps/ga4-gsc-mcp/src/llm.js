@@ -4,7 +4,7 @@
  */
 
 const db = require("./db");
-const { runGA4Report, GA4_DIMENSIONS, GA4_METRICS } = require("./ga4");
+const { runGA4Report, runRealtimeReport, GA4_DIMENSIONS, GA4_METRICS, REALTIME_DIMENSIONS, REALTIME_METRICS } = require("./ga4");
 const { queryGSC, inspectUrl, resolveDate, GSC_DIMENSIONS } = require("./gsc");
 
 // ── Tool Definitions (shared format, converted per provider) ──
@@ -12,87 +12,207 @@ const { queryGSC, inspectUrl, resolveDate, GSC_DIMENSIONS } = require("./gsc");
 const TOOLS = [
   {
     name: "query_ga4",
-    description:
-      "Query Google Analytics 4 data. Use this to get website traffic, user behavior, landing page performance, source/medium breakdowns, conversions, and more. Always specify relevant dimensions and metrics for the user's question.",
+    description: `Query Google Analytics 4 data. Returns website traffic, user behavior, landing page performance, source/medium breakdowns, conversions, and more.
+
+## Dimensions (group by)
+Choose dimensions relevant to the question. Organized by category:
+- **Traffic source**: sessionSource, sessionMedium, sessionSourceMedium, sessionCampaignName, sessionDefaultChannelGroup, firstUserSource, firstUserMedium, firstUserSourceMedium, firstUserCampaignName, firstUserDefaultChannelGroup
+- **Content**: pagePath, pageTitle, landingPage, landingPagePlusQueryString, pageReferrer, contentGroup
+- **User/Geo**: country, city, region, continent, language, deviceCategory, browser, operatingSystem, platform, newVsReturning
+- **Time**: date, dateHour, dayOfWeek, dayOfWeekName, hour, isoWeek, month, week, year
+- **Event**: eventName, isConversionEvent
+- **Ecommerce**: itemName, itemCategory, itemBrand, transactionId
+Full reference: https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema#dimensions
+
+## Metrics
+Choose metrics relevant to the question:
+- **Sessions**: sessions, engagedSessions, engagementRate, bounceRate, averageSessionDuration, sessionsPerUser
+- **Users**: totalUsers, newUsers, activeUsers, dauPerMau, dauPerWau, wauPerMau
+- **Pages**: screenPageViews, screenPageViewsPerSession, screenPageViewsPerUser
+- **Events**: eventCount, eventCountPerUser, eventsPerSession
+- **Conversions**: conversions, userConversionRate, sessionConversionRate
+- **Revenue**: totalRevenue, purchaseRevenue, ecommercePurchases, averageRevenuePerUser, averagePurchaseRevenuePerUser
+Full reference: https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema#metrics
+
+## Date Ranges
+- Relative: "today", "yesterday", "7daysAgo", "30daysAgo", "90daysAgo", "365daysAgo", or "NdaysAgo"
+- Absolute: "YYYY-MM-DD" format
+- For YTD: startDate "2026-01-01", endDate "today"
+- For specific month: startDate "2026-03-01", endDate "2026-03-31"
+
+## Dimension Filter Examples
+**Simple format** (array, combined with AND logic):
+Single filter: [{"dimension": "country", "matchType": "exact", "value": "United States"}]
+Multiple AND: [{"dimension": "pagePath", "matchType": "contains", "value": "/blog"}, {"dimension": "deviceCategory", "matchType": "exact", "value": "mobile"}]
+matchType options: "exact", "contains", "beginsWith", "endsWith", "regex"
+
+**Advanced format** (native GA4 FilterExpression, use for OR/NOT/complex queries):
+OR group: {"orGroup": {"expressions": [{"filter": {"fieldName": "country", "stringFilter": {"matchType": "EXACT", "value": "United States"}}}, {"filter": {"fieldName": "country", "stringFilter": {"matchType": "EXACT", "value": "Canada"}}}]}}
+NOT filter: {"notExpression": {"filter": {"fieldName": "pagePath", "stringFilter": {"matchType": "CONTAINS", "value": "/admin"}}}}
+IN list: {"filter": {"fieldName": "eventName", "inListFilter": {"values": ["page_view", "scroll", "click"]}}}
+
+## Metric Filter Examples
+Use metricFilter (separate parameter from dimensionFilter) to filter rows by metric values.
+Greater than: {"filter": {"fieldName": "sessions", "numericFilter": {"operation": "GREATER_THAN", "value": {"int64Value": "100"}}}}
+Between: {"filter": {"fieldName": "bounceRate", "betweenFilter": {"fromValue": {"doubleValue": 0.5}, "toValue": {"doubleValue": 0.9}}}}
+Operations: EQUAL, LESS_THAN, LESS_THAN_OR_EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL
+AND group: {"andGroup": {"expressions": [{"filter": {"fieldName": "sessions", "numericFilter": {"operation": "GREATER_THAN", "value": {"int64Value": "50"}}}}, {"filter": {"fieldName": "bounceRate", "numericFilter": {"operation": "LESS_THAN", "value": {"doubleValue": 0.7}}}}]}}
+
+## Order By
+Set orderBy to any metric or dimension name included in your query. Default direction is "desc".`,
     parameters: {
       type: "object",
       properties: {
         dimensions: {
           type: "array",
           items: { type: "string" },
-          description: `GA4 dimensions to group by. Common: ${GA4_DIMENSIONS.join(", ")}`,
+          description: "GA4 dimensions to group by. See dimension categories in tool description.",
         },
         metrics: {
           type: "array",
           items: { type: "string" },
-          description: `GA4 metrics to retrieve. Common: ${GA4_METRICS.join(", ")}`,
+          description: "GA4 metrics to retrieve. See metric categories in tool description.",
         },
         startDate: {
           type: "string",
-          description: 'Start date. Use "7daysAgo", "30daysAgo", "90daysAgo", or "YYYY-MM-DD"',
+          description: 'Start date. Relative: "7daysAgo", "30daysAgo", "NdaysAgo". Absolute: "YYYY-MM-DD".',
         },
         endDate: {
           type: "string",
-          description: 'End date. Use "today", "yesterday", or "YYYY-MM-DD"',
+          description: 'End date. Use "today", "yesterday", or "YYYY-MM-DD".',
         },
         limit: {
           type: "number",
-          description: "Max rows to return (default 25, max 100)",
+          description: "Max rows to return (default 25, max 100).",
         },
         orderBy: {
           type: "string",
-          description: "Metric or dimension name to sort by",
+          description: "Metric or dimension name to sort by. Must be included in dimensions or metrics.",
         },
         orderDirection: {
           type: "string",
           enum: ["asc", "desc"],
-          description: "Sort direction (default desc)",
+          description: "Sort direction (default desc).",
         },
         dimensionFilter: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              dimension: { type: "string" },
-              matchType: { type: "string", enum: ["contains", "exact", "regex", "beginsWith"] },
-              value: { type: "string" },
-            },
-            required: ["dimension", "matchType", "value"],
-          },
-          description: "Optional dimension filters",
+          description: 'Dimension filters. Simple format: array of {"dimension","matchType","value"} objects (AND logic). Advanced format: native GA4 FilterExpression object supporting andGroup, orGroup, notExpression, inListFilter. See examples in tool description.',
+        },
+        metricFilter: {
+          description: 'Metric filters (separate from dimensionFilter). Native GA4 FilterExpression with numericFilter or betweenFilter. Use to filter rows by metric thresholds. See examples in tool description.',
         },
       },
       required: ["dimensions", "metrics", "startDate", "endDate"],
     },
   },
   {
-    name: "query_gsc",
-    description:
-      "Query Google Search Console data. Use this to get search queries, page performance in Google Search, clicks, impressions, CTR, and average position. Data is typically available with a 2-3 day delay.",
+    name: "query_ga4_realtime",
+    description: `Query GA4 realtime data. Returns what's happening on the site RIGHT NOW — active users, current pages, events in the last 30 minutes.
+
+## Realtime Dimensions
+city, country, deviceCategory, eventName, minutesAgo, platform, streamName, unifiedScreenName, audienceId, audienceName
+
+## Realtime Metrics
+activeUsers, conversions, eventCount, screenPageViews
+
+Note: Realtime reports do NOT use date ranges. They always return data from the last 30 minutes.
+Realtime reports cannot use custom metrics.
+Use "minutesAgo" dimension to see activity broken down by minute (0 = current minute, 29 = 30 minutes ago).
+
+## Example Queries
+- Active users right now: dimensions ["deviceCategory"], metrics ["activeUsers"]
+- What pages are being viewed: dimensions ["unifiedScreenName"], metrics ["activeUsers", "screenPageViews"]
+- Activity by minute: dimensions ["minutesAgo"], metrics ["activeUsers", "eventCount"]
+- Users by country right now: dimensions ["country"], metrics ["activeUsers"]`,
     parameters: {
       type: "object",
       properties: {
         dimensions: {
           type: "array",
           items: { type: "string" },
-          description: `GSC dimensions. Options: ${GSC_DIMENSIONS.join(", ")}`,
+          description: "Realtime dimensions: city, country, deviceCategory, eventName, minutesAgo, platform, streamName, unifiedScreenName, audienceId, audienceName.",
+        },
+        metrics: {
+          type: "array",
+          items: { type: "string" },
+          description: "Realtime metrics: activeUsers, conversions, eventCount, screenPageViews.",
+        },
+        limit: {
+          type: "number",
+          description: "Max rows to return (default 25).",
+        },
+        dimensionFilter: {
+          description: "Optional dimension filter. Same format as query_ga4 dimensionFilter.",
+        },
+        metricFilter: {
+          description: "Optional metric filter. Same format as query_ga4 metricFilter.",
+        },
+      },
+      required: ["dimensions", "metrics"],
+    },
+  },
+  {
+    name: "query_gsc",
+    description: `Query Google Search Console data. Returns how the site performs in Google Search — which queries bring traffic, which pages rank, clicks, impressions, CTR, and average position.
+
+**Important**: GSC data has a 2-3 day delay. The most recent complete data is typically 3 days ago.
+
+## Dimensions
+- **query**: Search terms users typed in Google
+- **page**: URL of the page that appeared in results
+- **country**: Country of the searcher (ISO 3166-1 alpha-3, e.g. "USA", "GBR", "DEU")
+- **device**: Device type: "DESKTOP", "MOBILE", "TABLET"
+- **date**: Date of the search
+- **searchAppearance**: How the result appeared (e.g. "RICH_RESULT", "AMP_BLUE_LINK")
+
+## Metrics (always returned)
+- **clicks**: Number of clicks from search results
+- **impressions**: Number of times the page appeared in results
+- **ctr**: Click-through rate (clicks / impressions)
+- **position**: Average ranking position in search results (1 = top)
+
+## Date Ranges
+- Relative: "7daysAgo", "28daysAgo", "90daysAgo", "NdaysAgo", "today", "3daysAgo"
+- Absolute: "YYYY-MM-DD" format
+- For reliable data, use endDate "3daysAgo" instead of "today"
+
+## Filter Examples
+Single filter: [{"filters": [{"dimension": "query", "operator": "contains", "expression": "seo"}]}]
+Multiple AND: [{"filters": [{"dimension": "query", "operator": "contains", "expression": "seo"}, {"dimension": "country", "operator": "equals", "expression": "usa"}]}]
+Exclude: [{"filters": [{"dimension": "query", "operator": "notContains", "expression": "brand name"}]}]
+Regex: [{"filters": [{"dimension": "page", "operator": "includingRegex", "expression": "/blog/.*"}]}]
+Operators: "contains", "equals", "notContains", "notEquals", "includingRegex", "excludingRegex"
+
+## Search Types
+- **web** (default): Standard web search results
+- **image**: Google Images
+- **video**: Google Video
+- **news**: Google News
+- **discover**: Google Discover feed
+- **googleNews**: Google News app/tab`,
+    parameters: {
+      type: "object",
+      properties: {
+        dimensions: {
+          type: "array",
+          items: { type: "string" },
+          description: "GSC dimensions: query, page, country, device, date, searchAppearance.",
         },
         startDate: {
           type: "string",
-          description: 'Start date. Use "7daysAgo", "28daysAgo", or "YYYY-MM-DD"',
+          description: 'Start date. Use "28daysAgo", "90daysAgo", "NdaysAgo", or "YYYY-MM-DD".',
         },
         endDate: {
           type: "string",
-          description: 'End date. Use "today", "3daysAgo", or "YYYY-MM-DD"',
+          description: 'End date. Use "3daysAgo" for reliable data, or "YYYY-MM-DD".',
         },
         type: {
           type: "string",
           enum: ["web", "image", "video", "news", "discover", "googleNews"],
-          description: "Search type (default: web)",
+          description: "Search type (default: web).",
         },
         rowLimit: {
           type: "number",
-          description: "Max rows (default 25, max 25000)",
+          description: "Max rows (default 25, max 25000).",
         },
         dimensionFilterGroups: {
           type: "array",
@@ -113,7 +233,7 @@ const TOOLS = [
               },
             },
           },
-          description: "Optional filters for GSC queries",
+          description: "Filter groups. See filter examples in tool description.",
         },
       },
       required: ["dimensions", "startDate", "endDate"],
@@ -121,14 +241,15 @@ const TOOLS = [
   },
   {
     name: "inspect_url",
-    description:
-      "Inspect a specific URL in Google Search Console. Returns index status, crawl info, mobile usability, and rich results. Use when asked about a specific page's indexing status.",
+    description: `Inspect a specific URL in Google Search Console. Returns detailed index status, crawl info, mobile usability, and rich results detection. Use when asked about a specific page's indexing status, crawlability, or search appearance.
+
+Returns: indexStatus (PASS/FAIL/etc), coverageState, crawledAs (DESKTOP/MOBILE), lastCrawlTime, pageFetchState, robotsTxtState, mobileUsability, and detected rich result types.`,
     parameters: {
       type: "object",
       properties: {
         url: {
           type: "string",
-          description: "The full URL to inspect (e.g. https://www.example.com/page)",
+          description: "The full URL to inspect (e.g. https://www.example.com/page). Must include protocol.",
         },
       },
       required: ["url"],
@@ -179,6 +300,15 @@ async function executeTool(toolName, args, clientConfig) {
       });
       break;
     }
+    case "query_ga4_realtime": {
+      if (!ga4_property_id) return { error: "GA4 property ID not configured for this client" };
+      result = await runRealtimeReport({
+        serviceAccountJson: service_account_json,
+        propertyId: ga4_property_id,
+        ...args,
+      });
+      break;
+    }
     case "query_gsc": {
       if (!gsc_site_url) return { error: "GSC site URL not configured for this client" };
       result = await queryGSC({
@@ -220,7 +350,23 @@ async function chatOpenAI(apiKey, messages, clientConfig, model) {
 
   const systemMsg = {
     role: "system",
-    content: `You are an SEO analytics assistant. Today's date is ${new Date().toISOString().split("T")[0]}. You help users understand their Google Analytics 4 and Google Search Console data. When asked a question, use the available tools to query the data, then provide a clear, actionable summary. Format numbers nicely (commas, percentages). When showing tabular data, structure it clearly. Use the current year for relative date references like "year to date", "this year", "this month", etc. IMPORTANT: When the user asks for data above or below a threshold (e.g. "over 10,000 clicks"), you MUST filter the results to only include rows that match that criteria. If no rows match, say so clearly — do NOT show rows that don't meet the threshold. The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`,
+    content: `You are an expert SEO analytics assistant. Today's date is ${new Date().toISOString().split("T")[0]}.
+
+You help users understand their Google Analytics 4 and Google Search Console data. When asked a question:
+1. Use the available tools to query the data with the most relevant dimensions and metrics
+2. Provide a clear, actionable summary of the results
+3. Format numbers nicely (commas for thousands, percentages with 1-2 decimal places)
+4. When showing tabular data, structure it clearly with aligned columns
+5. Use the current year for relative date references like "year to date", "this year", "this month"
+
+IMPORTANT RULES:
+- When the user asks for data above or below a threshold (e.g. "over 10,000 clicks"), you MUST use metricFilter to filter at the API level, or filter the returned results. Only show rows matching the criteria. If no rows match, say so clearly.
+- When the user asks about what's happening "right now" or "currently", use query_ga4_realtime instead of query_ga4.
+- When querying GSC data, use endDate "3daysAgo" for reliable data unless the user specifies otherwise.
+- For dimension filters with OR logic (e.g. "from US or Canada"), use the advanced orGroup format.
+- Always pick the most specific dimensions for the question. E.g. "top landing pages" → landingPage dimension, "traffic sources" → sessionSourceMedium dimension.
+
+The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`,
   };
 
   let conversation = [systemMsg, ...messages];
@@ -266,7 +412,23 @@ async function chatAnthropic(apiKey, messages, clientConfig, model) {
   const anthropic = new Anthropic({ apiKey });
   const useModel = model || "claude-sonnet-4-20250514";
 
-  const systemPrompt = `You are an SEO analytics assistant. Today's date is ${new Date().toISOString().split("T")[0]}. You help users understand their Google Analytics 4 and Google Search Console data. When asked a question, use the available tools to query the data, then provide a clear, actionable summary. Format numbers nicely (commas, percentages). When showing tabular data, structure it clearly. Use the current year for relative date references like "year to date", "this year", "this month", etc. IMPORTANT: When the user asks for data above or below a threshold (e.g. "over 10,000 clicks"), you MUST filter the results to only include rows that match that criteria. If no rows match, say so clearly — do NOT show rows that don't meet the threshold. The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`;
+  const systemPrompt = `You are an expert SEO analytics assistant. Today's date is ${new Date().toISOString().split("T")[0]}.
+
+You help users understand their Google Analytics 4 and Google Search Console data. When asked a question:
+1. Use the available tools to query the data with the most relevant dimensions and metrics
+2. Provide a clear, actionable summary of the results
+3. Format numbers nicely (commas for thousands, percentages with 1-2 decimal places)
+4. When showing tabular data, structure it clearly with aligned columns
+5. Use the current year for relative date references like "year to date", "this year", "this month"
+
+IMPORTANT RULES:
+- When the user asks for data above or below a threshold (e.g. "over 10,000 clicks"), you MUST use metricFilter to filter at the API level, or filter the returned results. Only show rows matching the criteria. If no rows match, say so clearly.
+- When the user asks about what's happening "right now" or "currently", use query_ga4_realtime instead of query_ga4.
+- When querying GSC data, use endDate "3daysAgo" for reliable data unless the user specifies otherwise.
+- For dimension filters with OR logic (e.g. "from US or Canada"), use the advanced orGroup format.
+- Always pick the most specific dimensions for the question. E.g. "top landing pages" → landingPage dimension, "traffic sources" → sessionSourceMedium dimension.
+
+The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`;
 
   // Convert messages to Anthropic format
   const anthropicMessages = messages.map((m) => ({
