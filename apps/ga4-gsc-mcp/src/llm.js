@@ -418,13 +418,19 @@ WHEN TO USE EACH TOOL:
 - query_ga4_realtime: what is happening RIGHT NOW, current active users, live events.
 - inspect_url: checking if a specific URL is indexed by Google.
 
-- When the user asks about "URLs", "pages", "page views", traffic from a country, or content performance, ALWAYS use query_ga4 with pagePath dimension, NOT query_gsc.
+- When the user asks about "URLs", "pages", "page views", traffic from a country, or content performance, ALWAYS use query_ga4 with pagePath dimension, NOT query_gsc. GA4 has data available within hours; GSC has a 2-3 day delay.
+- When the user mentions "clicks" they usually mean GSC search clicks. GA4 does NOT have a "clicks" metric -- use "sessions" or "screenPageViews" for GA4 traffic volume.
 - When the user asks for data above or below a threshold (e.g. "over 10,000 clicks"), you MUST use metricFilter to filter at the API level, or filter the returned results. Only show rows matching the criteria. If no rows match, say so clearly.
 - When the user asks about what is happening "right now" or "currently", use query_ga4_realtime instead of query_ga4.
 - When querying GSC data, use endDate "3daysAgo" for reliable data unless the user specifies otherwise.
 - GSC does NOT support metric filtering. NEVER put clicks, impressions, ctr, or position in GSC dimensionFilterGroups. Instead, set a high rowLimit (e.g. 500) and filter the returned results yourself before presenting to the user.
 - For dimension filters with OR logic (e.g. "from US or Canada"), use the advanced orGroup format.
 - Always pick the most specific dimensions for the question. E.g. "top landing pages" = landingPage dimension, "traffic sources" = sessionSourceMedium dimension.
+
+MULTI-STEP QUERIES: For complex questions that involve comparisons or multiple breakdowns (e.g. "which countries improved AND what URLs"), break it into separate queries:
+1. First query with fewer dimensions to get the overview (e.g. just country totals)
+2. Then follow-up queries with more dimensions for the detail (e.g. country+page for top countries)
+This avoids row limits cutting off important data. Use rowLimit 500 for GSC queries with multiple dimensions.
 
 GEOGRAPHIC FILTERING: When the user mentions ANY country, nationality, city, or region (e.g. "from Germany", "German", "French", "US", "UK", "Japan", "New York", "European"), ALWAYS filter by the geo dimension (country, city, region), NEVER by URL path. Examples: "German" = country filter "Germany". "French" = country filter "France". "US" = country filter "United States". Only use URL path filters when the user explicitly says a path like "/de/", "/fr/", or "/en/".
 
@@ -496,12 +502,18 @@ WHEN TO USE EACH TOOL:
 
 - When the user asks about "URLs", "pages", "page views", traffic from a country, or content performance, ALWAYS use query_ga4 with pagePath dimension, NOT query_gsc. GA4 has data available within hours; GSC has a 2-3 day delay.
 - If the question could benefit from BOTH GA4 and GSC data (e.g. "how are my German pages doing?"), query both -- use GA4 for page views/sessions and GSC for search impressions/clicks/rankings. Present both together.
+- When the user mentions "clicks" they usually mean GSC search clicks. GA4 does NOT have a "clicks" metric -- use "sessions" or "screenPageViews" for GA4 traffic volume.
 - When the user asks for data above or below a threshold (e.g. "over 10,000 clicks"), you MUST use metricFilter to filter at the API level, or filter the returned results. Only show rows matching the criteria. If no rows match, say so clearly.
 - When the user asks about what is happening "right now" or "currently", use query_ga4_realtime instead of query_ga4.
 - When querying GSC data, use endDate "3daysAgo" for reliable data unless the user specifies otherwise. GSC data from the last 2-3 days is incomplete.
 - GSC does NOT support metric filtering. NEVER put clicks, impressions, ctr, or position in GSC dimensionFilterGroups. Instead, set a high rowLimit (e.g. 500) and filter the returned results yourself before presenting to the user.
 - For dimension filters with OR logic (e.g. "from US or Canada"), use the advanced orGroup format.
 - Always pick the most specific dimensions for the question. E.g. "top landing pages" = landingPage dimension, "traffic sources" = sessionSourceMedium dimension.
+
+MULTI-STEP QUERIES: For complex questions that involve comparisons or multiple breakdowns (e.g. "which countries improved AND what URLs"), break it into separate queries:
+1. First query with fewer dimensions to get the overview (e.g. just country totals)
+2. Then follow-up queries with more dimensions for the detail (e.g. country+page for top countries)
+This avoids row limits cutting off important data. Use rowLimit 500 for GSC queries with multiple dimensions.
 
 GEOGRAPHIC FILTERING: When the user mentions ANY country, nationality, city, or region (e.g. "from Germany", "German", "French", "US", "UK", "Japan", "New York", "European"), ALWAYS filter by the geo dimension (country, city, region), NEVER by URL path. Examples: "German" = country filter "Germany". "French" = country filter "France". "US" = country filter "United States". Only use URL path filters when the user explicitly says a path like "/de/", "/fr/", or "/en/".
 
