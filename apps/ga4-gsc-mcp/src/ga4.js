@@ -226,13 +226,14 @@ const GA4_METRICS = [
 ];
 
 const REALTIME_DIMENSIONS = [
-  "city", "country", "deviceCategory", "eventName",
-  "minutesAgo", "platform", "streamName", "unifiedScreenName",
-  "audienceId", "audienceName",
+  "appVersion", "audienceId", "audienceName", "audienceResourceName",
+  "city", "cityId", "country", "countryId", "deviceCategory",
+  "eventName", "minutesAgo", "platform", "streamId", "streamName",
+  "unifiedScreenName",
 ];
 
 const REALTIME_METRICS = [
-  "activeUsers", "conversions", "eventCount", "screenPageViews",
+  "activeUsers", "eventCount", "keyEvents", "screenPageViews",
 ];
 
 module.exports = {

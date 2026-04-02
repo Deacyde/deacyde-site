@@ -108,43 +108,38 @@ Set orderBy to any metric or dimension name included in your query. Default dire
     name: "query_ga4_realtime",
     description: `Query GA4 realtime data. Returns what's happening on the site RIGHT NOW — active users, current pages, events in the last 30 minutes.
 
-## Realtime Dimensions
-city, country, deviceCategory, eventName, minutesAgo, platform, streamName, unifiedScreenName, audienceId, audienceName
+## Realtime Dimensions (ONLY use these, never use regular GA4 dimensions)
+appVersion, audienceId, audienceName, city, cityId, country, countryId, deviceCategory, eventName, minutesAgo, platform, streamId, streamName, unifiedScreenName
 
-## Realtime Metrics
-activeUsers, conversions, eventCount, screenPageViews
+## Realtime Metrics (ONLY use these 4, never use regular GA4 metrics)
+activeUsers, eventCount, keyEvents, screenPageViews
 
-**IMPORTANT COMPATIBILITY**: Not all dimension+metric combos work in realtime. If you get error 3 "cannot be queried together", simplify:
-- Use max 1-2 dimensions at a time
-- "eventName" dimension works with: eventCount, activeUsers
-- "deviceCategory" works with: activeUsers, screenPageViews, eventCount
-- "country" or "city" works with: activeUsers
-- "unifiedScreenName" works with: activeUsers, screenPageViews
-- "minutesAgo" works with: activeUsers, eventCount
-- When in doubt, use ONE dimension + ONE metric
+**IMPORTANT**: Do NOT use regular GA4 dimensions or metrics like "sessions", "totalUsers", "bounceRate", "landingPage", "sessionSource", "conversions" etc. Those will cause errors. ONLY use the dimensions and metrics listed above.
+
+All dimension+metric combos above are compatible with each other. You can combine multiple dimensions and metrics freely.
 
 Note: Realtime reports do NOT use date ranges. They always return data from the last 30 minutes.
-Realtime reports cannot use custom metrics.
 Use "minutesAgo" dimension to see activity broken down by minute (0 = current minute, 29 = 30 minutes ago).
 
 ## Example Queries
 - Event counts by event name: dimensions ["eventName"], metrics ["eventCount"]
-- Active users right now: dimensions ["deviceCategory"], metrics ["activeUsers"]
+- Active users by device: dimensions ["deviceCategory"], metrics ["activeUsers"]
 - What pages are being viewed: dimensions ["unifiedScreenName"], metrics ["screenPageViews"]
-- Activity by minute: dimensions ["minutesAgo"], metrics ["activeUsers"]
-- Users by country right now: dimensions ["country"], metrics ["activeUsers"]`,
+- Activity by minute: dimensions ["minutesAgo"], metrics ["activeUsers", "eventCount"]
+- Users by country right now: dimensions ["country"], metrics ["activeUsers"]
+- Events by name and device: dimensions ["eventName", "deviceCategory"], metrics ["eventCount", "activeUsers"]`,
     parameters: {
       type: "object",
       properties: {
         dimensions: {
           type: "array",
           items: { type: "string" },
-          description: "Realtime dimensions: city, country, deviceCategory, eventName, minutesAgo, platform, streamName, unifiedScreenName, audienceId, audienceName.",
+          description: "ONLY realtime dimensions: appVersion, audienceId, audienceName, city, cityId, country, countryId, deviceCategory, eventName, minutesAgo, platform, streamId, streamName, unifiedScreenName.",
         },
         metrics: {
           type: "array",
           items: { type: "string" },
-          description: "Realtime metrics: activeUsers, conversions, eventCount, screenPageViews.",
+          description: "ONLY realtime metrics: activeUsers, eventCount, keyEvents, screenPageViews. Do NOT use conversions, sessions, totalUsers, or any other regular GA4 metric.",
         },
         limit: {
           type: "number",
