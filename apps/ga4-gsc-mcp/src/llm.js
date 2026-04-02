@@ -293,8 +293,8 @@ async function executeTool(toolName, args, clientConfig) {
   console.log(`[tool] ${toolName}`, JSON.stringify(args).substring(0, 200));
 
   // Cap row limits to prevent massive responses
-  if (args.rowLimit) args.rowLimit = Math.min(args.rowLimit, 1000);
-  if (args.limit) args.limit = Math.min(args.limit, 500);
+  if (args.rowLimit) args.rowLimit = Math.min(args.rowLimit, 500);
+  if (args.limit) args.limit = Math.min(args.limit, 250);
 
   // Resolve and validate dates — swap if LLM put them in wrong order
   if (args.startDate && args.endDate) {
@@ -408,6 +408,7 @@ You help users understand their Google Analytics 4 and Google Search Console dat
 3. Format numbers nicely (commas for thousands, percentages with 1-2 decimal places)
 4. When showing tabular data, structure it clearly with aligned columns
 5. Use the current year for relative date references like "year to date", "this year", "this month"
+6. Display URLs as plain text, NEVER as markdown links. Wrong: [https://example.com](https://example.com). Correct: https://example.com
 
 IMPORTANT RULES:
 - **WHEN TO USE EACH TOOL**:
@@ -423,7 +424,7 @@ IMPORTANT RULES:
 - For dimension filters with OR logic (e.g. "from US or Canada"), use the advanced orGroup format.
 - Always pick the most specific dimensions for the question. E.g. "top landing pages" → landingPage dimension, "traffic sources" → sessionSourceMedium dimension.
 - **GEOGRAPHIC FILTERING**: When the user mentions ANY country, nationality, city, or region (e.g. "from Germany", "German", "French", "US", "UK", "Japan", "New York", "European"), ALWAYS filter by the geo dimension (country, city, region), NEVER by URL path. Examples: "German" → country filter "Germany". "French" → country filter "France". "US" → country filter "United States". Only use URL path filters when the user explicitly says a path like "/de/", "/fr/", or "/en/".
-- **ROW LIMITS**: When the user wants ALL data or a complete list (e.g. "show me all URLs", "every page"), set limit to 500. When they want a summary or top items, use 25-50. Never truncate with "and more" — if results are cut off, re-query with a higher limit.
+- **ROW LIMITS**: Default to 25 rows. Use 50-100 only when the user says "all", "every", "complete list", or "export". Tell the user the total count and offer to fetch more if the data was truncated. This saves API costs.
 
 The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`,
   };
@@ -479,6 +480,7 @@ You help users understand their Google Analytics 4 and Google Search Console dat
 3. Format numbers nicely (commas for thousands, percentages with 1-2 decimal places)
 4. When showing tabular data, structure it clearly with aligned columns
 5. Use the current year for relative date references like "year to date", "this year", "this month"
+6. Display URLs as plain text, NEVER as markdown links. Wrong: [https://example.com](https://example.com). Correct: https://example.com
 
 IMPORTANT RULES:
 - **WHEN TO USE EACH TOOL**:
@@ -495,7 +497,7 @@ IMPORTANT RULES:
 - For dimension filters with OR logic (e.g. "from US or Canada"), use the advanced orGroup format.
 - Always pick the most specific dimensions for the question. E.g. "top landing pages" → landingPage dimension, "traffic sources" → sessionSourceMedium dimension.
 - **GEOGRAPHIC FILTERING**: When the user mentions ANY country, nationality, city, or region (e.g. "from Germany", "German", "French", "US", "UK", "Japan", "New York", "European"), ALWAYS filter by the geo dimension (country, city, region), NEVER by URL path. Examples: "German" → country filter "Germany". "French" → country filter "France". "US" → country filter "United States". Only use URL path filters when the user explicitly says a path like "/de/", "/fr/", or "/en/".
-- **ROW LIMITS**: When the user wants ALL data or a complete list (e.g. "show me all URLs", "every page"), set limit to 500. When they want a summary or top items, use 25-50. Never truncate with "and more" — if results are cut off, re-query with a higher limit.
+- **ROW LIMITS**: Default to 25 rows. Use 50-100 only when the user says "all", "every", "complete list", or "export". Tell the user the total count and offer to fetch more if the data was truncated. This saves API costs.
 
 The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`;
 
