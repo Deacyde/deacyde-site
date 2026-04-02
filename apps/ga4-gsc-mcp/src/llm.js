@@ -427,14 +427,17 @@ WHEN TO USE EACH TOOL:
 - For dimension filters with OR logic (e.g. "from US or Canada"), use the advanced orGroup format.
 - Always pick the most specific dimensions for the question. E.g. "top landing pages" = landingPage dimension, "traffic sources" = sessionSourceMedium dimension.
 
-MULTI-STEP QUERIES: For complex questions that involve comparisons or multiple breakdowns (e.g. "which countries improved AND what URLs"), break it into separate queries:
-1. First query with fewer dimensions to get the overview (e.g. just country totals)
-2. Then follow-up queries with more dimensions for the detail (e.g. country+page for top countries)
-This avoids row limits cutting off important data. Use rowLimit 500 for GSC queries with multiple dimensions.
+COMPARISON / TREND QUERIES: When the user asks "which countries improved/declined", "what changed", or any question comparing two time periods, you MUST follow these steps exactly:
+Step 1: Query the OVERVIEW dimension only (e.g. just "country") for Period A (e.g. last 30 days). Use rowLimit 500. Do NOT add page/URL dimensions yet.
+Step 2: Query the SAME overview dimension for Period B (e.g. previous 30 days). Use rowLimit 500.
+Step 3: In your response, compute the delta (Period A value minus Period B value) for each item. Sort by delta DESCENDING for "improved" questions, ASCENDING for "declined" questions. The numbers for the same item MUST be consistent -- never show different totals for the same country.
+Step 4: ONLY AFTER identifying the top/bottom items, make follow-up queries adding the detail dimension (e.g. country+page) filtered to those specific items.
+CRITICAL: NEVER query country+page together in a comparison query. Row limits will truncate data differently for each period, producing inconsistent and wrong totals. Always get country totals first, then drill into URLs.
+SORTING: Always sort comparison results by the computed change amount (delta), not alphabetically or by raw metric value. "Top 5 improved" = 5 largest positive deltas. "Top 5 declined" = 5 largest negative deltas.
 
 GEOGRAPHIC FILTERING: When the user mentions ANY country, nationality, city, or region (e.g. "from Germany", "German", "French", "US", "UK", "Japan", "New York", "European"), ALWAYS filter by the geo dimension (country, city, region), NEVER by URL path. Examples: "German" = country filter "Germany". "French" = country filter "France". "US" = country filter "United States". Only use URL path filters when the user explicitly says a path like "/de/", "/fr/", or "/en/".
 
-ROW LIMITS: Default to 25 rows. Use 50-100 only when the user says "all", "every", "complete list", or "export". Tell the user the total count and offer to fetch more if the data was truncated. This saves API costs.
+ROW LIMITS: Default to 25 rows. Use 50-100 only when the user says "all", "every", "complete list", or "export". For comparison queries, always use rowLimit 500 to get complete country/dimension totals. Tell the user the total count and offer to fetch more if the data was truncated.
 
 The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`,
   };
@@ -510,14 +513,17 @@ WHEN TO USE EACH TOOL:
 - For dimension filters with OR logic (e.g. "from US or Canada"), use the advanced orGroup format.
 - Always pick the most specific dimensions for the question. E.g. "top landing pages" = landingPage dimension, "traffic sources" = sessionSourceMedium dimension.
 
-MULTI-STEP QUERIES: For complex questions that involve comparisons or multiple breakdowns (e.g. "which countries improved AND what URLs"), break it into separate queries:
-1. First query with fewer dimensions to get the overview (e.g. just country totals)
-2. Then follow-up queries with more dimensions for the detail (e.g. country+page for top countries)
-This avoids row limits cutting off important data. Use rowLimit 500 for GSC queries with multiple dimensions.
+COMPARISON / TREND QUERIES: When the user asks "which countries improved/declined", "what changed", or any question comparing two time periods, you MUST follow these steps exactly:
+Step 1: Query the OVERVIEW dimension only (e.g. just "country") for Period A (e.g. last 30 days). Use rowLimit 500. Do NOT add page/URL dimensions yet.
+Step 2: Query the SAME overview dimension for Period B (e.g. previous 30 days). Use rowLimit 500.
+Step 3: In your response, compute the delta (Period A value minus Period B value) for each item. Sort by delta DESCENDING for "improved" questions, ASCENDING for "declined" questions. The numbers for the same item MUST be consistent -- never show different totals for the same country.
+Step 4: ONLY AFTER identifying the top/bottom items, make follow-up queries adding the detail dimension (e.g. country+page) filtered to those specific items.
+CRITICAL: NEVER query country+page together in a comparison query. Row limits will truncate data differently for each period, producing inconsistent and wrong totals. Always get country totals first, then drill into URLs.
+SORTING: Always sort comparison results by the computed change amount (delta), not alphabetically or by raw metric value. "Top 5 improved" = 5 largest positive deltas. "Top 5 declined" = 5 largest negative deltas.
 
 GEOGRAPHIC FILTERING: When the user mentions ANY country, nationality, city, or region (e.g. "from Germany", "German", "French", "US", "UK", "Japan", "New York", "European"), ALWAYS filter by the geo dimension (country, city, region), NEVER by URL path. Examples: "German" = country filter "Germany". "French" = country filter "France". "US" = country filter "United States". Only use URL path filters when the user explicitly says a path like "/de/", "/fr/", or "/en/".
 
-ROW LIMITS: Default to 25 rows. Use 50-100 only when the user says "all", "every", "complete list", or "export". Tell the user the total count and offer to fetch more if the data was truncated. This saves API costs.
+ROW LIMITS: Default to 25 rows. Use 50-100 only when the user says "all", "every", "complete list", or "export". For comparison queries, always use rowLimit 500 to get complete country/dimension totals. Tell the user the total count and offer to fetch more if the data was truncated.
 
 The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`;
 
