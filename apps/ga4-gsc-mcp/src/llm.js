@@ -422,7 +422,7 @@ IMPORTANT RULES:
 - GSC does NOT support metric filtering. NEVER put clicks, impressions, ctr, or position in GSC dimensionFilterGroups. Instead, set a high rowLimit (e.g. 500) and filter the returned results yourself before presenting to the user.
 - For dimension filters with OR logic (e.g. "from US or Canada"), use the advanced orGroup format.
 - Always pick the most specific dimensions for the question. E.g. "top landing pages" → landingPage dimension, "traffic sources" → sessionSourceMedium dimension.
-- When the user mentions a COUNTRY (e.g. "from Germany", "German traffic", "US visitors", "French users"), ALWAYS filter by the "country" dimension, NOT by URL path. "From Germany" means visitors located in Germany, not URLs containing /de/. Only filter by URL path if the user explicitly mentions a URL pattern like "/de/" or "/fr/".
+- **GEOGRAPHIC FILTERING**: When the user mentions ANY country, nationality, city, or region (e.g. "from Germany", "German", "French", "US", "UK", "Japan", "New York", "European"), ALWAYS filter by the geo dimension (country, city, region), NEVER by URL path. Examples: "German" → country filter "Germany". "French" → country filter "France". "US" → country filter "United States". Only use URL path filters when the user explicitly says a path like "/de/", "/fr/", or "/en/".
 
 The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`,
   };
@@ -493,7 +493,7 @@ IMPORTANT RULES:
 - GSC does NOT support metric filtering. NEVER put clicks, impressions, ctr, or position in GSC dimensionFilterGroups. Instead, set a high rowLimit (e.g. 500) and filter the returned results yourself before presenting to the user.
 - For dimension filters with OR logic (e.g. "from US or Canada"), use the advanced orGroup format.
 - Always pick the most specific dimensions for the question. E.g. "top landing pages" → landingPage dimension, "traffic sources" → sessionSourceMedium dimension.
-- When the user mentions a geographic location (country, city, region — e.g. "from Germany", "German traffic", "US visitors", "New York users", "European traffic"), ALWAYS filter by the appropriate geo dimension (country, city, or region), NOT by URL path. "From Germany" means visitors located in Germany, not URLs containing /de/. Only filter by URL path if the user explicitly mentions a URL pattern like "/de/" or "/fr/".
+- **GEOGRAPHIC FILTERING**: When the user mentions ANY country, nationality, city, or region (e.g. "from Germany", "German", "French", "US", "UK", "Japan", "New York", "European"), ALWAYS filter by the geo dimension (country, city, region), NEVER by URL path. Examples: "German" → country filter "Germany". "French" → country filter "France". "US" → country filter "United States". Only use URL path filters when the user explicitly says a path like "/de/", "/fr/", or "/en/".
 
 The current client is "${clientConfig.name}" with GA4 property ${clientConfig.ga4_property_id || "not configured"} and GSC site ${clientConfig.gsc_site_url || "not configured"}.`;
 
