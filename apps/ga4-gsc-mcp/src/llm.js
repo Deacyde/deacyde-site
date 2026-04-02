@@ -114,14 +114,24 @@ city, country, deviceCategory, eventName, minutesAgo, platform, streamName, unif
 ## Realtime Metrics
 activeUsers, conversions, eventCount, screenPageViews
 
+**IMPORTANT COMPATIBILITY**: Not all dimension+metric combos work in realtime. If you get error 3 "cannot be queried together", simplify:
+- Use max 1-2 dimensions at a time
+- "eventName" dimension works with: eventCount, activeUsers
+- "deviceCategory" works with: activeUsers, screenPageViews, eventCount
+- "country" or "city" works with: activeUsers
+- "unifiedScreenName" works with: activeUsers, screenPageViews
+- "minutesAgo" works with: activeUsers, eventCount
+- When in doubt, use ONE dimension + ONE metric
+
 Note: Realtime reports do NOT use date ranges. They always return data from the last 30 minutes.
 Realtime reports cannot use custom metrics.
 Use "minutesAgo" dimension to see activity broken down by minute (0 = current minute, 29 = 30 minutes ago).
 
 ## Example Queries
+- Event counts by event name: dimensions ["eventName"], metrics ["eventCount"]
 - Active users right now: dimensions ["deviceCategory"], metrics ["activeUsers"]
-- What pages are being viewed: dimensions ["unifiedScreenName"], metrics ["activeUsers", "screenPageViews"]
-- Activity by minute: dimensions ["minutesAgo"], metrics ["activeUsers", "eventCount"]
+- What pages are being viewed: dimensions ["unifiedScreenName"], metrics ["screenPageViews"]
+- Activity by minute: dimensions ["minutesAgo"], metrics ["activeUsers"]
 - Users by country right now: dimensions ["country"], metrics ["activeUsers"]`,
     parameters: {
       type: "object",
