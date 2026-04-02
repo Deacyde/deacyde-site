@@ -290,9 +290,23 @@ function toolsForAnthropic() {
 async function executeTool(toolName, args, clientConfig) {
   const { service_account_json, ga4_property_id, gsc_site_url } = clientConfig;
 
+  console.log(`[tool] ${toolName}`, JSON.stringify(args).substring(0, 200));
+
   // Cap row limits to prevent massive responses
   if (args.rowLimit) args.rowLimit = Math.min(args.rowLimit, 500);
   if (args.limit) args.limit = Math.min(args.limit, 100);
+
+  // Resolve and validate dates — swap if LLM put them in wrong order
+  if (args.startDate && args.endDate) {
+    let start = resolveDate(args.startDate);
+    let end = resolveDate(args.endDate);
+    if (start > end) {
+      console.log(`[date-fix] Swapping reversed dates: ${start} > ${end}`);
+      [start, end] = [end, start];
+    }
+    args.startDate = start;
+    args.endDate = end;
+  }
 
   let result;
   switch (toolName) {
@@ -302,8 +316,6 @@ async function executeTool(toolName, args, clientConfig) {
         serviceAccountJson: service_account_json,
         propertyId: ga4_property_id,
         ...args,
-        startDate: resolveDate(args.startDate),
-        endDate: resolveDate(args.endDate),
       });
       break;
     }
@@ -355,8 +367,6 @@ async function executeTool(toolName, args, clientConfig) {
         serviceAccountJson: service_account_json,
         siteUrl: gsc_site_url,
         ...args,
-        startDate: resolveDate(args.startDate),
-        endDate: resolveDate(args.endDate),
       });
       break;
     }
