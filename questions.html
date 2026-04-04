@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EQEmu Merchant Bug — Unresolved Questions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.7;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #00d4ff;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #222;
+            padding-bottom: 1rem;
+        }
+        .question-card {
+            background: #141414;
+            border: 1px solid #222;
+            border-left: 4px solid #00d4ff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: border-color 0.2s;
+        }
+        .question-card:hover { border-left-color: #ff6b35; }
+        .question-card.hot { border-left-color: #ff4444; }
+        .question-card.hot:hover { border-left-color: #ff6b35; }
+        .q-number {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #00d4ff;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+        .question-card.hot .q-number { color: #ff4444; }
+        .q-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.75rem;
+        }
+        .q-detail {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+        .q-detail strong { color: #ccc; }
+        code {
+            background: #1a1a2e;
+            color: #00d4ff;
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-family: 'Courier New', monospace;
+        }
+        .tag {
+            display: inline-block;
+            background: #1a1a2e;
+            color: #888;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2em 0.6em;
+            border-radius: 4px;
+            margin-right: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .tag.lead { background: #2a1a0a; color: #ff6b35; }
+        .tag.source { background: #0a2a1a; color: #00cc66; }
+        .tag.shared-mem { background: #2a0a2a; color: #cc66ff; }
+        .tag.logging { background: #0a1a2a; color: #6699ff; }
+
+        .context-box {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .context-box h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ff6b35;
+            margin-bottom: 0.75rem;
+        }
+        .context-box ul {
+            list-style: none;
+            padding: 0;
+        }
+        .context-box li {
+            color: #aaa;
+            font-size: 0.85rem;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        .context-box li:last-child { border-bottom: none; }
+        .context-box li strong { color: #ccc; }
+
+        .sql-box {
+            background: #0d1117;
+            border: 1px solid #222;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 0.75rem;
+            overflow-x: auto;
+        }
+        .sql-box code {
+            background: none;
+            color: #c9d1d9;
+            padding: 0;
+            font-size: 0.8rem;
+            white-space: pre;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #00d4ff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+        .priority-banner {
+            background: linear-gradient(135deg, #1a0a0a, #2a1010);
+            border: 1px solid #441111;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: #ff8888;
+        }
+        .priority-banner strong { color: #ff4444; }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← Back to Deacyde.com</a>
+
+    <h1>🔧 EQEmu Merchant Bug — Unresolved Questions</h1>
+    <p class="subtitle">Server Of Deacyde &bull; EQEmu v23.10.3 &bull; RoF2 Client &bull; Last updated: March 31, 2026</p>
+
+    <div class="priority-banner" style="background: linear-gradient(135deg, #0a1a0a, #102a10); border-color: #114411; color: #88ff88;">
+        <strong>✅ RESOLVED — April 1, 2026 ~9:45 AM ET</strong><br>
+        Root cause: Adding items via raw SQL bypasses the data validation and formatting that Spire (EQEmu's web admin) handles properly.
+        Items added through Spire work immediately. Items added via direct SQL INSERTs/UPDATEs to the <code style="background:#1a2a1a;color:#88ff88;">items</code> and <code style="background:#1a2a1a;color:#88ff88;">merchantlist</code> tables 
+        produced records that shared_memory.exe couldn't properly load.
+        <br><br>
+        <strong>Lesson learned:</strong> Always use Spire to manage items and merchant lists. Don't raw-SQL the items table.
+    </div>
+
+    <div class="context-box">
+        <h2>What We Know So Far</h2>
+        <ul>
+            <li><strong>Bug:</strong> Buying from custom merchant NPCs gives "That item has already been sold" error</li>
+            <li><strong>Working:</strong> Unmodified PEQ items (Short Sword 5001, Water Flask 13006) CAN be bought from custom NPCs ✅</li>
+            <li><strong>Working:</strong> Bags from Baggins (itemclass=1, itemtype=11) CAN be bought ✅</li>
+            <li><strong>Working:</strong> All items from stock PEQ merchants (e.g. Bubar) work ✅</li>
+            <li><strong>Broken:</strong> ALL our custom/modified items (weapons, armor, caster gear, monk gear, fabled) CANNOT be bought ✗</li>
+            <li><strong>Ruled out:</strong> nodrop/norent flags (fixed to 1/1, didn't help)</li>
+            <li><strong>Ruled out:</strong> Stale shared memory (deleted + rebuilt, didn't help)</li>
+            <li><strong>Ruled out:</strong> merchantlist_temp (table is empty for our merchants)</li>
+            <li><strong>Ruled out:</strong> Duplicate/bad slots (all clean, sequential)</li>
+            <li><strong>Ruled out:</strong> NPC config issues (class=41, merchant_id matches, identical to working NPCs)</li>
+            <li><strong>Confirmed path:</strong> Packet logs show <code>database.GetItem(item_id)</code> returning null → ALREADY_SOLD</li>
+        </ul>
+    </div>
+
+    <!-- Question 1 -->
+    <div class="question-card">
+        <div class="q-number">Question 1</div>
+        <div class="q-title">Why does Short Sword (5001) work but Soul Devourer (11001) doesn't?</div>
+        <p class="q-detail">
+            Both items now have identical critical flags: <code>nodrop=1</code>, <code>norent=1</code>, <code>itemclass=0</code>, <code>itemtype=0</code>, <code>loregroup=0</code>.
+            Short Sword is an unmodified PEQ database item (id 5001). Soul Devourer was modified by us (originally a PEQ item, id 11001).
+            The buy handler calls <code>database.GetItem(item_id)</code> which reads from shared memory — it returns the item for 5001 but null for 11001.
+        </p>
+        <p class="q-detail">
+            <strong>Key difference:</strong> Soul Devourer has <code>proceffect=995</code> (a spell proc) and <code>magic=1</code>. Short Sword has <code>proceffect=-1</code> and <code>magic=0</code>.
+            Could a bad proc spell reference cause shared_memory to skip the item?
+        </p>
+        <span class="tag shared-mem">shared memory</span>
+        <span class="tag source">source code</span>
+    </div>
+
+    <!-- Question 2 -->
+    <div class="question-card">
+        <div class="q-number">Question 2</div>
+        <div class="q-title">Why do bags (containers) work with any flags?</div>
+        <p class="q-detail">
+            Baggins' items (<code>itemclass=1</code>, <code>itemtype=11</code>) buy fine — even when they had <code>nodrop=0, norent=0</code>.
+            Weapons/armor (<code>itemclass=0</code>, <code>itemtype=0/3/4/10</code>) fail with the same flags.
+        </p>
+        <p class="q-detail">
+            In the source code, bags use <code>cursor=false</code> (placed directly into inventory) while equipment uses <code>cursor=true</code> (placed on cursor).
+            But the failure happens BEFORE this — at the <code>GetItem()</code> call. So the cursor logic shouldn't matter.
+        </p>
+        <p class="q-detail">
+            <strong>Research angle:</strong> Does the shared_memory loader or content filtering system treat <code>itemclass=1</code> (containers) differently than <code>itemclass=0</code> (common items)?
+        </p>
+        <span class="tag shared-mem">shared memory</span>
+        <span class="tag source">source code</span>
+    </div>
+
+    <!-- Question 3 -->
+    <div class="question-card hot">
+        <div class="q-number">Question 3 — Strong Lead 🔥</div>
+        <div class="q-title">Is content/expansion filtering excluding our items?</div>
+        <p class="q-detail">
+            The zone boot log shows: <strong>"Loaded [939] of [1152] merchant list entries"</strong> — meaning 213 items were filtered out.
+            EQEmu has a content filtering system that can exclude items based on expansion settings.
+        </p>
+        <p class="q-detail">
+            Server config: <code>Expansion:CurrentExpansion = 9</code> (Shadows of Luclin), <code>World:ExpansionSettings = 524287</code>.
+            If our items have expansion metadata that puts them beyond Luclin, they'd be filtered from merchant lists at zone load time — meaning they'd appear in the merchant window (client-side) but <code>GetItem()</code> would return null (server-side).
+        </p>
+        <p class="q-detail">
+            <strong>Research angle:</strong> How does EQEmu's content filter decide which items to exclude?
+            Check the <code>items</code> table for any expansion-related columns. The column <code>min_expansion</code> didn't exist in our schema — 
+            what column DOES v23.10.3 use? Could it be in the item ID range itself, or in a separate content_flags table?
+        </p>
+        <div class="sql-box"><code>-- Check if there's a content filtering table
+SHOW TABLES LIKE '%content%';
+
+-- Check all columns that might relate to expansion filtering
+SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE TABLE_SCHEMA='peq' AND TABLE_NAME='items' 
+AND COLUMN_NAME LIKE '%exp%' OR COLUMN_NAME LIKE '%content%' 
+OR COLUMN_NAME LIKE '%era%' OR COLUMN_NAME LIKE '%flag%';</code></div>
+        <span class="tag lead">strongest lead</span>
+        <span class="tag source">source code</span>
+    </div>
+
+    <!-- Question 4 -->
+    <div class="question-card">
+        <div class="q-number">Question 4</div>
+        <div class="q-title">Does database.GetItem() fail for certain items in shared memory?</div>
+        <p class="q-detail">
+            The packet logs confirm the exact failure: <code>OP_ShopPlayerBuy</code> → <code>OP_SimpleMessage</code> (already sold) → <code>OP_ShopDelItem</code> → <code>OP_ShopEndConfirm</code>.
+            This matches the code path where <code>database.GetItem(item_id)</code> returns null.
+        </p>
+        <p class="q-detail">
+            The item EXISTS in the MySQL <code>items</code> table. Shared memory was rebuilt fresh. Yet <code>GetItem()</code> can't find it.
+            This means either: (a) shared_memory.exe skipped loading the item, or (b) the lookup key/index doesn't match.
+        </p>
+        <p class="q-detail">
+            <strong>Research angle:</strong> Look at EQEmu's <code>shared_memory.cpp</code> — does it load ALL items from the DB, or does it filter?
+            Check <code>common/shared_tasks.cpp</code> or <code>common/items.cpp</code> for the loading query. Does it have a WHERE clause that excludes certain items?
+        </p>
+        <span class="tag shared-mem">shared memory</span>
+        <span class="tag source">source code</span>
+    </div>
+
+    <!-- Question 5 -->
+    <div class="question-card hot">
+        <div class="q-number">Question 5 — Strong Lead 🔥</div>
+        <div class="q-title">UNK132 field length mismatch — 19 vs 20 characters</div>
+        <p class="q-detail">
+            Comparing working vs broken items in the database:
+        </p>
+        <p class="q-detail">
+            <strong>Working items</strong> (Short Sword 5001, Water Flask 13006): <code>UNK132 = '00000000000000000000'</code> (20 characters)<br>
+            <strong>Broken items</strong> (Soul Devourer 11001, Big Soul Devourer 11000, Ancient Frostreaver 32801): <code>UNK132 = '0000000000000000000'</code> (19 characters)<br>
+            <strong>Bags</strong> (Annihilator's Satchel 139831): <code>UNK132 = NULL</code>
+        </p>
+        <p class="q-detail">
+            If shared_memory.exe parses UNK132 as a fixed-width binary field and expects exactly 20 characters, 
+            a 19-character value could cause a parsing error that makes the item fail to load — or corrupt the index so <code>GetItem()</code> can't find it.
+        </p>
+        <div class="sql-box"><code>-- Check UNK132 lengths across ALL our merchant items
+SELECT i.id, i.Name, LENGTH(i.UNK132) as unk132_len, i.UNK132
+FROM items i
+JOIN merchantlist ml ON ml.item = i.id
+WHERE ml.merchantid IN (104901,104902,104903,104908,104909,104910)
+ORDER BY LENGTH(i.UNK132), i.id;
+
+-- Quick fix attempt: pad all to 20 chars
+UPDATE items SET UNK132 = '00000000000000000000' 
+WHERE id IN (
+  SELECT item FROM merchantlist 
+  WHERE merchantid IN (104901,104902,104903,104908,104909,104910)
+) AND (LENGTH(UNK132) != 20 OR UNK132 IS NULL);</code></div>
+        <span class="tag lead">strongest lead</span>
+        <span class="tag shared-mem">shared memory</span>
+    </div>
+
+    <!-- Question 6 -->
+    <div class="question-card">
+        <div class="q-number">Question 6</div>
+        <div class="q-title">Why didn't Trading/Merchant log categories produce output?</div>
+        <p class="q-detail">
+            We enabled verbose logging: set <code>log_to_file=3</code> and <code>log_to_gmsay=3</code> for Trading (category 29) and Merchants (category 67) in <code>logsys_categories</code>.
+            Ran <code>#logs reload</code> in-game. No merchant-level debug messages appeared in logs.
+        </p>
+        <p class="q-detail">
+            Only packet-level logs were visible in the zone log file. The Trading/Merchant categories may not have any log statements in v23.10.3, 
+            or the category IDs may have shifted between versions.
+        </p>
+        <p class="q-detail">
+            <strong>Research angle:</strong> Check if EQEmu v23.10.3 actually has <code>LogTrading</code> or <code>LogMerchants</code> calls in the merchant buy handler. 
+            If not, those categories are useless and we need packet-level debugging or custom source code builds.
+        </p>
+        <span class="tag logging">logging</span>
+    </div>
+
+    <!-- Question 7 -->
+    <div class="question-card">
+        <div class="q-number">Question 7</div>
+        <div class="q-title">Could the item ID range affect shared memory loading?</div>
+        <p class="q-detail">
+            <strong>Working items:</strong> Short Sword (5001), Water Flask (13006) — low IDs from base EverQuest.<br>
+            <strong>Broken items:</strong> Soul Devourer (11001), Ancient Frostreaver (32801), items up to 147494 — spanning many expansion ranges.
+        </p>
+        <p class="q-detail">
+            Shared memory uses a binary file (<code>C:\Users\deacyde-minipc\server\shared\items</code>, 157MB). 
+            If it uses a fixed-size array indexed by item ID, there could be an upper bound. Or if it uses a hash table, 
+            collisions could cause certain IDs to be unreachable.
+        </p>
+        <p class="q-detail">
+            <strong>Counter-evidence:</strong> Bags work and include high IDs like 139831. But bags might use a different lookup path.
+        </p>
+        <span class="tag shared-mem">shared memory</span>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- UPDATE LOG -->
+    <!-- ============================================================ -->
+
+    <hr style="border: none; border-top: 2px solid #333; margin: 3rem 0;">
+
+    <h1 style="font-size: 1.5rem; color: #ff6b35;">📋 Update Log</h1>
+    <p class="subtitle">Running record of changes, results, and new questions as we debug.</p>
+
+    <!-- Update 1 -->
+    <div class="context-box" style="border-left: 4px solid #ff6b35;">
+        <h2>April 1, 2026 — ~8:10 AM ET</h2>
+        <ul>
+            <li><strong>Action:</strong> Queried UNK132 lengths for all 87 merchant items across all 6 custom merchants</li>
+            <li><strong>Finding:</strong> Clear pattern confirmed:
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li>✅ <strong>20 chars</strong> → items that CAN be bought (Short Sword, Water Flask, Windblade, Fabled Blade of War, etc.)</li>
+                    <li>✗ <strong>19 chars</strong> → items that CANNOT be bought (Soul Devourer, Ancient Frostreaver, Hammer of Striking, all broken items)</li>
+                    <li>❓ <strong>NULL</strong> → bags + newer expansion items (bags work, others untested)</li>
+                </ul>
+            </li>
+            <li><strong>Action:</strong> Fixed UNK132 for all affected items:</li>
+        </ul>
+        <div class="sql-box"><code>UPDATE items SET UNK132 = '00000000000000000000'
+WHERE id IN (
+  SELECT item FROM merchantlist
+  WHERE merchantid IN (104901,104902,104903,104908,104909,104910)
+) AND (LENGTH(UNK132) != 20 OR UNK132 IS NULL);
+
+-- Result: 67 items updated</code></div>
+        <ul style="margin-top: 0.75rem;">
+            <li><strong>Next step:</strong> StopEQ → delete shared\items → StartEQ → test buying Soul Devourer from Stabby</li>
+        </ul>
+    </div>
+
+    <!-- Update 2 -->
+    <div class="context-box" style="border-left: 4px solid #ff4444;">
+        <h2>April 1, 2026 — ~8:25 AM ET</h2>
+        <ul>
+            <li><strong>Result: UNK132 fix DID NOT solve the merchant buy bug.</strong> Still getting "already been sold" error.</li>
+            <li><strong>Status of Question #5 (UNK132):</strong> ❌ Ruled out as root cause. The 19 vs 20 char difference was a red herring — or at least not the sole cause.</li>
+        </ul>
+    </div>
+
+    <!-- Update 3 — RESOLUTION -->
+    <div class="context-box" style="border-left: 4px solid #00cc66;">
+        <h2>✅ April 1, 2026 — ~9:45 AM ET — BUG RESOLVED</h2>
+        <ul>
+            <li><strong>Fix:</strong> Used <strong>Spire</strong> (EQEmu web admin panel) to add items to merchants instead of raw SQL</li>
+            <li><strong>Result:</strong> Items added via Spire can be purchased immediately — no "already been sold" error ✅</li>
+            <li><strong>Root cause:</strong> Direct SQL INSERTs/UPDATEs to the <code>items</code> and <code>merchantlist</code> tables produced records that 
+                <code>shared_memory.exe</code> couldn't properly parse. Spire handles the correct data formatting, field validation, 
+                and serialization that raw SQL skips.</li>
+            <li><strong>Additional finding:</strong> Soul Devourer was removed from Stabby's merchant window entirely — the server recognized it as invalid 
+                and stripped it from the merchant list on load. Other raw-SQL items that happened to have valid formatting survived, 
+                but Soul Devourer's record was too malformed to load.</li>
+            <li><strong>Items vanishing on restart:</strong> Same root cause — items that <code>GetItem()</code> can't resolve from shared memory 
+                get dropped from inventory on character load. The server can't persist what it can't parse.</li>
+        </ul>
+        <p class="q-detail" style="margin-top: 1rem;">
+            <strong>How we were doing it (broken):</strong>
+        </p>
+        <div class="sql-box"><code>-- Direct SQL — bypasses validation, produces malformed records
+INSERT INTO merchantlist (merchantid, slot, item) VALUES (104901, 0, 11001);
+UPDATE items SET damage=100, delay=10, nodrop=1, norent=1 WHERE id=11001;</code></div>
+        <p class="q-detail" style="margin-top: 0.75rem;">
+            <strong>How to do it correctly:</strong> Use Spire's item editor and merchant list manager. 
+            Spire URL is typically <code>http://192.168.1.66:3010</code> (or whatever port Spire runs on).
+            Search for items, edit properties through the UI, and add to merchant lists through the merchant editor.
+        </p>
+        <p class="q-detail">
+            <strong>Lesson learned:</strong> Never raw-SQL the <code>items</code> table. The EQEmu item format has many interdependent fields, 
+            unknown columns (UNK012, UNK132, etc.), serialization fields, and binary expectations. 
+            Spire knows all of these. We don't.
+        </p>
+    </div>
+
+    <!-- Update 4 — Remaining question -->
+    <div class="question-card" style="margin-top: 1.5rem;">
+        <div class="q-number">Remaining Question</div>
+        <div class="q-title">Which specific fields does Spire set differently than raw SQL?</div>
+        <p class="q-detail">
+            Now that we know Spire works and raw SQL doesn't, the academic question is: which fields exactly were wrong?
+            Candidates include <code>UNK132</code>, <code>serialized</code>, <code>serialization</code>, the various <code>UNK</code> fields, 
+            or possibly the <code>updated</code>/<code>verified</code> timestamps that shared_memory uses to index items.
+        </p>
+        <p class="q-detail">
+            <strong>Not urgent</strong> — we have a working workflow now (use Spire). But understanding the exact failure field 
+            would let us safely use SQL for bulk operations in the future.
+        </p>
+        <span class="tag source">source code</span>
+        <span class="tag shared-mem">shared memory</span>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid #222; margin: 2rem 0;">
+
+    <!-- Prior discovery — kept for history -->
+    <h2 style="color: #666; font-size: 1rem; margin-bottom: 1rem;">📜 Prior Investigation Notes (kept for reference)</h2>
+
+    <div class="question-card" style="border-left-color: #333; opacity: 0.7;">
+        <div class="q-number" style="color: #666;">Prior Discovery — April 1, 2026 ~8:25 AM ET</div>
+        <div class="q-title" style="color: #999;">Items not saving through server restarts</div>
+        <p class="q-detail">
+            After restarting the server, some items in character inventory are <strong>gone</strong>. Specifically:
+        </p>
+        <p class="q-detail">
+            <strong>Items that disappeared:</strong><br>
+            — 40-slot bags<br>
+            — Fungi Covered Scale Tunic (first one obtained)<br>
+            — Various armor pieces
+        </p>
+        <p class="q-detail">
+            <strong>Items that survived restart:</strong><br>
+            — Some items did persist (not all lost)
+        </p>
+        <p class="q-detail">
+            <strong>This may be directly related to the merchant bug.</strong> If an item can't be properly resolved by the server 
+            (because <code>GetItem()</code> returns null from shared memory), the server may also fail to save/load that item 
+            in character inventory. Both problems point to the same root cause: <strong>certain items don't exist in shared memory</strong>.
+        </p>
+        <p class="q-detail">
+            <strong>Key connection:</strong> In EQEmu, character inventory is stored in the <code>inventory</code> table by item_id.
+            When the server loads a character, it calls <code>GetItem()</code> for each inventory slot. If that returns null, 
+            the item effectively doesn't exist — it can't be loaded, rendered, or saved. This is the same <code>GetItem()</code> 
+            that fails during merchant purchases.
+        </p>
+        <span class="tag lead">critical clue</span>
+        <span class="tag shared-mem">shared memory</span>
+    </div>
+
+    <!-- New Question 8 -->
+    <div class="question-card hot" style="margin-top: 1.5rem;">
+        <div class="q-number">Question 8 — New 🔥</div>
+        <div class="q-title">Which items vanish on restart vs which survive? Is there a pattern?</div>
+        <p class="q-detail">
+            We need to check: do the items that vanish from inventory match the same items that can't be bought from merchants?
+            If so, this confirms that certain items simply <strong>do not load into shared memory</strong> — affecting both 
+            merchant purchases AND inventory persistence.
+        </p>
+        <p class="q-detail">
+            <strong>Research angle:</strong> Check the <code>character_data</code> or <code>inventory</code> table before and after restart. 
+            Which item IDs are present? Do the missing ones match our broken merchant items?
+        </p>
+        <div class="sql-box"><code>-- Check what's in character inventory right now
+SELECT * FROM inventory WHERE charid = (
+  SELECT id FROM character_data WHERE name = 'Deacyde'
+) ORDER BY slotid;
+
+-- Or check sharedbank + inventory
+SELECT * FROM sharedbank WHERE acctid = (
+  SELECT account_id FROM character_data WHERE name = 'Deacyde'
+);</code></div>
+        <span class="tag lead">strongest lead</span>
+        <span class="tag shared-mem">shared memory</span>
+    </div>
+
+    <!-- New Question 9 -->
+    <div class="question-card hot" style="margin-top: 1.5rem;">
+        <div class="q-number">Question 9 — New 🔥</div>
+        <div class="q-title">What does shared_memory.exe actually load? Does it filter or skip items?</div>
+        <p class="q-detail">
+            The merchant bug AND the inventory loss both point to the same thing: <code>GetItem(item_id)</code> returns null for certain items.
+            This means shared_memory.exe either <strong>skips loading</strong> those items, or <strong>loads them with corrupted indices</strong>.
+        </p>
+        <p class="q-detail">
+            <strong>Research angles:</strong>
+        </p>
+        <p class="q-detail">
+            1. <strong>Check shared_memory.exe output:</strong> Does it log how many items it loaded? Does it report errors or skipped items?
+            Look at server logs from startup for shared_memory output.<br><br>
+            2. <strong>Find the loading query:</strong> In EQEmu source, what SQL query does shared_memory use to load items? Does it have a WHERE clause 
+            that filters by expansion, content_flags, or any other column?<br><br>
+            3. <strong>Binary verification:</strong> Search the shared\items binary file for a known working item ID (5001) and a known broken item ID (11001). 
+            If 11001 isn't in the file at all, we know shared_memory skipped it.<br><br>
+            4. <strong>Check for a content_flags system:</strong> Some EQEmu versions have a <code>content_flags</code> column on items or a separate 
+            content filtering table. Does v23.10.3 use this?
+        </p>
+        <div class="sql-box"><code>-- Check for content-related tables
+SHOW TABLES LIKE '%content%';
+
+-- Check for content_flags column on items
+SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA='peq' AND TABLE_NAME='items'
+AND COLUMN_NAME LIKE '%content%';
+
+-- Check for expansion-related columns on items  
+SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA='peq' AND TABLE_NAME='items'
+AND (COLUMN_NAME LIKE '%exp%' OR COLUMN_NAME LIKE '%era%');
+
+-- Check merchantlist for content filtering columns
+SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA='peq' AND TABLE_NAME='merchantlist';</code></div>
+        <span class="tag lead">strongest lead</span>
+        <span class="tag shared-mem">shared memory</span>
+        <span class="tag source">source code</span>
+    </div>
+
+    <!-- New Question 10 -->
+    <div class="question-card" style="margin-top: 1.5rem;">
+        <div class="q-number">Question 10 — New</div>
+        <div class="q-title">Are our item modifications causing shared_memory to reject them?</div>
+        <p class="q-detail">
+            We've been modifying existing PEQ database items (changing stats, flags, etc.). The original PEQ items worked fine.
+            Could our modifications introduce values that shared_memory.exe can't parse?
+        </p>
+        <p class="q-detail">
+            <strong>Test idea:</strong> INSERT a completely brand-new item (fresh ID like 200001) with minimal, clean fields — 
+            copy every field exactly from Short Sword (5001) but change the name and ID. Add it to Stabby's merchantlist. 
+            If it works, the problem is with how we modified existing items. If it fails, the problem is elsewhere.
+        </p>
+        <p class="q-detail">
+            <strong>Second test:</strong> RESTORE Soul Devourer (11001) to its exact original PEQ values (undo all our modifications). 
+            If it works after restore, we know one of our modifications broke it.
+        </p>
+        <span class="tag source">source code</span>
+        <span class="tag shared-mem">shared memory</span>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid #222; margin: 2rem 0;">
+
+    <div class="context-box" style="border: 1px solid #114411;">
+        <h2 style="color: #00cc66;">Current Status — April 1, 2026 ✅ RESOLVED</h2>
+        <ul>
+            <li>✅ <strong>FIX: Use Spire to manage items and merchant lists</strong> — works immediately</li>
+            <li>❌ <s>nodrop/norent fix</s> — did not solve it</li>
+            <li>❌ <s>UNK132 padding fix</s> — did not solve it</li>
+            <li>❌ <s>Shared memory rebuild</s> — did not solve it</li>
+            <li>❌ <s>merchantlist_temp cleanup</s> — table was already empty</li>
+            <li>❌ <s>Slot conflicts</s> — all clean and sequential</li>
+            <li>✅ <strong>Root cause:</strong> Raw SQL to the items/merchantlist tables produces records that shared_memory can't parse. Spire handles proper formatting.</li>
+            <li>✅ <strong>Items vanishing:</strong> Same cause — malformed items can't be loaded by <code>GetItem()</code> on character load</li>
+            <li>ℹ️ <strong>Soul Devourer:</strong> Server recognized it as invalid and removed it from merchant window entirely</li>
+        </ul>
+    </div>
+
+    <div class="context-box">
+        <h2>Going Forward</h2>
+        <ul>
+            <li><strong>Use Spire</strong> for ALL item creation, editing, and merchant list management</li>
+            <li><strong>Safe to raw SQL:</strong> merchantlist slot assignments, NPC spawns, quest scripts, zone configs</li>
+            <li><strong>NOT safe to raw SQL:</strong> items table (creation or modification), anything shared_memory caches</li>
+            <li><strong>After any item changes:</strong> Delete <code>shared\items</code> → restart server to rebuild shared memory</li>
+            <li><strong>Re-add removed items:</strong> Soul Devourer and any other items that got stripped need to be re-added via Spire</li>
+        </ul>
+    </div>
+
+    <div class="context-box">
+        <h2>Server Details (for reference)</h2>
+        <ul>
+            <li><strong>Server:</strong> Beelink SER5 MAX, Windows 11, IP 192.168.1.66</li>
+            <li><strong>EQEmu:</strong> v23.10.3</li>
+            <li><strong>Client:</strong> RoF2</li>
+            <li><strong>Database:</strong> MariaDB, db=peq</li>
+            <li><strong>Zone:</strong> East Commonlands (ecommons, zone 22)</li>
+            <li><strong>Expansion:</strong> CurrentExpansion=9 (Shadows of Luclin)</li>
+            <li><strong>Shared memory:</strong> C:\Users\deacyde-minipc\server\shared\items (157MB)</li>
+            <li><strong>Merchant NPCs:</strong> 104901 (weapons), 104902 (armor), 104903 (bags), 104908 (caster), 104909 (monk), 104910 (fabled)</li>
+        </ul>
+    </div>
+
+</body>
+</html>
