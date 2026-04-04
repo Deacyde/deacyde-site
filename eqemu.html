@@ -302,6 +302,7 @@
     <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab('tab-quick', this)">⚡ Quick Ref</button>
         <button class="tab-btn" onclick="switchTab('tab-bots', this)">🤖 Bots</button>
+        <button class="tab-btn" onclick="switchTab('tab-npcs', this)">🎰 Custom NPCs</button>
         <button class="tab-btn" onclick="switchTab('tab-gm', this)">⚔️ GM Commands</button>
         <button class="tab-btn" onclick="switchTab('tab-mq2', this)">🔧 MacroQuest2</button>
     </div>
@@ -912,6 +913,94 @@
     </div>
 
     </div><!-- /tab-bots -->
+
+    <div class="tab-panel" id="tab-npcs">
+
+    <!-- ============================================================ -->
+    <!-- CUSTOM NPCs — EC TUNNEL HUB -->
+    <!-- ============================================================ -->
+    <div class="section" id="npc-ectunnel">
+        <div class="section-header">
+            <span class="section-icon">🗺️</span>
+            <span class="section-title">EC Tunnel Hub — Custom NPCs</span>
+        </div>
+        <div class="info-box">
+            All custom NPCs are located in <strong>East Commonlands (ecommons)</strong> near the tunnel entrance at <code>y=-1519</code>.
+            Line up from west to east: Bubar → Shady Sam → Lady Luck → Brother Kail → Master Rashan → Gear Wrangler Vex.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd highlight" data-search="shady sam casino bet gamble platinum win jackpot">
+                <div class="cmd-name">Shady Sam <span class="tag tag-essential">Casino</span></div>
+                <div>
+                    <div class="cmd-desc">Casino NPC. Bet platinum and try your luck. Win big and get a clicky jackpot item.</div>
+                    <div class="cmd-syntax">Say: bet 10 &nbsp;|&nbsp; bet 100 &nbsp;|&nbsp; bet 1000</div>
+                    <div class="cmd-syntax">Say: odds &nbsp;|&nbsp; jackpot</div>
+                </div>
+            </div>
+            <div class="cmd highlight" data-search="lady luck grab bag item loot reward class gear fabled legendary rare common">
+                <div class="cmd-name">Lady Luck <span class="tag tag-essential">Grab Bag</span></div>
+                <div>
+                    <div class="cmd-desc">Item grab bag NPC. Pay platinum, receive a class-appropriate item. Higher bets = better odds. Items are chosen for your class (monk, caster, priest, melee).</div>
+                    <div class="cmd-syntax">Say: 10 plat &nbsp;|&nbsp; 100 plat &nbsp;|&nbsp; 1000 plat &nbsp;|&nbsp; 5000 plat</div>
+                    <div class="cmd-syntax">Say: odds</div>
+                    <table style="margin-top:0.5rem;font-size:0.8rem;border-collapse:collapse;width:100%">
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">10pp</td><td>60% Common / 28% Rare / 10% Legendary / 2% Fabled</td></tr>
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">100pp</td><td>20% / 48% / 25% / 7%</td></tr>
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">1000pp</td><td>5% / 25% / 50% / 20%</td></tr>
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">5000pp</td><td>0% / 10% / 45% / 45%</td></tr>
+                    </table>
+                    <div style="margin-top:0.4rem;font-size:0.8rem;color:#ff9900">⚠️ Money display updates on zone — deduction happens immediately server-side.</div>
+                </div>
+            </div>
+            <div class="cmd" data-search="brother kail monk trainer train skills kick flying kick dragon punch">
+                <div class="cmd-name">Brother Kail <span class="tag">Monk Trainer</span></div>
+                <div>
+                    <div class="cmd-desc">Monk trainer NPC. Right-click or use <code>/train</code> to train monk skills. AllowCrossClassTrainers is enabled — any trainer works for any class.</div>
+                    <div class="cmd-syntax">/train &nbsp;(while targeting Brother Kail)</div>
+                </div>
+            </div>
+            <div class="cmd" data-search="master rashan monk tome discipline vendor buy shop whirlwind hundred fists voiddance">
+                <div class="cmd-name">Master Rashan <span class="tag">Tome Vendor</span></div>
+                <div>
+                    <div class="cmd-desc">Sells all monk discipline tomes — 77 tomes from classic to RoF2 era. Right-click to open merchant window. Tomes are priced by tier.</div>
+                    <div class="cmd-syntax">Right-click to browse &amp; buy</div>
+                    <table style="margin-top:0.5rem;font-size:0.8rem;border-collapse:collapse;width:100%">
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">50pp</td><td>Classic discs (Whirlwind, Hundred Fists, Voiddance, Stone Stance…)</td></tr>
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">200pp</td><td>Mid-tier (Scaledfist, Impenetrable, Delay Death…)</td></tr>
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">500pp</td><td>Advanced (Drunken Monkey Style, Cloud of Fists, Crane Stance…)</td></tr>
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">1000pp</td><td>Elite (Earthforce, Eagle's Balance, Shadewalker's Synergy…)</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="cmd highlight" data-search="gear wrangler vex bot outfit equip auto gear level class inventory despawn respawn">
+                <div class="cmd-name">Gear Wrangler Vex <span class="tag tag-essential">Bot Outfitter</span></div>
+                <div>
+                    <div class="cmd-desc">Auto-equips ALL your bots with the best gear available for their class and level. Queries the item DB and fills every gear slot. Class-aware scoring: melee gets AC/HP/ATK, casters get INT/mana, priests get WIS/mana.</div>
+                    <div style="margin-top:0.5rem;margin-bottom:0.3rem;font-size:0.85rem;color:#fff;font-weight:600">Workflow:</div>
+                    <ol style="font-size:0.85rem;color:#aaa;padding-left:1.2rem;line-height:1.8">
+                        <li>Despawn all bots: <code>#bot despawnall</code></li>
+                        <li>Talk to Vex → say <code>outfit bots</code></li>
+                        <li>Respawn each bot: <code>#bot spawn BotName</code></li>
+                    </ol>
+                    <div style="margin-top:0.5rem">
+                        <div class="cmd-syntax">Say: outfit bots &nbsp;&nbsp;— equip ALL your bots</div>
+                        <div class="cmd-syntax">Say: outfit [BotName] &nbsp;— equip one specific bot</div>
+                        <div class="cmd-syntax">Say: list &nbsp;&nbsp;— see your bots and their class/level</div>
+                    </div>
+                    <div style="margin-top:0.4rem;font-size:0.8rem;color:#ff9900">⚠️ Bots must be despawned before outfitting, then respawned after to load new gear.</div>
+                </div>
+            </div>
+            <div class="cmd" data-search="vah shir scotty teleport port teleporter">
+                <div class="cmd-name">Vah Shir Scotty <span class="tag">Teleporter</span></div>
+                <div>
+                    <div class="cmd-desc">Zone teleporter NPC. Beams you to various destinations around Norrath.</div>
+                    <div class="cmd-syntax">Hail to see destination list</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div><!-- /tab-npcs -->
 
     <div class="tab-panel" id="tab-gm">
 
