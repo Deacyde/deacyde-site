@@ -975,19 +975,28 @@
             <div class="cmd highlight" data-search="gear wrangler vex bot outfit equip auto gear level class inventory despawn respawn">
                 <div class="cmd-name">Gear Wrangler Vex <span class="tag tag-essential">Bot Outfitter</span></div>
                 <div>
-                    <div class="cmd-desc">Auto-equips ALL your bots with the best gear available for their class and level. Queries the item DB and fills every gear slot. Class-aware scoring: melee gets AC/HP/ATK, casters get INT/mana, priests get WIS/mana.</div>
-                    <div style="margin-top:0.5rem;margin-bottom:0.3rem;font-size:0.85rem;color:#fff;font-weight:600">Workflow:</div>
+                    <div class="cmd-desc">Auto-equips ALL your bots with curated gear for their class and level (10-level bands, class-aware scoring). Also saves and restores YOUR personal gear set — great for recovering after a death.</div>
+                    <div style="margin-top:0.5rem;margin-bottom:0.3rem;font-size:0.85rem;color:#fff;font-weight:600">Bot Outfitting Workflow:</div>
                     <ol style="font-size:0.85rem;color:#aaa;padding-left:1.2rem;line-height:1.8">
                         <li>Camp each bot: <code>^botcamp</code> (while each bot is targeted)</li>
                         <li>Talk to Vex → say <code>outfit bots</code></li>
                         <li>Respawn each bot: <code>^botspawn BotName</code></li>
                     </ol>
+                    <div style="margin-top:0.5rem;margin-bottom:0.3rem;font-size:0.85rem;color:#fff;font-weight:600">Player Gear Save/Restore:</div>
+                    <ol style="font-size:0.85rem;color:#aaa;padding-left:1.2rem;line-height:1.8">
+                        <li>While fully geared: say <code>save gear</code> — snapshots all worn slots to DB</li>
+                        <li>After dying: say <code>restore gear</code> — re-summons every saved item to your cursor</li>
+                        <li>Say <code>what's saved</code> to review your saved set slot by slot</li>
+                    </ol>
                     <div style="margin-top:0.5rem">
                         <div class="cmd-syntax">Say: outfit bots &nbsp;&nbsp;— equip ALL your bots</div>
                         <div class="cmd-syntax">Say: outfit [BotName] &nbsp;— equip one specific bot</div>
                         <div class="cmd-syntax">Say: list &nbsp;&nbsp;— see your bots and their class/level</div>
+                        <div class="cmd-syntax">Say: save gear &nbsp;&nbsp;— save YOUR current worn gear</div>
+                        <div class="cmd-syntax">Say: restore gear &nbsp;— re-summon your saved gear after death</div>
+                        <div class="cmd-syntax">Say: what's saved &nbsp;— list your saved gear set</div>
                     </div>
-                    <div style="margin-top:0.4rem;font-size:0.8rem;color:#ff9900">⚠️ Bots must be despawned before outfitting, then respawned after to load new gear.</div>
+                    <div style="margin-top:0.4rem;font-size:0.8rem;color:#ff9900">⚠️ Bots must be camped before outfitting, then respawned after to load new gear.</div>
                 </div>
             </div>
             <div class="cmd" data-search="vah shir scotty teleport port teleporter">
