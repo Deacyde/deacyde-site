@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EQEmu Command Reference — Server Of Deacyde</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.7;
+        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 2rem 0 1.5rem;
+            border-bottom: 2px solid #1a1a1a;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00d4ff, #7b2fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .header .subtitle { color: #666; font-size: 0.9rem; }
+        .header .subtitle span { color: #888; }
+        
+        /* Search */
+        .search-bar {
+            position: sticky;
+            top: 0;
+            background: #0a0a0a;
+            padding: 1rem 0;
+            z-index: 100;
+            border-bottom: 1px solid #1a1a1a;
+            margin-bottom: 1.5rem;
+        }
+        .search-bar input {
+            width: 100%;
+            background: #141414;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-bar input:focus { border-color: #00d4ff; }
+        .search-bar input::placeholder { color: #555; }
+        .search-count { color: #555; font-size: 0.8rem; margin-top: 0.5rem; }
+        
+        /* TOC */
+        .toc {
+            background: #111;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            columns: 2;
+            column-gap: 2rem;
+        }
+        .toc a {
+            display: block;
+            color: #00d4ff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            padding: 0.25rem 0;
+            break-inside: avoid;
+        }
+        .toc a:hover { color: #fff; }
+        .toc a .count { color: #555; font-size: 0.75rem; }
+        
+        /* Sections */
+        .section {
+            margin-bottom: 2.5rem;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        .section-icon { font-size: 1.3rem; }
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        
+        /* Command cards */
+        .cmd-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+        .cmd {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 1rem;
+            padding: 0.6rem 0.8rem;
+            background: #111;
+            border-radius: 6px;
+            border-left: 3px solid #222;
+            align-items: start;
+            transition: border-color 0.15s;
+        }
+        .cmd:hover { border-left-color: #00d4ff; background: #141414; }
+        .cmd.highlight { border-left-color: #ff6b35; background: #1a1408; }
+        .cmd-name {
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            color: #00d4ff;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .cmd-desc {
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+        .cmd-alias {
+            color: #555;
+            font-size: 0.75rem;
+        }
+        .cmd-syntax {
+            color: #7b2fff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            margin-top: 0.15rem;
+        }
+        
+        /* Bot command prefix */
+        .bot-prefix { color: #ff6b35; }
+        
+        /* Tags */
+        .tag {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.1em 0.5em;
+            border-radius: 3px;
+            margin-left: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            vertical-align: middle;
+        }
+        .tag-essential { background: #1a2a0a; color: #88cc44; }
+        .tag-admin { background: #2a0a0a; color: #ff6666; }
+        .tag-fun { background: #0a1a2a; color: #6699ff; }
+        
+        /* Info boxes */
+        .info-box {
+            background: #0d1a0d;
+            border: 1px solid #1a331a;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: #88cc88;
+        }
+        .info-box strong { color: #aaffaa; }
+        .info-box code {
+            background: #1a2a1a;
+            color: #00d4ff;
+            padding: 0.1em 0.35em;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+        .warn-box {
+            background: #1a1a0d;
+            border: 1px solid #33331a;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: #cccc88;
+        }
+        .warn-box strong { color: #ffff88; }
+        
+        .back-link {
+            display: inline-block;
+            color: #00d4ff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .back-link:hover { text-decoration: underline; }
+        
+        @media (max-width: 700px) {
+            .toc { columns: 1; }
+            .cmd { grid-template-columns: 1fr; gap: 0.25rem; }
+            .container { padding: 1rem; }
+        }
+
+        /* Tabs */
+        .tab-nav {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid #1a1a1a;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 0.75rem 1.25rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #555;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+            margin-bottom: -2px;
+            white-space: nowrap;
+        }
+        .tab-btn:hover { color: #aaa; }
+        .tab-btn.active { color: #fff; border-bottom-color: #00d4ff; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .cmd-example {
+            background: #0d0d1a;
+            border: 1px solid #1a1a33;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin: 0.75rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.82rem;
+            color: #9999dd;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .cmd-tip {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        .cmd-tip code {
+            background: #1a1a1a;
+            color: #00d4ff;
+            padding: 0.1em 0.35em;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+        .tip-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        .ini-grid { display: grid; grid-template-columns: 1fr; gap: 0.4rem; margin-bottom: 1rem; }
+        .ini-field {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 1rem;
+            padding: 0.5rem 0.8rem;
+            background: #111;
+            border-radius: 6px;
+            border-left: 3px solid #333;
+            align-items: start;
+        }
+        .ini-key {
+            font-family: 'Courier New', monospace;
+            color: #7b2fff;
+            font-size: 0.85rem;
+        }
+        .ini-desc { color: #aaa; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <a href="/" class="back-link">← Back to Deacyde.com</a>
+
+    <div class="header">
+        <h1>⚔️ EQEmu Command Reference</h1>
+        <p class="subtitle">Server Of Deacyde &bull; EQEmu v23.10.3 &bull; RoF2 Client<br><span>GM Commands (#) &bull; Bot Commands (^) &bull; Merc Info &bull; Quick Reference</span></p>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search commands... (e.g. summon, bot, zone, spawn)" oninput="filterCommands()">
+        <div class="search-count" id="searchCount"></div>
+    </div>
+
+    <!-- Tab Nav -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('tab-quick', this)">⚡ Quick Ref</button>
+        <button class="tab-btn" onclick="switchTab('tab-bots', this)">🤖 Bots</button>
+        <button class="tab-btn" onclick="switchTab('tab-npcs', this)">🎰 Custom NPCs</button>
+        <button class="tab-btn" onclick="switchTab('tab-gm', this)">⚔️ GM Commands</button>
+        <button class="tab-btn" onclick="switchTab('tab-mq2', this)">🔧 MacroQuest2</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-quick">
+
+    <!-- ============================================================ -->
+    <!-- QUICK REFERENCE -->
+    <!-- ============================================================ -->
+    <div class="section" id="quick-ref">
+        <div class="section-header">
+            <span class="section-icon">⚡</span>
+            <span class="section-title">Quick Reference — Daily Use</span>
+        </div>
+        <div class="info-box">
+            <strong>Most used commands at a glance.</strong> These are the ones you'll use 90% of the time while playing and testing.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd highlight" data-search="summonitem si item give">
+                <div class="cmd-name">#summonitem <span class="tag tag-essential">essential</span></div>
+                <div><div class="cmd-desc">Summon an item to your cursor</div>
+                <div class="cmd-syntax">#summonitem [itemid] [charges]</div></div>
+            </div>
+            <div class="cmd highlight" data-search="givemoney money platinum gold silver copper">
+                <div class="cmd-name">#givemoney <span class="tag tag-essential">essential</span></div>
+                <div><div class="cmd-desc">Give money to yourself</div>
+                <div class="cmd-syntax">#givemoney [plat] [gold] [silver] [copper]</div></div>
+            </div>
+            <div class="cmd highlight" data-search="level set level character">
+                <div class="cmd-name">#set level <span class="tag tag-essential">essential</span></div>
+                <div><div class="cmd-desc">Set your or target's level</div>
+                <div class="cmd-syntax">#set level [1-65]</div></div>
+            </div>
+            <div class="cmd highlight" data-search="speed run fast movement">
+                <div class="cmd-name">#set speed</div>
+                <div><div class="cmd-desc">Change run speed (1=normal, 2=double, etc.)</div>
+                <div class="cmd-syntax">#set speed [value]</div></div>
+            </div>
+            <div class="cmd highlight" data-search="goto teleport coordinates">
+                <div class="cmd-name">#goto</div>
+                <div><div class="cmd-desc">Teleport to coordinates or a player</div>
+                <div class="cmd-syntax">#goto [x] [y] [z] or #goto [playername]</div></div>
+            </div>
+            <div class="cmd highlight" data-search="zone teleport travel">
+                <div class="cmd-name">#zone</div>
+                <div><div class="cmd-desc">Zone to a different zone</div>
+                <div class="cmd-syntax">#zone [shortname] [x] [y] [z]</div></div>
+            </div>
+            <div class="cmd highlight" data-search="repop spawn respawn reload">
+                <div class="cmd-name">#repop</div>
+                <div><div class="cmd-desc">Repop the zone (respawn all NPCs)</div>
+                <div class="cmd-syntax">#repop [zonename]</div></div>
+            </div>
+            <div class="cmd highlight" data-search="kill target destroy">
+                <div class="cmd-name">#kill</div>
+                <div><div class="cmd-desc">Kill your current target</div>
+                <div class="cmd-syntax">#kill</div></div>
+            </div>
+            <div class="cmd highlight" data-search="loc location position coordinates where">
+                <div class="cmd-name">#loc</div>
+                <div><div class="cmd-desc">Print your current location and heading</div>
+                <div class="cmd-syntax">#loc</div></div>
+            </div>
+            <div class="cmd highlight" data-search="gearup equip gear developer">
+                <div class="cmd-name">#gearup</div>
+                <div><div class="cmd-desc">Developer tool to equip yourself or target with level-appropriate gear</div>
+                <div class="cmd-syntax">#gearup</div></div>
+            </div>
+            <div class="cmd highlight" data-search="scribespells learn all spells book">
+                <div class="cmd-name">#scribespells</div>
+                <div><div class="cmd-desc">Scribe all spells up to a level into your spellbook</div>
+                <div class="cmd-syntax">#scribespells [maxlevel] [minlevel]</div></div>
+            </div>
+            <div class="cmd highlight" data-search="traindisc discipline combat abilities">
+                <div class="cmd-name">#traindisc</div>
+                <div><div class="cmd-desc">Train all disciplines usable up to level</div>
+                <div class="cmd-syntax">#traindisc [level]</div></div>
+            </div>
+            <div class="cmd highlight" data-search="grantaa aa alternate advancement points">
+                <div class="cmd-name">#grantaa</div>
+                <div><div class="cmd-desc">Grant all available AA points up to specified level</div>
+                <div class="cmd-syntax">#grantaa [level]</div></div>
+            </div>
+            <div class="cmd highlight" data-search="logs reload logging debug">
+                <div class="cmd-name">#logs reload</div>
+                <div><div class="cmd-desc">Reload log settings without restart</div>
+                <div class="cmd-syntax">#logs reload</div></div>
+            </div>
+            <div class="cmd highlight" data-search="bot create spawn helper npc companion">
+                <div class="cmd-name">^botcreate <span class="tag tag-essential">essential</span></div>
+                <div><div class="cmd-desc">Create a new bot</div>
+                <div class="cmd-syntax">^botcreate [name] [classid] [raceid] [gender]</div></div>
+            </div>
+            <div class="cmd highlight" data-search="bot spawn summon bring">
+                <div class="cmd-name">^botspawn <span class="tag tag-essential">essential</span></div>
+                <div><div class="cmd-desc">Spawn a bot you've created</div>
+                <div class="cmd-syntax">^botspawn [botname]</div></div>
+            </div>
+        </div>
+    </div>
+
+    </div><!-- /tab-quick -->
+
+    <div class="tab-panel" id="tab-bots">
+
+    <!-- ============================================================ -->
+    <!-- BOT COMMANDS — ESSENTIAL -->
+    <!-- ============================================================ -->
+    <div class="section" id="bot-essential">
+        <div class="section-header">
+            <span class="section-icon">🤖</span>
+            <span class="section-title">Bot Commands — Essential</span>
+        </div>
+        <div class="info-box">
+            <strong>Bot commands use the ^ prefix.</strong> Create bots, add them to your group, and control them in combat.
+            Bots level with you, use spells, and can be fully geared.<br><br>
+            <strong>Class IDs:</strong> 1=WAR, 2=CLR, 3=PAL, 4=RNG, 5=SHD, 6=DRU, 7=MNK, 8=BRD, 9=ROG, 10=SHM, 11=NEC, 12=WIZ, 13=MAG, 14=ENC, 15=BST, 16=BER<br>
+            <strong>Race IDs:</strong> 1=HUM, 2=BAR, 3=ERU, 4=ELF, 5=HIE, 6=DEF, 7=HEF, 8=DWF, 9=TRL, 10=OGR, 11=HFL, 12=GNM, 128=IKS, 130=VAH, 330=FRG
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="bot create new make">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botcreate</div>
+                <div><div class="cmd-desc">Create a new bot character</div>
+                <div class="cmd-syntax">^botcreate [Name] [ClassID] [RaceID] [Gender 0=M 1=F]</div></div>
+            </div>
+            <div class="cmd" data-search="bot spawn summon bring call">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botspawn</div>
+                <div><div class="cmd-desc">Spawn one of your bots into the world</div>
+                <div class="cmd-syntax">^botspawn [BotName]</div></div>
+            </div>
+            <div class="cmd" data-search="bot camp despawn dismiss remove leave">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botcamp</div>
+                <div><div class="cmd-desc">Despawn/camp out a bot</div>
+                <div class="cmd-syntax">^botcamp</div></div>
+            </div>
+            <div class="cmd" data-search="bot delete destroy permanent">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botdelete</div>
+                <div><div class="cmd-desc">Permanently delete a bot</div>
+                <div class="cmd-syntax">^botdelete</div></div>
+            </div>
+            <div class="cmd" data-search="bot list show all mine bots">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botlist</div>
+                <div><div class="cmd-desc">Show all your created bots</div>
+                <div class="cmd-syntax">^botlist</div></div>
+            </div>
+            <div class="cmd" data-search="bot help commands reference">
+                <div class="cmd-name"><span class="bot-prefix">^</span>help</div>
+                <div><div class="cmd-desc">Show all available bot commands</div>
+                <div class="cmd-syntax">^help</div></div>
+            </div>
+            <div class="cmd" data-search="bot report health mana status">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botreport</div>
+                <div><div class="cmd-desc">Show health/mana status of your bots</div>
+                <div class="cmd-alias">Aliases: ^report, ^health, ^mana</div></div>
+            </div>
+            <div class="cmd" data-search="bot details info stats">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botdetails</div>
+                <div><div class="cmd-desc">Show detailed info about a bot</div>
+                <div class="cmd-syntax">^botdetails</div></div>
+            </div>
+            <div class="cmd" data-search="class race list combos valid combinations">
+                <div class="cmd-name"><span class="bot-prefix">^</span>classracelist</div>
+                <div><div class="cmd-desc">Show valid class/race combinations for bot creation</div></div>
+            </div>
+            <div class="cmd" data-search="view combos combinations available">
+                <div class="cmd-name"><span class="bot-prefix">^</span>viewcombos</div>
+                <div><div class="cmd-desc">View all available race/class combos</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- BOT MANAGEMENT -->
+    <!-- ============================================================ -->
+    <div class="section" id="bot-management">
+        <div class="section-header">
+            <span class="section-icon">🤖</span>
+            <span class="section-title">Bot Management</span>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="bot follow distance leash range">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botfollowdistance</div>
+                <div><div class="cmd-desc">Set how far behind a bot follows you</div>
+                <div class="cmd-alias">Aliases: ^followd, ^followdistance</div></div>
+            </div>
+            <div class="cmd" data-search="bot summon bring here come">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botsummon</div>
+                <div><div class="cmd-desc">Summon a bot to your location</div>
+                <div class="cmd-alias">Alias: ^summon</div></div>
+            </div>
+            <div class="cmd" data-search="bot follow come heel">
+                <div class="cmd-name"><span class="bot-prefix">^</span>follow</div>
+                <div><div class="cmd-desc">Tell bot to follow you</div></div>
+            </div>
+            <div class="cmd" data-search="bot guard stay position hold">
+                <div class="cmd-name"><span class="bot-prefix">^</span>guard</div>
+                <div><div class="cmd-desc">Tell bot to guard current position</div></div>
+            </div>
+            <div class="cmd" data-search="bot hold stop wait pause">
+                <div class="cmd-name"><span class="bot-prefix">^</span>hold</div>
+                <div><div class="cmd-desc">Tell bot to hold position and not assist</div></div>
+            </div>
+            <div class="cmd" data-search="bot release unhold resume">
+                <div class="cmd-name"><span class="bot-prefix">^</span>release</div>
+                <div><div class="cmd-desc">Release bot from hold</div></div>
+            </div>
+            <div class="cmd" data-search="bot stance aggressive defensive passive balanced burn efficient">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botstance</div>
+                <div><div class="cmd-desc">Set bot's combat stance (aggressive, defensive, passive, etc.)</div>
+                <div class="cmd-alias">Alias: ^stance</div></div>
+            </div>
+            <div class="cmd" data-search="bot settings config options preferences">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botsettings</div>
+                <div><div class="cmd-desc">View/modify bot settings</div></div>
+            </div>
+            <div class="cmd" data-search="bot owner option defend auto">
+                <div class="cmd-name"><span class="bot-prefix">^</span>owneroption</div>
+                <div><div class="cmd-desc">Set owner options (auto-defend, etc.)</div>
+                <div class="cmd-alias">Alias: ^oo</div></div>
+            </div>
+            <div class="cmd" data-search="bot clone copy duplicate">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botclone</div>
+                <div><div class="cmd-desc">Clone a bot (GM only, access 200)</div>
+                <div class="cmd-alias">Alias: ^clone</div></div>
+            </div>
+            <div class="cmd" data-search="bot update refresh sync">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botupdate</div>
+                <div><div class="cmd-desc">Update bot data</div>
+                <div class="cmd-alias">Alias: ^update</div></div>
+            </div>
+            <div class="cmd" data-search="bot suspend save logout offline">
+                <div class="cmd-name"><span class="bot-prefix">^</span>suspend</div>
+                <div><div class="cmd-desc">Suspend a bot (save and despawn)</div></div>
+            </div>
+            <div class="cmd" data-search="bot depart leave zone">
+                <div class="cmd-name"><span class="bot-prefix">^</span>depart</div>
+                <div><div class="cmd-desc">Depart/dismiss a bot</div>
+                <div class="cmd-alias">Alias: ^dep</div></div>
+            </div>
+            <div class="cmd" data-search="bot copy settings transfer">
+                <div class="cmd-name"><span class="bot-prefix">^</span>copysettings</div>
+                <div><div class="cmd-desc">Copy settings from one bot to another</div></div>
+            </div>
+            <div class="cmd" data-search="bot default settings reset factory">
+                <div class="cmd-name"><span class="bot-prefix">^</span>defaultsettings</div>
+                <div><div class="cmd-desc">Reset bot to default settings</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- BOT COMBAT -->
+    <!-- ============================================================ -->
+    <div class="section" id="bot-combat">
+        <div class="section-header">
+            <span class="section-icon">🤖</span>
+            <span class="section-title">Bot Combat & AI</span>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="bot attack fight target engage">
+                <div class="cmd-name"><span class="bot-prefix">^</span>attack</div>
+                <div><div class="cmd-desc">Tell bots to attack your target</div>
+                <div class="cmd-alias">Alias: ^atk</div></div>
+            </div>
+            <div class="cmd" data-search="bot pull lure aggro">
+                <div class="cmd-name"><span class="bot-prefix">^</span>pull</div>
+                <div><div class="cmd-desc">Tell a bot to pull a target</div></div>
+            </div>
+            <div class="cmd" data-search="bot taunt aggro tank threat">
+                <div class="cmd-name"><span class="bot-prefix">^</span>taunt</div>
+                <div><div class="cmd-desc">Toggle taunt on/off for a bot</div></div>
+            </div>
+            <div class="cmd" data-search="bot behind mob backstab position rogue">
+                <div class="cmd-name"><span class="bot-prefix">^</span>behindmob</div>
+                <div><div class="cmd-desc">Force bot to position behind mob (for backstab)</div></div>
+            </div>
+            <div class="cmd" data-search="bot ranged bow throw distance">
+                <div class="cmd-name"><span class="bot-prefix">^</span>bottoggleranged</div>
+                <div><div class="cmd-desc">Toggle ranged attacks on/off</div></div>
+            </div>
+            <div class="cmd" data-search="bot distance ranged range max">
+                <div class="cmd-name"><span class="bot-prefix">^</span>distanceranged</div>
+                <div><div class="cmd-desc">Set max ranged distance for bot</div></div>
+            </div>
+            <div class="cmd" data-search="bot max melee range distance close">
+                <div class="cmd-name"><span class="bot-prefix">^</span>maxmeleerange</div>
+                <div><div class="cmd-desc">Set max melee range for bot</div></div>
+            </div>
+            <div class="cmd" data-search="bot stop melee level caster ranged">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botstopmeleelevel</div>
+                <div><div class="cmd-desc">Set level at which caster bot stops meleeing</div>
+                <div class="cmd-alias">Alias: ^sml</div></div>
+            </div>
+            <div class="cmd" data-search="bot precombat setup buff pre">
+                <div class="cmd-name"><span class="bot-prefix">^</span>precombat</div>
+                <div><div class="cmd-desc">Set precombat actions</div></div>
+            </div>
+            <div class="cmd" data-search="bot pet familiar companion animal">
+                <div class="cmd-name"><span class="bot-prefix">^</span>pet</div>
+                <div><div class="cmd-desc">Bot pet commands</div>
+                <div class="cmd-alias">Alias: ^p</div></div>
+            </div>
+            <div class="cmd" data-search="bot pet remove dismiss kill despawn">
+                <div class="cmd-name"><span class="bot-prefix">^</span>petremove</div>
+                <div><div class="cmd-desc">Remove bot's pet</div>
+                <div class="cmd-alias">Alias: ^prem</div></div>
+            </div>
+            <div class="cmd" data-search="bot pet set type summon change">
+                <div class="cmd-name"><span class="bot-prefix">^</span>petsettype</div>
+                <div><div class="cmd-desc">Set bot's pet type</div>
+                <div class="cmd-alias">Alias: ^pset, ^pst</div></div>
+            </div>
+            <div class="cmd" data-search="bot pet get lost dismiss go away">
+                <div class="cmd-name"><span class="bot-prefix">^</span>petgetlost</div>
+                <div><div class="cmd-desc">Dismiss bot's pet</div>
+                <div class="cmd-alias">Alias: ^pgl</div></div>
+            </div>
+            <div class="cmd" data-search="bot discipline combat ability disc">
+                <div class="cmd-name"><span class="bot-prefix">^</span>discipline</div>
+                <div><div class="cmd-desc">Bot discipline commands</div></div>
+            </div>
+            <div class="cmd" data-search="bot set assistee main assist ma">
+                <div class="cmd-name"><span class="bot-prefix">^</span>setassistee</div>
+                <div><div class="cmd-desc">Set the bot's assist target</div></div>
+            </div>
+            <div class="cmd" data-search="bot pickpocket steal rogue thief">
+                <div class="cmd-name"><span class="bot-prefix">^</span>pickpocket</div>
+                <div><div class="cmd-desc">Rogue bot pickpocket command</div></div>
+            </div>
+            <div class="cmd" data-search="bot picklock open door rogue">
+                <div class="cmd-name"><span class="bot-prefix">^</span>picklock</div>
+                <div><div class="cmd-desc">Rogue bot pick lock command</div>
+                <div class="cmd-alias">Alias: ^pl</div></div>
+            </div>
+            <div class="cmd" data-search="bot apply poison rogue">
+                <div class="cmd-name"><span class="bot-prefix">^</span>applypoison</div>
+                <div><div class="cmd-desc">Apply poison to rogue bot's weapon</div></div>
+            </div>
+            <div class="cmd" data-search="bot track ranger find locate">
+                <div class="cmd-name"><span class="bot-prefix">^</span>track</div>
+                <div><div class="cmd-desc">Ranger bot tracking</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- BOT INVENTORY & APPEARANCE -->
+    <!-- ============================================================ -->
+    <div class="section" id="bot-inventory">
+        <div class="section-header">
+            <span class="section-icon">🤖</span>
+            <span class="section-title">Bot Inventory & Appearance</span>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="bot inventory equip gear items">
+                <div class="cmd-name"><span class="bot-prefix">^</span>inventory</div>
+                <div><div class="cmd-desc">Bot inventory management</div>
+                <div class="cmd-alias">Alias: ^inv</div></div>
+            </div>
+            <div class="cmd" data-search="bot inventory give item equip hand">
+                <div class="cmd-name"><span class="bot-prefix">^</span>inventorygive</div>
+                <div><div class="cmd-desc">Give item on your cursor to bot</div>
+                <div class="cmd-alias">Alias: ^invgive, ^ig</div></div>
+            </div>
+            <div class="cmd" data-search="bot inventory list show equipped">
+                <div class="cmd-name"><span class="bot-prefix">^</span>inventorylist</div>
+                <div><div class="cmd-desc">List bot's equipped items</div>
+                <div class="cmd-alias">Alias: ^invlist, ^il</div></div>
+            </div>
+            <div class="cmd" data-search="bot inventory remove take unequip">
+                <div class="cmd-name"><span class="bot-prefix">^</span>inventoryremove</div>
+                <div><div class="cmd-desc">Remove item from bot's inventory</div>
+                <div class="cmd-alias">Alias: ^invremove, ^ir</div></div>
+            </div>
+            <div class="cmd" data-search="bot inventory window open trade">
+                <div class="cmd-name"><span class="bot-prefix">^</span>inventorywindow</div>
+                <div><div class="cmd-desc">Open bot's inventory window</div>
+                <div class="cmd-alias">Alias: ^invwindow, ^iw</div></div>
+            </div>
+            <div class="cmd" data-search="bot click item use activate equip">
+                <div class="cmd-name"><span class="bot-prefix">^</span>clickitem</div>
+                <div><div class="cmd-desc">Make bot use a clickable equipped item</div></div>
+            </div>
+            <div class="cmd" data-search="bot item use activate click">
+                <div class="cmd-name"><span class="bot-prefix">^</span>itemuse</div>
+                <div><div class="cmd-desc">Bot item use command</div></div>
+            </div>
+            <div class="cmd" data-search="bot appearance look visual model">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botappearance</div>
+                <div><div class="cmd-desc">Change bot's appearance</div>
+                <div class="cmd-alias">Alias: ^app, ^appearance</div></div>
+            </div>
+            <div class="cmd" data-search="bot face look facial">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botface</div>
+                <div><div class="cmd-desc">Change bot's face</div>
+                <div class="cmd-alias">Alias: ^face</div></div>
+            </div>
+            <div class="cmd" data-search="bot hair style barber">
+                <div class="cmd-name"><span class="bot-prefix">^</span>bothairstyle</div>
+                <div><div class="cmd-desc">Change bot's hair style</div>
+                <div class="cmd-alias">Alias: ^hs, ^hairstyle</div></div>
+            </div>
+            <div class="cmd" data-search="bot hair color dye">
+                <div class="cmd-name"><span class="bot-prefix">^</span>bothaircolor</div>
+                <div><div class="cmd-desc">Change bot's hair color</div>
+                <div class="cmd-alias">Alias: ^hc, ^haircolor</div></div>
+            </div>
+            <div class="cmd" data-search="bot beard style facial hair">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botbeardstyle</div>
+                <div><div class="cmd-desc">Change bot's beard style</div>
+                <div class="cmd-alias">Alias: ^bs, ^beardstyle</div></div>
+            </div>
+            <div class="cmd" data-search="bot beard color dye">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botbeardcolor</div>
+                <div><div class="cmd-desc">Change bot's beard color</div>
+                <div class="cmd-alias">Alias: ^bc, ^beardcolor</div></div>
+            </div>
+            <div class="cmd" data-search="bot eyes color look">
+                <div class="cmd-name"><span class="bot-prefix">^</span>boteyes</div>
+                <div><div class="cmd-desc">Change bot's eye color</div>
+                <div class="cmd-alias">Alias: ^eyes</div></div>
+            </div>
+            <div class="cmd" data-search="bot helm toggle show hide helmet">
+                <div class="cmd-name"><span class="bot-prefix">^</span>bottogglehelm</div>
+                <div><div class="cmd-desc">Toggle helmet visibility</div>
+                <div class="cmd-alias">Alias: ^helm, ^togglehelm</div></div>
+            </div>
+            <div class="cmd" data-search="bot dye armor color tint">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botdyearmor</div>
+                <div><div class="cmd-desc">Dye bot's armor</div>
+                <div class="cmd-alias">Alias: ^dyearmor</div></div>
+            </div>
+            <div class="cmd" data-search="bot surname last name title">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botsurname</div>
+                <div><div class="cmd-desc">Set bot's surname</div></div>
+            </div>
+            <div class="cmd" data-search="bot suffix tag label">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botsuffix</div>
+                <div><div class="cmd-desc">Set bot's suffix</div></div>
+            </div>
+            <div class="cmd" data-search="bot title prefix label">
+                <div class="cmd-name"><span class="bot-prefix">^</span>bottitle</div>
+                <div><div class="cmd-desc">Set bot's title</div></div>
+            </div>
+            <div class="cmd" data-search="bot inspect message look at">
+                <div class="cmd-name"><span class="bot-prefix">^</span>botinspectmessage</div>
+                <div><div class="cmd-desc">Set bot's inspect message</div>
+                <div class="cmd-alias">Alias: ^inspect</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- BOT SPELLS & HEALING -->
+    <!-- ============================================================ -->
+    <div class="section" id="bot-spells">
+        <div class="section-header">
+            <span class="section-icon">🤖</span>
+            <span class="section-title">Bot Spells & Healing</span>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="bot cast spell magic ability">
+                <div class="cmd-name"><span class="bot-prefix">^</span>cast</div>
+                <div><div class="cmd-desc">Make bot cast a spell (by AA or spell ID)</div>
+                <div class="cmd-syntax">^cast aa [AAID] or ^cast spellid [ID]</div></div>
+            </div>
+            <div class="cmd" data-search="bot spells list available memorized">
+                <div class="cmd-name"><span class="bot-prefix">^</span>spells</div>
+                <div><div class="cmd-desc">View bot's spell list</div></div>
+            </div>
+            <div class="cmd" data-search="bot spell info details information">
+                <div class="cmd-name"><span class="bot-prefix">^</span>spellinfo</div>
+                <div><div class="cmd-desc">Show spell info for a bot's spell</div></div>
+            </div>
+            <div class="cmd" data-search="bot spell settings config manage">
+                <div class="cmd-name"><span class="bot-prefix">^</span>spellsettings</div>
+                <div><div class="cmd-desc">View/modify bot spell settings</div></div>
+            </div>
+            <div class="cmd" data-search="bot spell holds hold stop prevent">
+                <div class="cmd-name"><span class="bot-prefix">^</span>spellholds</div>
+                <div><div class="cmd-desc">Hold/prevent specific spell types from being cast</div></div>
+            </div>
+            <div class="cmd" data-search="bot spell aggro check hate threat">
+                <div class="cmd-name"><span class="bot-prefix">^</span>spellaggrochecks</div>
+                <div><div class="cmd-desc">Toggle spell aggro checking on/off</div></div>
+            </div>
+            <div class="cmd" data-search="bot spell announce cast notify">
+                <div class="cmd-name"><span class="bot-prefix">^</span>spellannouncecasts</div>
+                <div><div class="cmd-desc">Toggle spell cast announcements</div></div>
+            </div>
+            <div class="cmd" data-search="bot spell delays timing cast speed">
+                <div class="cmd-name"><span class="bot-prefix">^</span>spelldelays</div>
+                <div><div class="cmd-desc">Set delays between spell casts</div></div>
+            </div>
+            <div class="cmd" data-search="bot spell resist limits cap">
+                <div class="cmd-name"><span class="bot-prefix">^</span>spellresistlimits</div>
+                <div><div class="cmd-desc">Set spell resist limits for bots</div></div>
+            </div>
+            <div class="cmd" data-search="bot blocked buffs prevent buff">
+                <div class="cmd-name"><span class="bot-prefix">^</span>blockedbuffs</div>
+                <div><div class="cmd-desc">Manage blocked buffs for a bot</div></div>
+            </div>
+            <div class="cmd" data-search="bot blocked pet buffs prevent">
+                <div class="cmd-name"><span class="bot-prefix">^</span>blockedpetbuffs</div>
+                <div><div class="cmd-desc">Manage blocked buffs for a bot's pet</div></div>
+            </div>
+            <div class="cmd" data-search="bot illusion block prevent disguise">
+                <div class="cmd-name"><span class="bot-prefix">^</span>illusionblock</div>
+                <div><div class="cmd-desc">Block illusion spells on bot</div></div>
+            </div>
+            <div class="cmd" data-search="bot enforce spell settings strict">
+                <div class="cmd-name"><span class="bot-prefix">^</span>enforcespellsettings</div>
+                <div><div class="cmd-desc">Enforce spell settings strictly</div></div>
+            </div>
+            <div class="cmd" data-search="bot heal rotation group healing chain">
+                <div class="cmd-name"><span class="bot-prefix">^</span>healrotation</div>
+                <div><div class="cmd-desc">Manage heal rotations</div>
+                <div class="cmd-alias">Alias: ^hr — Use ^hr then subcommands: create, start, stop, addm, addt, etc.</div></div>
+            </div>
+            <div class="cmd" data-search="bot heal rotation create new setup">
+                <div class="cmd-name"><span class="bot-prefix">^</span>healrotationcreate</div>
+                <div><div class="cmd-desc">Create a new heal rotation</div>
+                <div class="cmd-alias">Alias: ^hrcreate</div></div>
+            </div>
+            <div class="cmd" data-search="bot heal rotation add member healer">
+                <div class="cmd-name"><span class="bot-prefix">^</span>healrotationaddmember</div>
+                <div><div class="cmd-desc">Add a healer bot to rotation</div>
+                <div class="cmd-alias">Alias: ^hraddm</div></div>
+            </div>
+            <div class="cmd" data-search="bot heal rotation add target patient">
+                <div class="cmd-name"><span class="bot-prefix">^</span>healrotationaddtarget</div>
+                <div><div class="cmd-desc">Add a target to be healed in rotation</div>
+                <div class="cmd-alias">Alias: ^hraddt</div></div>
+            </div>
+            <div class="cmd" data-search="bot heal rotation start begin activate">
+                <div class="cmd-name"><span class="bot-prefix">^</span>healrotationstart</div>
+                <div><div class="cmd-desc">Start the heal rotation</div>
+                <div class="cmd-alias">Alias: ^hrstart</div></div>
+            </div>
+            <div class="cmd" data-search="bot heal rotation stop end deactivate">
+                <div class="cmd-name"><span class="bot-prefix">^</span>healrotationstop</div>
+                <div><div class="cmd-desc">Stop the heal rotation</div>
+                <div class="cmd-alias">Alias: ^hrstop</div></div>
+            </div>
+            <div class="cmd" data-search="bot heal rotation list show view">
+                <div class="cmd-name"><span class="bot-prefix">^</span>healrotationlist</div>
+                <div><div class="cmd-desc">List active heal rotations</div>
+                <div class="cmd-alias">Alias: ^hrlist</div></div>
+            </div>
+            <div class="cmd" data-search="bot sit hp percent rest health">
+                <div class="cmd-name"><span class="bot-prefix">^</span>sithppercent</div>
+                <div><div class="cmd-desc">Set HP% threshold for bot to sit and regen</div></div>
+            </div>
+            <div class="cmd" data-search="bot sit mana percent rest meditate">
+                <div class="cmd-name"><span class="bot-prefix">^</span>sitmanapercent</div>
+                <div><div class="cmd-desc">Set mana% threshold for bot to sit and meditate</div></div>
+            </div>
+            <div class="cmd" data-search="bot sit combat fight meditate">
+                <div class="cmd-name"><span class="bot-prefix">^</span>sitincombat</div>
+                <div><div class="cmd-desc">Toggle whether bot can sit during combat</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MERCENARIES -->
+    <!-- ============================================================ -->
+    <div class="section" id="mercs">
+        <div class="section-header">
+            <span class="section-icon">🛡️</span>
+            <span class="section-title">Mercenaries</span>
+        </div>
+        <div class="info-box">
+            <strong>Mercs are hired from Guardian NPCs in PoK</strong> (near each racial gate and along the wall by Castle Drewe). 
+            Right-click a Guardian to open the merc hire window. Mercs are free on this server (purchase/upkeep costs disabled).<br><br>
+            <strong>Merc types:</strong> Tank (Warrior) and Healer (Cleric)<br>
+            <strong>Tiers:</strong> Apprentice (I-V) and Journeyman (I-V) — Journeyman are significantly better<br>
+            <strong>Proficiencies:</strong> Each race offers different merc options<br><br>
+            <strong>Mercs are controlled through the Mercenary window</strong> (default hotkey: Alt+M or through the EQ menu). 
+            No chat commands needed — everything is done through the UI window.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd highlight" data-search="merc hire purchase get recruit">
+                <div class="cmd-name">Hire a Merc</div>
+                <div><div class="cmd-desc">Right-click any Guardian NPC in PoK → Select merc type/tier → Hire</div></div>
+            </div>
+            <div class="cmd" data-search="merc suspend dismiss pause save">
+                <div class="cmd-name">Suspend Merc</div>
+                <div><div class="cmd-desc">Use Mercenary window → Suspend button. Saves merc for later resummon.</div></div>
+            </div>
+            <div class="cmd" data-search="merc unsuspend resume activate bring back">
+                <div class="cmd-name">Unsuspend Merc</div>
+                <div><div class="cmd-desc">Use Mercenary window → Unsuspend button. Brings merc back.</div></div>
+            </div>
+            <div class="cmd" data-search="merc stance aggressive passive balanced burn">
+                <div class="cmd-name">Change Stance</div>
+                <div><div class="cmd-desc">Mercenary window → Stance dropdown. Controls combat behavior.</div></div>
+            </div>
+            <div class="cmd" data-search="merc dismiss fire release permanent">
+                <div class="cmd-name">Dismiss Merc</div>
+                <div><div class="cmd-desc">Mercenary window → Dismiss button. Permanently releases the merc.</div></div>
+            </div>
+        </div>
+        <div class="warn-box" style="margin-top: 1rem;">
+            <strong>Note:</strong> If Guardian NPCs aren't showing in PoK, run <code>#repop poknowledge</code> in-game after zoning to PoK.
+            Their spawn expansion requirement has been set to always spawn regardless of server expansion.
+        </div>
+    </div>
+
+    </div><!-- /tab-bots -->
+
+    <div class="tab-panel" id="tab-npcs">
+
+    <!-- ============================================================ -->
+    <!-- CUSTOM NPCs — EC TUNNEL HUB -->
+    <!-- ============================================================ -->
+    <div class="section" id="npc-ectunnel">
+        <div class="section-header">
+            <span class="section-icon">🗺️</span>
+            <span class="section-title">EC Tunnel Hub — Custom NPCs</span>
+        </div>
+        <div class="info-box">
+            All custom NPCs are located in <strong>East Commonlands (ecommons)</strong> near the tunnel entrance at <code>y=-1519</code>.
+            Line up from west to east: Bubar → Shady Sam → Lady Luck → Brother Kail → Master Rashan → Gear Wrangler Vex.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd highlight" data-search="shady sam casino bet gamble platinum win jackpot">
+                <div class="cmd-name">Shady Sam <span class="tag tag-essential">Casino</span></div>
+                <div>
+                    <div class="cmd-desc">Casino NPC. Bet platinum and try your luck. Win big and get a clicky jackpot item.</div>
+                    <div class="cmd-syntax">Say: bet 10 &nbsp;|&nbsp; bet 100 &nbsp;|&nbsp; bet 1000</div>
+                    <div class="cmd-syntax">Say: odds &nbsp;|&nbsp; jackpot</div>
+                </div>
+            </div>
+            <div class="cmd highlight" data-search="lady luck grab bag item loot reward class gear fabled legendary rare common">
+                <div class="cmd-name">Lady Luck <span class="tag tag-essential">Grab Bag</span></div>
+                <div>
+                    <div class="cmd-desc">Item grab bag NPC. Pay platinum, receive a class-appropriate item. Higher bets = better odds. Items are chosen for your class (monk, caster, priest, melee).</div>
+                    <div class="cmd-syntax">Say: 10 plat &nbsp;|&nbsp; 100 plat &nbsp;|&nbsp; 1000 plat &nbsp;|&nbsp; 5000 plat</div>
+                    <div class="cmd-syntax">Say: odds</div>
+                    <table style="margin-top:0.5rem;font-size:0.8rem;border-collapse:collapse;width:100%">
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">10pp</td><td>60% Common / 28% Rare / 10% Legendary / 2% Fabled</td></tr>
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">100pp</td><td>20% / 48% / 25% / 7%</td></tr>
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">1000pp</td><td>5% / 25% / 50% / 20%</td></tr>
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">5000pp</td><td>0% / 10% / 45% / 45%</td></tr>
+                    </table>
+                    <div style="margin-top:0.4rem;font-size:0.8rem;color:#ff9900">⚠️ Money display updates on zone — deduction happens immediately server-side.</div>
+                </div>
+            </div>
+            <div class="cmd" data-search="brother kail monk trainer train skills kick flying kick dragon punch">
+                <div class="cmd-name">Brother Kail <span class="tag">Monk Trainer</span></div>
+                <div>
+                    <div class="cmd-desc">Monk trainer NPC. Right-click or use <code>/train</code> to train monk skills. AllowCrossClassTrainers is enabled — any trainer works for any class.</div>
+                    <div class="cmd-syntax">/train &nbsp;(while targeting Brother Kail)</div>
+                </div>
+            </div>
+            <div class="cmd" data-search="master rashan monk tome discipline vendor buy shop whirlwind hundred fists voiddance">
+                <div class="cmd-name">Master Rashan <span class="tag">Tome Vendor</span></div>
+                <div>
+                    <div class="cmd-desc">Sells all monk discipline tomes — 77 tomes from classic to RoF2 era. Right-click to open merchant window. Tomes are priced by tier.</div>
+                    <div class="cmd-syntax">Right-click to browse &amp; buy</div>
+                    <table style="margin-top:0.5rem;font-size:0.8rem;border-collapse:collapse;width:100%">
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">50pp</td><td>Classic discs (Whirlwind, Hundred Fists, Voiddance, Stone Stance…)</td></tr>
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">200pp</td><td>Mid-tier (Scaledfist, Impenetrable, Delay Death…)</td></tr>
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">500pp</td><td>Advanced (Drunken Monkey Style, Cloud of Fists, Crane Stance…)</td></tr>
+                        <tr style="color:#aaa"><td style="padding:2px 8px 2px 0">1000pp</td><td>Elite (Earthforce, Eagle's Balance, Shadewalker's Synergy…)</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="cmd highlight" data-search="gear wrangler vex bot outfit equip auto gear level class inventory despawn respawn">
+                <div class="cmd-name">Gear Wrangler Vex <span class="tag tag-essential">Bot Outfitter</span></div>
+                <div>
+                    <div class="cmd-desc">Auto-equips ALL your bots with curated gear for their class and level (10-level bands, class-aware scoring). Also saves and restores YOUR personal gear set — great for recovering after a death.</div>
+                    <div style="margin-top:0.5rem;margin-bottom:0.3rem;font-size:0.85rem;color:#fff;font-weight:600">Bot Outfitting Workflow:</div>
+                    <ol style="font-size:0.85rem;color:#aaa;padding-left:1.2rem;line-height:1.8">
+                        <li>Camp each bot: <code>^botcamp</code> (while each bot is targeted)</li>
+                        <li>Talk to Vex → say <code>outfit bots</code></li>
+                        <li>Respawn each bot: <code>^botspawn BotName</code></li>
+                    </ol>
+                    <div style="margin-top:0.5rem;margin-bottom:0.3rem;font-size:0.85rem;color:#fff;font-weight:600">Player Gear Save/Restore:</div>
+                    <ol style="font-size:0.85rem;color:#aaa;padding-left:1.2rem;line-height:1.8">
+                        <li>While fully geared: say <code>save gear</code> — snapshots all worn slots to DB</li>
+                        <li>After dying: say <code>restore gear</code> — re-summons every saved item to your cursor</li>
+                        <li>Say <code>what's saved</code> to review your saved set slot by slot</li>
+                    </ol>
+                    <div style="margin-top:0.5rem">
+                        <div class="cmd-syntax">Say: outfit bots &nbsp;&nbsp;— equip ALL your bots</div>
+                        <div class="cmd-syntax">Say: outfit [BotName] &nbsp;— equip one specific bot</div>
+                        <div class="cmd-syntax">Say: list &nbsp;&nbsp;— see your bots and their class/level</div>
+                        <div class="cmd-syntax">Say: save gear &nbsp;&nbsp;— save YOUR current worn gear</div>
+                        <div class="cmd-syntax">Say: restore gear &nbsp;— re-summon your saved gear after death</div>
+                        <div class="cmd-syntax">Say: what's saved &nbsp;— list your saved gear set</div>
+                    </div>
+                    <div style="margin-top:0.5rem;margin-bottom:0.3rem;font-size:0.85rem;color:#fff;font-weight:600">Find Best Item for a Slot:</div>
+                    <div style="font-size:0.82rem;color:#aaa;margin-bottom:0.3rem">Queries the DB live for the best item for your exact class &amp; level. Summons it to your cursor.</div>
+                    <div style="margin-top:0.3rem">
+                        <div class="cmd-syntax">Say: find [slot] &nbsp;— e.g. <code>find head</code>, <code>find chest</code>, <code>find primary</code></div>
+                        <div class="cmd-syntax">Say: find primary [type] &nbsp;— weapon subtype: <code>find primary 1hb</code>, <code>find primary h2h</code>, <code>find primary 1hs</code></div>
+                        <div class="cmd-syntax">Say: find ammo &nbsp;— best arrow/bolt (WAR PAL RNG SHD ROG only)</div>
+                        <div class="cmd-syntax">Say: find power &nbsp;— best power source</div>
+                        <div class="cmd-syntax">Say: find range &nbsp;— best ranged weapon</div>
+                        <div class="cmd-syntax">Say: slots &nbsp;— list all valid slot names</div>
+                    </div>
+                    <div style="margin-top:0.5rem;margin-bottom:0.3rem;font-size:0.85rem;color:#fff;font-weight:600">Epic Weapons:</div>
+                    <div style="font-size:0.82rem;color:#aaa;margin-bottom:0.3rem">Summons your class epic directly to your cursor. All 16 classes supported.</div>
+                    <div style="margin-top:0.3rem">
+                        <div class="cmd-syntax">Say: find epic1.0 &nbsp;— summon your Epic 1.0 weapon</div>
+                        <div class="cmd-syntax">Say: find epic2.0 &nbsp;— summon your Epic 2.0 weapon</div>
+                    </div>
+                    <div style="margin-top:0.4rem;font-size:0.8rem;color:#ff9900">⚠️ Bots must be camped before outfitting, then respawned after to load new gear.</div>
+                </div>
+            </div>
+            <div class="cmd" data-search="vah shir scotty teleport port teleporter">
+                <div class="cmd-name">Vah Shir Scotty <span class="tag">Teleporter</span></div>
+                <div>
+                    <div class="cmd-desc">Zone teleporter NPC. Beams you to various destinations around Norrath.</div>
+                    <div class="cmd-syntax">Hail to see destination list</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div><!-- /tab-npcs -->
+
+    <div class="tab-panel" id="tab-gm">
+
+    <!-- ============================================================ -->
+    <!-- GM — CHARACTER -->
+    <!-- ============================================================ -->
+    <div class="section" id="gm-character">
+        <div class="section-header">
+            <span class="section-icon">👤</span>
+            <span class="section-title">GM — Character Commands</span>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="set level character experience">
+                <div class="cmd-name">#set level</div>
+                <div><div class="cmd-desc">Set your or target's level</div>
+                <div class="cmd-syntax">#set level [1-65]</div></div>
+            </div>
+            <div class="cmd" data-search="set speed run movement fast slow">
+                <div class="cmd-name">#set speed</div>
+                <div><div class="cmd-desc">Set movement speed multiplier</div>
+                <div class="cmd-syntax">#set speed [value] (1=normal)</div></div>
+            </div>
+            <div class="cmd" data-search="grant aa alternate advancement all points">
+                <div class="cmd-name">#grantaa</div>
+                <div><div class="cmd-desc">Grant all available AA points up to level</div>
+                <div class="cmd-syntax">#grantaa [level]</div></div>
+            </div>
+            <div class="cmd" data-search="reset aa alternate advancement clear">
+                <div class="cmd-name">#resetaa</div>
+                <div><div class="cmd-desc">Reset a player's AAs</div></div>
+            </div>
+            <div class="cmd" data-search="reset aa timer cooldown reuse">
+                <div class="cmd-name">#resetaa_timer</div>
+                <div><div class="cmd-desc">Reset AA cooldown timers</div></div>
+            </div>
+            <div class="cmd" data-search="reset disc discipline timer cooldown">
+                <div class="cmd-name">#resetdisc_timer</div>
+                <div><div class="cmd-desc">Reset discipline timers</div></div>
+            </div>
+            <div class="cmd" data-search="hp health points refresh bar">
+                <div class="cmd-name">#hp</div>
+                <div><div class="cmd-desc">Refresh your HP bar from server</div></div>
+            </div>
+            <div class="cmd" data-search="my stats statistics info details">
+                <div class="cmd-name">#mystats</div>
+                <div><div class="cmd-desc">Show detailed stats about you or your pet</div></div>
+            </div>
+            <div class="cmd" data-search="my skills skill levels abilities">
+                <div class="cmd-name">#myskills</div>
+                <div><div class="cmd-desc">Show your current skill levels</div></div>
+            </div>
+            <div class="cmd" data-search="save character force database write">
+                <div class="cmd-name">#save</div>
+                <div><div class="cmd-desc">Force save player/corpse to database</div></div>
+            </div>
+            <div class="cmd" data-search="exp toggle experience gain disable enable">
+                <div class="cmd-name">#exptoggle</div>
+                <div><div class="cmd-desc">Toggle experience gain on/off</div></div>
+            </div>
+            <div class="cmd" data-search="faction view reset manage reputation">
+                <div class="cmd-name">#faction</div>
+                <div><div class="cmd-desc">Manage player faction</div>
+                <div class="cmd-syntax">#faction [find|review|reset]</div></div>
+            </div>
+            <div class="cmd" data-search="feature change appearance race gender texture">
+                <div class="cmd-name">#feature</div>
+                <div><div class="cmd-desc">Change target's features temporarily</div></div>
+            </div>
+            <div class="cmd" data-search="scale npc size stats modify">
+                <div class="cmd-name">#scale</div>
+                <div><div class="cmd-desc">Handle NPC scaling</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- GM — ITEMS -->
+    <!-- ============================================================ -->
+    <div class="section" id="gm-items">
+        <div class="section-header">
+            <span class="section-icon">🎒</span>
+            <span class="section-title">GM — Items & Money</span>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="summon item create spawn give si">
+                <div class="cmd-name">#summonitem</div>
+                <div><div class="cmd-desc">Summon an item onto your cursor</div>
+                <div class="cmd-syntax">#summonitem [itemid] [charges]</div>
+                <div class="cmd-alias">Alias: #si</div></div>
+            </div>
+            <div class="cmd" data-search="give item target hand equip">
+                <div class="cmd-name">#giveitem</div>
+                <div><div class="cmd-desc">Summon item onto target's cursor</div>
+                <div class="cmd-syntax">#giveitem [itemid] [charges]</div>
+                <div class="cmd-alias">Alias: #gi</div></div>
+            </div>
+            <div class="cmd" data-search="give money platinum gold silver copper currency">
+                <div class="cmd-name">#givemoney</div>
+                <div><div class="cmd-desc">Give money to yourself</div>
+                <div class="cmd-syntax">#givemoney [plat] [gold] [silver] [copper]</div></div>
+            </div>
+            <div class="cmd" data-search="take platinum remove money currency">
+                <div class="cmd-name">#takeplatinum</div>
+                <div><div class="cmd-desc">Take platinum from target</div></div>
+            </div>
+            <div class="cmd" data-search="remove item delete inventory specific">
+                <div class="cmd-name">#removeitem</div>
+                <div><div class="cmd-desc">Remove Item ID from inventory by amount</div>
+                <div class="cmd-syntax">#removeitem [itemid] [amount]</div></div>
+            </div>
+            <div class="cmd" data-search="nuke item destroy all instances remove">
+                <div class="cmd-name">#nukeitem</div>
+                <div><div class="cmd-desc">Remove ALL of a specific Item ID from inventory</div>
+                <div class="cmd-syntax">#nukeitem [itemid]</div></div>
+            </div>
+            <div class="cmd" data-search="count item how many inventory">
+                <div class="cmd-name">#countitem</div>
+                <div><div class="cmd-desc">Count how many of an item you have</div>
+                <div class="cmd-syntax">#countitem [itemid]</div></div>
+            </div>
+            <div class="cmd" data-search="augment item aug socket gem">
+                <div class="cmd-name">#augmentitem</div>
+                <div><div class="cmd-desc">Force augment an item (augment window must be open)</div>
+                <div class="cmd-alias">Alias: #aug</div></div>
+            </div>
+            <div class="cmd" data-search="npc loot treasure drops add remove">
+                <div class="cmd-name">#npcloot</div>
+                <div><div class="cmd-desc">Manipulate loot on an NPC</div></div>
+            </div>
+            <div class="cmd" data-search="empty inventory clear all bank delete wipe">
+                <div class="cmd-name">#emptyinventory <span class="tag tag-admin">danger</span></div>
+                <div><div class="cmd-desc">Clear ENTIRE inventory (equipment, bags, bank, shared bank)</div></div>
+            </div>
+            <div class="cmd" data-search="gear up equip auto developer">
+                <div class="cmd-name">#gearup</div>
+                <div><div class="cmd-desc">Auto-equip level-appropriate gear (dev tool)</div></div>
+            </div>
+            <div class="cmd" data-search="wc wear change armor material texture visual model">
+                <div class="cmd-name">#wc</div>
+                <div><div class="cmd-desc">Set armor slot material/Hero Forge/Elite Material</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- GM — NPC & SPAWNS -->
+    <!-- ============================================================ -->
+    <div class="section" id="gm-npc">
+        <div class="section-header">
+            <span class="section-icon">👹</span>
+            <span class="section-title">GM — NPC & Spawns</span>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="spawn npc create mob monster new">
+                <div class="cmd-name">#spawn</div>
+                <div><div class="cmd-desc">Spawn an NPC</div>
+                <div class="cmd-syntax">#spawn [name] [race] [level] [material] [hp] [gender] [class] [weapon1] [weapon2]</div></div>
+            </div>
+            <div class="cmd" data-search="npc type spawn database id existing">
+                <div class="cmd-name">#npctypespawn</div>
+                <div><div class="cmd-desc">Spawn an existing NPC from database by ID</div>
+                <div class="cmd-syntax">#npctypespawn [NPC_ID] [FactionID]</div>
+                <div class="cmd-alias">Alias: #dbspawn</div></div>
+            </div>
+            <div class="cmd" data-search="repop respawn all zone refresh reload">
+                <div class="cmd-name">#repop</div>
+                <div><div class="cmd-desc">Respawn all NPCs in zone (use after DB changes)</div>
+                <div class="cmd-syntax">#repop [zonename]</div></div>
+            </div>
+            <div class="cmd" data-search="depop despawn remove target npc">
+                <div class="cmd-name">#depop</div>
+                <div><div class="cmd-desc">Depop your NPC target</div></div>
+            </div>
+            <div class="cmd" data-search="depop zone all despawn clear everything">
+                <div class="cmd-name">#depopzone</div>
+                <div><div class="cmd-desc">Depop ALL NPCs in the zone</div></div>
+            </div>
+            <div class="cmd" data-search="kill destroy slay target">
+                <div class="cmd-name">#kill</div>
+                <div><div class="cmd-desc">Kill your current target</div></div>
+            </div>
+            <div class="cmd" data-search="kill all npcs zone wide mass">
+                <div class="cmd-name">#killallnpcs</div>
+                <div><div class="cmd-desc">Kill all attackable NPCs in zone</div>
+                <div class="cmd-syntax">#killallnpcs [searchname]</div></div>
+            </div>
+            <div class="cmd" data-search="damage hurt hit amount">
+                <div class="cmd-name">#damage</div>
+                <div><div class="cmd-desc">Damage yourself or target</div>
+                <div class="cmd-syntax">#damage [amount]</div></div>
+            </div>
+            <div class="cmd" data-search="npc edit modify change stats properties">
+                <div class="cmd-name">#npcedit</div>
+                <div><div class="cmd-desc">Edit NPC properties (mega editing command)</div>
+                <div class="cmd-syntax">#npcedit [column] [value]</div></div>
+            </div>
+            <div class="cmd" data-search="npc edit mass zone wide bulk all">
+                <div class="cmd-name">#npceditmass</div>
+                <div><div class="cmd-desc">Mass NPC editing (zone-wide)</div></div>
+            </div>
+            <div class="cmd" data-search="modify npc stat temp temporary">
+                <div class="cmd-name">#modifynpcstat</div>
+                <div><div class="cmd-desc">Temporarily modify NPC stats</div>
+                <div class="cmd-syntax">#modifynpcstat [stat] [value]</div></div>
+            </div>
+            <div class="cmd" data-search="npc spawn create add update remove delete persist">
+                <div class="cmd-name">#npcspawn</div>
+                <div><div class="cmd-desc">Manage NPC spawn entries in DB</div>
+                <div class="cmd-syntax">#npcspawn [create|add|update|remove|delete]</div></div>
+            </div>
+            <div class="cmd" data-search="advanced npc spawn spawngroup entry">
+                <div class="cmd-name">#advnpcspawn</div>
+                <div><div class="cmd-desc">Advanced spawn management</div>
+                <div class="cmd-alias">Alias: #advnpc</div></div>
+            </div>
+            <div class="cmd" data-search="spawn fix location position update database">
+                <div class="cmd-name">#spawnfix</div>
+                <div><div class="cmd-desc">Update database spawn location to NPC's current position</div></div>
+            </div>
+            <div class="cmd" data-search="npc say talk speak text">
+                <div class="cmd-name">#npcsay</div>
+                <div><div class="cmd-desc">Make NPC target say a message</div></div>
+            </div>
+            <div class="cmd" data-search="npc shout yell broadcast">
+                <div class="cmd-name">#npcshout</div>
+                <div><div class="cmd-desc">Make NPC target shout a message</div></div>
+            </div>
+            <div class="cmd" data-search="npc emote action gesture">
+                <div class="cmd-name">#npcemote</div>
+                <div><div class="cmd-desc">Make NPC target emote</div></div>
+            </div>
+            <div class="cmd" data-search="npc cast spell magic ability">
+                <div class="cmd-name">#npccast</div>
+                <div><div class="cmd-desc">Make NPC cast a spell</div>
+                <div class="cmd-syntax">#npccast [spellid] [target]</div></div>
+            </div>
+            <div class="cmd" data-search="npc attack fight engage aggro">
+                <div class="cmd-name">#attack</div>
+                <div><div class="cmd-desc">Make NPC target attack an entity</div>
+                <div class="cmd-syntax">#attack [entity name]</div></div>
+            </div>
+            <div class="cmd" data-search="ai faction spell con guard roam stop start">
+                <div class="cmd-name">#ai</div>
+                <div><div class="cmd-desc">Modify NPC AI</div>
+                <div class="cmd-syntax">#ai [factionid|spellslist|con|guard|roambox|stop|start]</div></div>
+            </div>
+            <div class="cmd" data-search="roam box wander patrol area range">
+                <div class="cmd-name">#roambox</div>
+                <div><div class="cmd-desc">Set NPC roam box size and delay</div></div>
+            </div>
+            <div class="cmd" data-search="grid wander path waypoint create delete">
+                <div class="cmd-name">#grid</div>
+                <div><div class="cmd-desc">Create/delete wandering grids</div>
+                <div class="cmd-syntax">#grid [add|delete] [grid_num] [wandertype] [pausetype]</div></div>
+            </div>
+            <div class="cmd" data-search="waypoint add path patrol route">
+                <div class="cmd-name">#wp</div>
+                <div><div class="cmd-desc">Add/delete waypoints by grid ID</div>
+                <div class="cmd-syntax">#wp [add|delete] [grid_id] [pause] [wp_id]</div></div>
+            </div>
+            <div class="cmd" data-search="waypoint add current location position here">
+                <div class="cmd-name">#wpadd</div>
+                <div><div class="cmd-desc">Add current location as waypoint to NPC's path</div></div>
+            </div>
+            <div class="cmd" data-search="stun freeze hold paralysis">
+                <div class="cmd-name">#stun</div>
+                <div><div class="cmd-desc">Stun yourself or target</div>
+                <div class="cmd-syntax">#stun [duration]</div></div>
+            </div>
+            <div class="cmd" data-search="aggro zone entire all mobs hate">
+                <div class="cmd-name">#aggrozone</div>
+                <div><div class="cmd-desc">Aggro every mob in zone</div></div>
+            </div>
+            <div class="cmd" data-search="merchant shop open close store">
+                <div class="cmd-name">#merchantshop</div>
+                <div><div class="cmd-desc">Open or close a merchant's shop</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- GM — ZONE & TELEPORT -->
+    <!-- ============================================================ -->
+    <div class="section" id="gm-zone">
+        <div class="section-header">
+            <span class="section-icon">🗺️</span>
+            <span class="section-title">GM — Zone & Teleport</span>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="zone teleport travel go warp">
+                <div class="cmd-name">#zone</div>
+                <div><div class="cmd-desc">Zone to a different zone</div>
+                <div class="cmd-syntax">#zone [shortname|zoneid] [x] [y] [z]</div></div>
+            </div>
+            <div class="cmd" data-search="zone instance dynamic instanced dungeon">
+                <div class="cmd-name">#zoneinstance</div>
+                <div><div class="cmd-desc">Zone to a specific instance</div>
+                <div class="cmd-syntax">#zoneinstance [instanceid] [x] [y] [z]</div></div>
+            </div>
+            <div class="cmd" data-search="gm zone private instance gm">
+                <div class="cmd-name">#gmzone</div>
+                <div><div class="cmd-desc">Zone to a private GM instance</div>
+                <div class="cmd-syntax">#gmzone [shortname] [version] [identifier]</div></div>
+            </div>
+            <div class="cmd" data-search="peq zone teleport safe">
+                <div class="cmd-name">#peqzone</div>
+                <div><div class="cmd-desc">Zone if you meet PEQ requirements</div></div>
+            </div>
+            <div class="cmd" data-search="goto teleport coordinates player target warp">
+                <div class="cmd-name">#goto</div>
+                <div><div class="cmd-desc">Teleport to coordinates or a player</div>
+                <div class="cmd-syntax">#goto [x] [y] [z] or #goto [playername]</div></div>
+            </div>
+            <div class="cmd" data-search="location position where am i xyz">
+                <div class="cmd-name">#loc</div>
+                <div><div class="cmd-desc">Print current location and heading</div></div>
+            </div>
+            <div class="cmd" data-search="move char offline character zone relocate">
+                <div class="cmd-name">#movechar</div>
+                <div><div class="cmd-desc">Move an offline character to a zone</div>
+                <div class="cmd-syntax">#movechar [charname|charid] [zonename|zoneid]</div></div>
+            </div>
+            <div class="cmd" data-search="summon bring here teleport player npc">
+                <div class="cmd-name">#summon</div>
+                <div><div class="cmd-desc">Summon corpse, NPC, or player target to you</div></div>
+            </div>
+            <div class="cmd" data-search="nudge push move position adjust">
+                <div class="cmd-name">#nudge</div>
+                <div><div class="cmd-desc">Nudge target's position</div></div>
+            </div>
+            <div class="cmd" data-search="instance manage dynamic zone expedition">
+                <div class="cmd-name">#instance</div>
+                <div><div class="cmd-desc">Manage instances</div></div>
+            </div>
+            <div class="cmd" data-search="dz expedition dynamic zone manage">
+                <div class="cmd-name">#dz</div>
+                <div><div class="cmd-desc">Manage expeditions and dynamic zones</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- GM — SPELLS -->
+    <!-- ============================================================ -->
+    <div class="section" id="gm-spells">
+        <div class="section-header">
+            <span class="section-icon">✨</span>
+            <span class="section-title">GM — Spells & Disciplines</span>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="cast spell magic force">
+                <div class="cmd-name">#castspell</div>
+                <div><div class="cmd-desc">Cast a spell by ID</div>
+                <div class="cmd-syntax">#castspell [spellid] [instant 0/1]</div>
+                <div class="cmd-alias">Alias: #cast</div></div>
+            </div>
+            <div class="cmd" data-search="scribe spell learn book single">
+                <div class="cmd-name">#scribespell</div>
+                <div><div class="cmd-desc">Scribe one spell to spellbook</div>
+                <div class="cmd-syntax">#scribespell [spellid]</div></div>
+            </div>
+            <div class="cmd" data-search="scribe spells learn all book bulk batch level">
+                <div class="cmd-name">#scribespells</div>
+                <div><div class="cmd-desc">Scribe ALL spells up to level</div>
+                <div class="cmd-syntax">#scribespells [maxlevel] [minlevel]</div></div>
+            </div>
+            <div class="cmd" data-search="unscribe spell remove forget single">
+                <div class="cmd-name">#unscribespell</div>
+                <div><div class="cmd-desc">Remove one spell from spellbook</div>
+                <div class="cmd-syntax">#unscribespell [spellid]</div></div>
+            </div>
+            <div class="cmd" data-search="unscribe spells clear all book wipe">
+                <div class="cmd-name">#unscribespells</div>
+                <div><div class="cmd-desc">Clear entire spellbook</div></div>
+            </div>
+            <div class="cmd" data-search="memorize spell gem slot mem">
+                <div class="cmd-name">#memspell</div>
+                <div><div class="cmd-desc">Memorize spell to gem slot</div>
+                <div class="cmd-syntax">#memspell [spellid] [gem]</div></div>
+            </div>
+            <div class="cmd" data-search="unmemorize spell gem slot forget">
+                <div class="cmd-name">#unmemspell</div>
+                <div><div class="cmd-desc">Unmemorize a spell by ID</div></div>
+            </div>
+            <div class="cmd" data-search="unmemorize spells all clear gems">
+                <div class="cmd-name">#unmemspells</div>
+                <div><div class="cmd-desc">Unmemorize all spells</div></div>
+            </div>
+            <div class="cmd" data-search="train discipline combat ability learn all level">
+                <div class="cmd-name">#traindisc</div>
+                <div><div class="cmd-desc">Train all disciplines up to level</div>
+                <div class="cmd-syntax">#traindisc [level]</div></div>
+            </div>
+            <div class="cmd" data-search="untrain discipline forget remove single">
+                <div class="cmd-name">#untraindisc</div>
+                <div><div class="cmd-desc">Untrain a discipline</div>
+                <div class="cmd-syntax">#untraindisc [spellid]</div></div>
+            </div>
+            <div class="cmd" data-search="untrain disciplines all clear wipe">
+                <div class="cmd-name">#untraindiscs</div>
+                <div><div class="cmd-desc">Untrain all disciplines</div></div>
+            </div>
+            <div class="cmd" data-search="nuke buffs strip remove clear beneficial detrimental">
+                <div class="cmd-name">#nukebuffs</div>
+                <div><div class="cmd-desc">Strip buffs by type</div>
+                <div class="cmd-syntax">#nukebuffs [beneficial|detrimental]</div></div>
+            </div>
+            <div class="cmd" data-search="make pet summon create familiar">
+                <div class="cmd-name">#makepet</div>
+                <div><div class="cmd-desc">Create a pet</div>
+                <div class="cmd-syntax">#makepet [petname]</div></div>
+            </div>
+            <div class="cmd" data-search="pet name rename familiar">
+                <div class="cmd-name">#petname</div>
+                <div><div class="cmd-desc">Rename your pet</div>
+                <div class="cmd-syntax">#petname [newname]</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- GM — APPEARANCE -->
+    <!-- ============================================================ -->
+    <div class="section" id="gm-appearance">
+        <div class="section-header">
+            <span class="section-icon">🎭</span>
+            <span class="section-title">GM — Appearance</span>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="size change grow shrink big small">
+                <div class="cmd-name">#size</div>
+                <div><div class="cmd-desc">Change target's size</div>
+                <div class="cmd-syntax">#size [value]</div></div>
+            </div>
+            <div class="cmd" data-search="appearance packet type value visual">
+                <div class="cmd-name">#appearance</div>
+                <div><div class="cmd-desc">Send an appearance packet</div>
+                <div class="cmd-syntax">#appearance [type] [value]</div></div>
+            </div>
+            <div class="cmd" data-search="appearance effects visual aura glow">
+                <div class="cmd-name">#appearanceeffects</div>
+                <div><div class="cmd-desc">Modify appearance effects</div>
+                <div class="cmd-syntax">#appearanceeffects [help|remove|set|view]</div></div>
+            </div>
+            <div class="cmd" data-search="fix mob race gender texture helm face hair look">
+                <div class="cmd-name">#fixmob</div>
+                <div><div class="cmd-desc">Change target appearance</div>
+                <div class="cmd-syntax">#fixmob [race|gender|texture|helm|face|hair|etc] [next|prev]</div></div>
+            </div>
+            <div class="cmd" data-search="random features face appearance randomize">
+                <div class="cmd-name">#randomfeatures</div>
+                <div><div class="cmd-desc">Randomize facial features</div></div>
+            </div>
+            <div class="cmd" data-search="dye armor color tint rgb">
+                <div class="cmd-name">#dye</div>
+                <div><div class="cmd-desc">Dye armor slot</div>
+                <div class="cmd-syntax">#dye [slot] [red] [green] [blue] [use_tint]</div></div>
+            </div>
+            <div class="cmd" data-search="undye armor color remove clear tint">
+                <div class="cmd-name">#undye</div>
+                <div><div class="cmd-desc">Remove dye from all armor slots</div></div>
+            </div>
+            <div class="cmd" data-search="do animation emote action anim">
+                <div class="cmd-name">#doanim</div>
+                <div><div class="cmd-desc">Play an animation</div>
+                <div class="cmd-syntax">#doanim [animid|name] [speed]</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- GM — SERVER ADMIN -->
+    <!-- ============================================================ -->
+    <div class="section" id="gm-server">
+        <div class="section-header">
+            <span class="section-icon">🖥️</span>
+            <span class="section-title">GM — Server Admin</span>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="reload quests scripts perl lua hot">
+                <div class="cmd-name">#rq</div>
+                <div><div class="cmd-desc">Reload quests (alias of #reload quests)</div></div>
+            </div>
+            <div class="cmd" data-search="reload logs logging settings">
+                <div class="cmd-name">#rl</div>
+                <div><div class="cmd-desc">Reload logs (alias of #reload logs)</div></div>
+            </div>
+            <div class="cmd" data-search="reload various types data refresh">
+                <div class="cmd-name">#reload</div>
+                <div><div class="cmd-desc">Reload server data (quests, rules, world, etc.)</div>
+                <div class="cmd-syntax">#reload [type] — use #reload for help menu</div></div>
+            </div>
+            <div class="cmd" data-search="hotfix shared memory live apply">
+                <div class="cmd-name">#hotfix</div>
+                <div><div class="cmd-desc">Reload shared memory as a hotfix (no restart needed)</div></div>
+            </div>
+            <div class="cmd" data-search="rules server manage settings config">
+                <div class="cmd-name">#rules</div>
+                <div><div class="cmd-desc">Manage server rules</div></div>
+            </div>
+            <div class="cmd" data-search="server rules display info show">
+                <div class="cmd-name">#serverrules</div>
+                <div><div class="cmd-desc">Display server rules</div></div>
+            </div>
+            <div class="cmd" data-search="logs manage logging debug verbose">
+                <div class="cmd-name">#logs</div>
+                <div><div class="cmd-desc">Manage logging</div>
+                <div class="cmd-syntax">#logs reload — reload log settings without restart</div></div>
+            </div>
+            <div class="cmd" data-search="shutdown zone process stop">
+                <div class="cmd-name">#shutdown</div>
+                <div><div class="cmd-desc">Shut down this zone process</div></div>
+            </div>
+            <div class="cmd" data-search="world shutdown server stop all everything">
+                <div class="cmd-name">#worldshutdown</div>
+                <div><div class="cmd-desc">Shut down world and all zones</div></div>
+            </div>
+            <div class="cmd" data-search="zone shutdown stop specific single">
+                <div class="cmd-name">#zoneshutdown</div>
+                <div><div class="cmd-desc">Shut down a specific zone</div>
+                <div class="cmd-syntax">#zoneshutdown [zoneid|shortname]</div></div>
+            </div>
+            <div class="cmd" data-search="zone boot up start launch specific">
+                <div class="cmd-name">#zonebootup</div>
+                <div><div class="cmd-desc">Boot a specific zone server</div>
+                <div class="cmd-syntax">#zonebootup [zoneserverid] [shortname]</div></div>
+            </div>
+            <div class="cmd" data-search="send zone spawns refresh client list">
+                <div class="cmd-name">#sendzonespawns</div>
+                <div><div class="cmd-desc">Refresh spawn list for all clients in zone</div></div>
+            </div>
+            <div class="cmd" data-search="ban account player character">
+                <div class="cmd-name">#ban</div>
+                <div><div class="cmd-desc">Ban by character name</div>
+                <div class="cmd-syntax">#ban [charname] [reason]</div></div>
+            </div>
+            <div class="cmd" data-search="ip ban block address network">
+                <div class="cmd-name">#ipban</div>
+                <div><div class="cmd-desc">Ban an IP address</div>
+                <div class="cmd-syntax">#ipban [ip]</div></div>
+            </div>
+            <div class="cmd" data-search="kick disconnect player character">
+                <div class="cmd-name">#kick</div>
+                <div><div class="cmd-desc">Disconnect a player</div>
+                <div class="cmd-syntax">#kick [charname]</div></div>
+            </div>
+            <div class="cmd" data-search="dev tools developer menu debug">
+                <div class="cmd-name">#devtools</div>
+                <div><div class="cmd-desc">Developer tools menu</div>
+                <div class="cmd-alias">Alias: #dev</div></div>
+            </div>
+            <div class="cmd" data-search="zone variable config setting custom">
+                <div class="cmd-name">#zonevariable</div>
+                <div><div class="cmd-desc">Modify zone variables</div>
+                <div class="cmd-syntax">#zonevariable [clear|delete|set|view]</div></div>
+            </div>
+            <div class="cmd" data-search="camera shake screen effect earthquake">
+                <div class="cmd-name">#camerashake</div>
+                <div><div class="cmd-desc">Shake everyone's camera</div>
+                <div class="cmd-syntax">#camerashake [duration] [intensity]</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- GM — UTILITY -->
+    <!-- ============================================================ -->
+    <div class="section" id="gm-utility">
+        <div class="section-header">
+            <span class="section-icon">🔧</span>
+            <span class="section-title">GM — Utility & Debug</span>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="help commands list available reference">
+                <div class="cmd-name">#help</div>
+                <div><div class="cmd-desc">List all available commands</div>
+                <div class="cmd-syntax">#help [searchterm]</div></div>
+            </div>
+            <div class="cmd" data-search="find search look up locate discover">
+                <div class="cmd-name">#find</div>
+                <div><div class="cmd-desc">Search for items, NPCs, zones, spells, etc.</div>
+                <div class="cmd-syntax">#find [type] [searchterm]</div></div>
+            </div>
+            <div class="cmd" data-search="show display view information details">
+                <div class="cmd-name">#show</div>
+                <div><div class="cmd-desc">Show various information</div>
+                <div class="cmd-syntax">#show [type]</div></div>
+            </div>
+            <div class="cmd" data-search="set change modify configure value">
+                <div class="cmd-name">#set</div>
+                <div><div class="cmd-desc">Set various values (level, speed, etc.)</div>
+                <div class="cmd-syntax">#set [type] [value]</div></div>
+            </div>
+            <div class="cmd" data-search="list search entities npcs players corpses doors objects">
+                <div class="cmd-name">#list</div>
+                <div><div class="cmd-desc">List entities in zone</div>
+                <div class="cmd-syntax">#list [npcs|players|corpses|doors|objects] [search]</div></div>
+            </div>
+            <div class="cmd" data-search="corpse manage manipulate body dead">
+                <div class="cmd-name">#corpse</div>
+                <div><div class="cmd-desc">Manipulate corpses</div></div>
+            </div>
+            <div class="cmd" data-search="corpse fix underground buried stuck">
+                <div class="cmd-name">#corpsefix</div>
+                <div><div class="cmd-desc">Bring corpses up from underground</div></div>
+            </div>
+            <div class="cmd" data-search="data buckets variables storage key value">
+                <div class="cmd-name">#databuckets</div>
+                <div><div class="cmd-desc">View/delete data buckets</div></div>
+            </div>
+            <div class="cmd" data-search="door edit manage manipulate open close">
+                <div class="cmd-name">#door</div>
+                <div><div class="cmd-desc">Door editing command</div></div>
+            </div>
+            <div class="cmd" data-search="object static tradeskill manipulate place">
+                <div class="cmd-name">#object</div>
+                <div><div class="cmd-desc">Manage static/tradeskill objects</div>
+                <div class="cmd-syntax">#object [list|add|edit|move|rotate|copy|save|undo|delete]</div></div>
+            </div>
+            <div class="cmd" data-search="tune combat statistics calculate dps">
+                <div class="cmd-name">#tune</div>
+                <div><div class="cmd-desc">Calculate combat statistics</div></div>
+            </div>
+            <div class="cmd" data-search="flag edit zone flags access requirement">
+                <div class="cmd-name">#flagedit</div>
+                <div><div class="cmd-desc">Edit zone flags on target</div></div>
+            </div>
+            <div class="cmd" data-search="guild manage edit manipulate administer">
+                <div class="cmd-name">#guild</div>
+                <div><div class="cmd-desc">Guild management commands</div>
+                <div class="cmd-alias">Alias: #guilds</div></div>
+            </div>
+            <div class="cmd" data-search="task quest manage edit manipulate">
+                <div class="cmd-name">#task</div>
+                <div><div class="cmd-desc">Task system commands</div></div>
+            </div>
+            <div class="cmd" data-search="bug report view manage close delete">
+                <div class="cmd-name">#bugs</div>
+                <div><div class="cmd-desc">Manage player bug reports</div>
+                <div class="cmd-syntax">#bugs [close|delete|review|search|view]</div></div>
+            </div>
+            <div class="cmd" data-search="flee info npc will run away escape">
+                <div class="cmd-name">#fleeinfo</div>
+                <div><div class="cmd-desc">Info about whether NPC will flee</div></div>
+            </div>
+            <div class="cmd" data-search="entity variable npc data storage">
+                <div class="cmd-name">#entityvariable</div>
+                <div><div class="cmd-desc">Manage entity variables</div></div>
+            </div>
+            <div class="cmd" data-search="interrupt cast stop cancel">
+                <div class="cmd-name">#interrupt</div>
+                <div><div class="cmd-desc">Interrupt your casting</div></div>
+            </div>
+            <div class="cmd" data-search="copy character clone duplicate transfer">
+                <div class="cmd-name">#copycharacter</div>
+                <div><div class="cmd-desc">Copy character to another account</div></div>
+            </div>
+            <div class="cmd" data-search="parcels mail delivery send receive">
+                <div class="cmd-name">#parcels</div>
+                <div><div class="cmd-desc">View/edit parcel system</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- COMMON ZONE SHORT NAMES -->
+    <!-- ============================================================ -->
+    <div class="section">
+        <div class="section-header">
+            <span class="section-icon">📍</span>
+            <span class="section-title">Common Zone Short Names</span>
+        </div>
+        <div class="info-box">
+            Use these with <code>#zone [shortname]</code> to teleport.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="zone ecommons east commonlands tunnel ec"><div class="cmd-name">ecommons</div><div class="cmd-desc">East Commonlands (The Rad hub zone)</div></div>
+            <div class="cmd" data-search="zone poknowledge pok plane of knowledge"><div class="cmd-name">poknowledge</div><div class="cmd-desc">Plane of Knowledge (merc merchants here)</div></div>
+            <div class="cmd" data-search="zone nektulos forest"><div class="cmd-name">nektulos</div><div class="cmd-desc">Nektulos Forest</div></div>
+            <div class="cmd" data-search="zone freporte freeport east"><div class="cmd-name">freporte</div><div class="cmd-desc">East Freeport</div></div>
+            <div class="cmd" data-search="zone qeynos north"><div class="cmd-name">northqeynos</div><div class="cmd-desc">North Qeynos</div></div>
+            <div class="cmd" data-search="zone gfaydark greater faydark"><div class="cmd-name">gfaydark</div><div class="cmd-desc">Greater Faydark (Kelethin)</div></div>
+            <div class="cmd" data-search="zone crushbone cb"><div class="cmd-name">crushbone</div><div class="cmd-desc">Crushbone</div></div>
+            <div class="cmd" data-search="zone unrest estate"><div class="cmd-name">unrest</div><div class="cmd-desc">Estate of Unrest</div></div>
+            <div class="cmd" data-search="zone mistmoore castle"><div class="cmd-name">mistmoore</div><div class="cmd-desc">Castle Mistmoore</div></div>
+            <div class="cmd" data-search="zone soldungb sol b solusek"><div class="cmd-name">soldungb</div><div class="cmd-desc">Solusek's Eye (Sol B)</div></div>
+            <div class="cmd" data-search="zone hateplane plane of hate"><div class="cmd-name">hateplane</div><div class="cmd-desc">Plane of Hate</div></div>
+            <div class="cmd" data-search="zone fearplane plane of fear"><div class="cmd-name">fearplane</div><div class="cmd-desc">Plane of Fear</div></div>
+            <div class="cmd" data-search="zone kedge keep underwater"><div class="cmd-name">kedge</div><div class="cmd-desc">Kedge Keep</div></div>
+            <div class="cmd" data-search="zone sebilis old ruins kunark"><div class="cmd-name">sebilis</div><div class="cmd-desc">Old Sebilis</div></div>
+            <div class="cmd" data-search="zone charasis howling stones kunark"><div class="cmd-name">charasis</div><div class="cmd-desc">Howling Stones (Charasis)</div></div>
+            <div class="cmd" data-search="zone veeshan temple vt"><div class="cmd-name">veeshan</div><div class="cmd-desc">Temple of Veeshan</div></div>
+            <div class="cmd" data-search="zone ssratemple ssra temple"><div class="cmd-name">ssratemple</div><div class="cmd-desc">Ssraeshza Temple</div></div>
+        </div>
+    </div>
+
+    </div><!-- /tab-gm -->
+
+    <div class="tab-panel" id="tab-mq2">
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — GETTING STARTED -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-start">
+        <div class="section-header">
+            <span class="section-icon">🚀</span>
+            <span class="section-title">Getting Started</span>
+        </div>
+        <div class="info-box">
+            <strong>MacroQuest2 launches automatically before EQ via the Steam launch wrapper.</strong>
+            Press <code>~</code> (tilde) to open the MQ2 command window in-game.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="mq2 help commands list all">
+                <div class="cmd-name">/help</div>
+                <div><div class="cmd-desc">List all MQ2 commands</div></div>
+            </div>
+            <div class="cmd" data-search="mq2 version show loaded build">
+                <div class="cmd-name">/mqversion</div>
+                <div><div class="cmd-desc">Show MQ2 version loaded</div></div>
+            </div>
+            <div class="cmd" data-search="plugin list loaded all active">
+                <div class="cmd-name">/plugin list</div>
+                <div><div class="cmd-desc">List all loaded plugins</div></div>
+            </div>
+            <div class="cmd" data-search="plugin load manual name enable">
+                <div class="cmd-name">/plugin [name] load</div>
+                <div><div class="cmd-desc">Load a plugin manually</div>
+                <div class="cmd-syntax">/plugin MQ2Map load</div></div>
+            </div>
+            <div class="cmd" data-search="plugin unload disable remove">
+                <div class="cmd-name">/plugin [name] unload</div>
+                <div><div class="cmd-desc">Unload a plugin</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — MAP -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-map">
+        <div class="section-header">
+            <span class="section-icon">🗺️</span>
+            <span class="section-title">MQ2Map</span>
+        </div>
+        <div class="info-box">
+            <strong>MQ2Map adds a fully featured overhead map overlay.</strong> Toggle with <code>/mapshow</code> and customize with <code>/mapfilter</code>.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="map show toggle visible display">
+                <div class="cmd-name">/mapshow</div>
+                <div><div class="cmd-desc">Toggle map visibility</div></div>
+            </div>
+            <div class="cmd" data-search="map hide close invisible">
+                <div class="cmd-name">/maphide</div>
+                <div><div class="cmd-desc">Hide the map</div></div>
+            </div>
+            <div class="cmd" data-search="map filter type npc pc item corpse on off">
+                <div class="cmd-name">/mapfilter [type] [on|off]</div>
+                <div><div class="cmd-desc">Filter what shows on map</div>
+                <div class="cmd-syntax">/mapfilter npc on &nbsp;| /mapfilter corpse off</div></div>
+            </div>
+            <div class="cmd" data-search="map names labels pc npc both toggle">
+                <div class="cmd-name">/mapnames [pc|npc|both]</div>
+                <div><div class="cmd-desc">Toggle name labels on map</div></div>
+            </div>
+            <div class="cmd" data-search="map location marker waypoint add y x z">
+                <div class="cmd-name">/maploc [y] [x] [z]</div>
+                <div><div class="cmd-desc">Add a location marker on the map</div></div>
+            </div>
+            <div class="cmd" data-search="map click behavior details action">
+                <div class="cmd-name">/mapclick</div>
+                <div><div class="cmd-desc">Details on map click behavior</div></div>
+            </div>
+        </div>
+        <div class="info-box" style="margin-top:0.75rem;">
+            💡 Middle-click on map to add a waypoint. Map auto-centers on you.
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — NAVIGATION -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-nav">
+        <div class="section-header">
+            <span class="section-icon">🧭</span>
+            <span class="section-title">MQ2MoveUtils / Navigation</span>
+        </div>
+        <div class="info-box">
+            <strong>MQ2MoveUtils enables automated movement, following, and navigation.</strong>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="stick on off follow target close">
+                <div class="cmd-name">/stick [on|off]</div>
+                <div><div class="cmd-desc">Stick to your current target (follow closely)</div></div>
+            </div>
+            <div class="cmd" data-search="stick id spawn specific target">
+                <div class="cmd-name">/stick id [id]</div>
+                <div><div class="cmd-desc">Stick to a specific spawn ID</div></div>
+            </div>
+            <div class="cmd" data-search="stick off stop cancel detach">
+                <div class="cmd-name">/stick off</div>
+                <div><div class="cmd-desc">Stop sticking</div></div>
+            </div>
+            <div class="cmd" data-search="moveto loc coordinates y x move">
+                <div class="cmd-name">/moveto loc [y] [x]</div>
+                <div><div class="cmd-desc">Move to coordinates</div></div>
+            </div>
+            <div class="cmd" data-search="moveto id spawn move go">
+                <div class="cmd-name">/moveto id [id]</div>
+                <div><div class="cmd-desc">Move to a spawn</div></div>
+            </div>
+            <div class="cmd" data-search="moveto off stop cancel movement">
+                <div class="cmd-name">/moveto off</div>
+                <div><div class="cmd-desc">Cancel movement</div></div>
+            </div>
+            <div class="cmd" data-search="circle on off rotate around target">
+                <div class="cmd-name">/circle [on|off]</div>
+                <div><div class="cmd-desc">Circle around target</div></div>
+            </div>
+            <div class="cmd" data-search="makecamp camp point on off set return">
+                <div class="cmd-name">/makecamp [on|off]</div>
+                <div><div class="cmd-desc">Set a camp point and return to it</div></div>
+            </div>
+            <div class="cmd" data-search="makecamp radius distance return range">
+                <div class="cmd-name">/makecamp radius [n]</div>
+                <div><div class="cmd-desc">Set camp return radius</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — USEFUL COMMANDS -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-cmds">
+        <div class="section-header">
+            <span class="section-icon">⚡</span>
+            <span class="section-title">MQ2 Useful Macros &amp; Commands</span>
+        </div>
+        <div class="info-box">
+            <strong>General MQ2 commands and built-in features useful for solo play.</strong>
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="target name npc player find">
+                <div class="cmd-name">/target [name]</div>
+                <div><div class="cmd-desc">Target an NPC or player by name</div></div>
+            </div>
+            <div class="cmd" data-search="cast slot spell spellbar number">
+                <div class="cmd-name">/cast [slot#]</div>
+                <div><div class="cmd-desc">Cast a spell from your spellbar slot</div></div>
+            </div>
+            <div class="cmd" data-search="cast spell name by name cast">
+                <div class="cmd-name">/cast "[Spell Name]"</div>
+                <div><div class="cmd-desc">Cast a spell by name</div></div>
+            </div>
+            <div class="cmd" data-search="memspell memorize slot gem spell name">
+                <div class="cmd-name">/memspell [slot] "[Spell Name]"</div>
+                <div><div class="cmd-desc">Memorize a spell into a slot</div></div>
+            </div>
+            <div class="cmd" data-search="sit stand rest macro utility">
+                <div class="cmd-name">/sit &nbsp;/ /stand</div>
+                <div><div class="cmd-desc">Sit or stand (useful in macros)</div></div>
+            </div>
+            <div class="cmd" data-search="autoskill on off toggle autofire skill">
+                <div class="cmd-name">/autoskill [on|off]</div>
+                <div><div class="cmd-desc">Toggle autofire/autoskill</div></div>
+            </div>
+            <div class="cmd" data-search="doability hotbar ability number activate">
+                <div class="cmd-name">/doability [#]</div>
+                <div><div class="cmd-desc">Activate a hotbar ability by number</div></div>
+            </div>
+            <div class="cmd" data-search="hotkey slot command bind keybind">
+                <div class="cmd-name">/hotkey [slot] [command]</div>
+                <div><div class="cmd-desc">Bind a command to a hotkey</div></div>
+            </div>
+            <div class="cmd" data-search="echo print text chat window output">
+                <div class="cmd-name">/echo [text]</div>
+                <div><div class="cmd-desc">Print text to your chat window (useful in macros)</div></div>
+            </div>
+            <div class="cmd" data-search="delay ms milliseconds pause wait macro">
+                <div class="cmd-name">/delay [ms]</div>
+                <div><div class="cmd-desc">Delay execution in macros (milliseconds)</div></div>
+            </div>
+            <div class="cmd" data-search="return macro subroutine sub end">
+                <div class="cmd-name">/return</div>
+                <div><div class="cmd-desc">Return from a macro subroutine</div></div>
+            </div>
+            <div class="cmd" data-search="end macro stop running terminate">
+                <div class="cmd-name">/end</div>
+                <div><div class="cmd-desc">End a running macro</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — AUTOLOGIN -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-autologin">
+        <div class="section-header">
+            <span class="section-icon">🤖</span>
+            <span class="section-title">MQ2AutoLogin</span>
+        </div>
+        <div class="info-box">
+            <strong>MQ2AutoLogin is already configured with your credentials.</strong> It auto-fills and submits the login screen.
+        </div>
+        <div class="ini-grid">
+            <div class="ini-field">
+                <div class="ini-key">[Settings]</div>
+                <div class="ini-desc">StationName, Password, Character, Server entries</div>
+            </div>
+        </div>
+        <div class="info-box">
+            💡 Your <code>MQ2AutoLogin.ini</code> in the EQ folder already has your login. Edit it to add character auto-select.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="autologin status show current login">
+                <div class="cmd-name">/autologin</div>
+                <div><div class="cmd-desc">Show current autologin status</div></div>
+            </div>
+            <div class="cmd" data-search="relog relog character reconnect">
+                <div class="cmd-name">/relog</div>
+                <div><div class="cmd-desc">Relog current character</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — WRITING MACROS -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-macros">
+        <div class="section-header">
+            <span class="section-icon">📜</span>
+            <span class="section-title">Writing Macros</span>
+        </div>
+        <div class="info-box">
+            <strong>Macros are .mac files stored in the <code>Macros/</code> folder.</strong> Run them with <code>/mac [filename]</code>.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="mac run macro filename execute">
+                <div class="cmd-name">/mac [filename]</div>
+                <div><div class="cmd-desc">Run a macro (no .mac extension needed)</div></div>
+            </div>
+            <div class="cmd" data-search="mac run macro arguments arg1 arg2">
+                <div class="cmd-name">/mac [filename] [arg1] [arg2]</div>
+                <div><div class="cmd-desc">Run a macro with arguments</div></div>
+            </div>
+            <div class="cmd" data-search="endmac stop end running macro">
+                <div class="cmd-name">/endmac</div>
+                <div><div class="cmd-desc">Stop the currently running macro</div></div>
+            </div>
+            <div class="cmd" data-search="listmacros list available macros show">
+                <div class="cmd-name">/listmacros</div>
+                <div><div class="cmd-desc">List available macros</div></div>
+            </div>
+        </div>
+        <div class="cmd-example">Sub Main
+  /echo Starting macro
+  /target goblin
+  /delay 500
+  /cast 1
+  /delay 3000
+  /endmac
+End Sub</div>
+        <div class="info-box">
+            💡 Macros in <code>Macros/autoplay.mac</code> and <code>Macros/setup.mac</code> are included — look at them as examples.
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — TIPS & TRICKS -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-tips">
+        <div class="section-header">
+            <span class="section-icon">🔧</span>
+            <span class="section-title">Tips &amp; Tricks</span>
+        </div>
+        <div class="tip-grid">
+            <div class="cmd-tip">Press <code>~</code> to open MQ2 chat window — type commands there or in normal chat</div>
+            <div class="cmd-tip">MQ2 commands work in the normal EQ chat box too — just prefix with / as usual</div>
+            <div class="cmd-tip"><code>/stick</code> is great for melee — target a mob and <code>/stick</code> to auto-follow it in combat</div>
+            <div class="cmd-tip">Use <code>/mapfilter npc on</code> and <code>/mapfilter npc_corpse off</code> to only show living NPCs</div>
+            <div class="cmd-tip">MQ2Map shows your exact coordinates — great with <code>#goto</code> GM commands</div>
+            <div class="cmd-tip">If MQ2 didn't inject, check that MacroQuest2.exe launched — look for it in Task Manager via Proton</div>
+            <div class="cmd-tip"><code>/mqpause</code> pauses macro execution without ending it</div>
+            <div class="cmd-tip">The <code>Macros/setup.mac</code> included can auto-equip and buff your character on login</div>
+        </div>
+    </div>
+    </div><!-- /tab-mq2 -->
+
+</div>
+
+<script>
+let activeTab = 'tab-quick';
+
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+    activeTab = tabId;
+    // Re-apply search if active
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) filterCommands();
+}
+
+function filterCommands() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const allCmds = document.querySelectorAll('.cmd');
+    let visible = 0;
+    const total = allCmds.length;
+
+    if (!query) {
+        // Restore normal tab view
+        allCmds.forEach(cmd => { cmd.style.display = ''; });
+        document.querySelectorAll('.section').forEach(s => { s.style.display = ''; });
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(activeTab).classList.add('active');
+        document.getElementById('searchCount').textContent = '';
+        return;
+    }
+
+    // Show all panels while searching
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('active'));
+
+    allCmds.forEach(cmd => {
+        const text = (cmd.textContent + ' ' + (cmd.dataset.search || '')).toLowerCase();
+        const match = query.split(' ').every(term => text.includes(term));
+        cmd.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+
+    document.querySelectorAll('.section').forEach(section => {
+        const cmds = section.querySelectorAll('.cmd');
+        const anyCmdVisible = Array.from(cmds).some(c => c.style.display !== 'none');
+        section.style.display = (cmds.length === 0 || anyCmdVisible) ? '' : 'none';
+    });
+
+    const countEl = document.getElementById('searchCount');
+    countEl.textContent = `Showing ${visible} of ${total} commands`;
+}
+</script>
+
+<div style="max-width:1100px;margin:2rem auto;padding:0 2rem 2rem;">
+    <hr style="border:none;border-top:1px solid #222;margin-bottom:1rem;">
+    <p style="color:#444;font-size:0.8rem;">
+        Spire: <a href="http://192.168.1.66:3007" style="color:#555">192.168.1.66:3007</a> &bull; 
+        User: <code style="background:#111;color:#555;padding:0.1em 0.3em;border-radius:3px;cursor:pointer" onclick="navigator.clipboard.writeText('admin')">admin</code> &bull; 
+        Pass: <code style="background:#111;color:#555;padding:0.1em 0.3em;border-radius:3px;cursor:pointer" onclick="navigator.clipboard.writeText('l6oLB3frTgRaKZQ04bDcX97q2n81Pm5N')">📋 click to copy</code>
+    </p>
+</div>
+
+</body>
+</html>
