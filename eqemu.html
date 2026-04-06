@@ -306,6 +306,7 @@
         <button class="tab-btn" onclick="switchTab('tab-gm', this)">⚔️ GM Commands</button>
         <button class="tab-btn" onclick="switchTab('tab-mq2', this)">🔧 MacroQuest2</button>
         <button class="tab-btn" onclick="switchTab('tab-augs', this)">🔮 Augments</button>
+        <button class="tab-btn" onclick="switchTab('tab-custom', this)">⭐ Custom Items</button>
     </div>
 
     <div class="tab-panel active" id="tab-quick">
@@ -2269,6 +2270,165 @@ End Sub</div>
         </div>
     </div>
     </div><!-- /tab-augs -->
+
+    <!-- ============================================================ -->
+    <!-- CUSTOM ITEMS -->
+    <!-- ============================================================ -->
+    <div class="tab-panel" id="tab-custom">
+    <div class="section">
+        <div class="section-header">
+            <span class="section-icon">⭐</span>
+            <span class="section-title">Custom Items — Server Exclusives</span>
+        </div>
+        <div class="info-box">
+            All items below are custom-made for this server. Use <code>#summonitem [ID]</code> to obtain. After adding new custom items, run <code>shared_memory.exe</code> then restart.
+        </div>
+
+        <!-- AUGS -->
+        <div style="margin-bottom:1.5rem">
+            <div style="font-size:1rem;font-weight:700;color:#00d4ff;margin-bottom:0.5rem;padding-bottom:0.3rem;border-bottom:1px solid #333">🔮 Augments</div>
+            <table style="width:100%;border-collapse:collapse;font-size:0.83rem">
+                <thead><tr style="color:#aaa;border-bottom:1px solid #444">
+                    <th style="text-align:left;padding:5px 8px">ID</th>
+                    <th style="text-align:left;padding:5px 8px">Name</th>
+                    <th style="text-align:left;padding:5px 8px">Class</th>
+                    <th style="text-align:left;padding:5px 8px">Stats</th>
+                    <th style="text-align:left;padding:5px 8px">Effects</th>
+                </tr></thead>
+                <tbody>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200010</td>
+                    <td style="padding:5px 8px;font-weight:600">Radical</td>
+                    <td style="padding:5px 8px;color:#7fff7f">Monk</td>
+                    <td style="padding:5px 8px;color:#ddd">500 HP/End · 50 AC · STR/STA/AGI/DEX/ATK +500 · Regen +20 · All Resists +100 · Heroic +50</td>
+                    <td style="padding:5px 8px;color:#aaa">Worn: Flurry · Proc: Spectral Lifetap · Click: RadicalRooter (root)</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- WEAPONS -->
+        <div style="margin-bottom:1.5rem">
+            <div style="font-size:1rem;font-weight:700;color:#00d4ff;margin-bottom:0.5rem;padding-bottom:0.3rem;border-bottom:1px solid #333">⚔️ Weapons</div>
+            <table style="width:100%;border-collapse:collapse;font-size:0.83rem">
+                <thead><tr style="color:#aaa;border-bottom:1px solid #444">
+                    <th style="text-align:left;padding:5px 8px">ID</th>
+                    <th style="text-align:left;padding:5px 8px">Name</th>
+                    <th style="text-align:left;padding:5px 8px">Class</th>
+                    <th style="text-align:left;padding:5px 8px">DMG/DLY</th>
+                    <th style="text-align:left;padding:5px 8px">Notes</th>
+                </tr></thead>
+                <tbody>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">11010</td>
+                    <td style="padding:5px 8px">Seeden's Stick</td>
+                    <td style="padding:5px 8px;color:#7fff7f">Monk</td>
+                    <td style="padding:5px 8px">50/5</td>
+                    <td style="padding:5px 8px;color:#aaa">5000 HP · 5000 AC — the original OP monk stick</td>
+                </tr>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200003</td>
+                    <td style="padding:5px 8px">Transcended Fistwraps of Immortality</td>
+                    <td style="padding:5px 8px;color:#7fff7f">Monk</td>
+                    <td style="padding:5px 8px">36/20</td>
+                    <td style="padding:5px 8px;color:#aaa">340 HP · 40 AC · Proc: lifetap</td>
+                </tr>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200012</td>
+                    <td style="padding:5px 8px">Hulk Fists</td>
+                    <td style="padding:5px 8px;color:#7fff7f">Monk/BST</td>
+                    <td style="padding:5px 8px">99/20</td>
+                    <td style="padding:5px 8px;color:#aaa">500 HP/AC/all stats · Proc: Claw of Khati Sha</td>
+                </tr>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200013</td>
+                    <td style="padding:5px 8px">Gaudralek (Custom)</td>
+                    <td style="padding:5px 8px;color:#7fff7f">WAR</td>
+                    <td style="padding:5px 8px">273/33</td>
+                    <td style="padding:5px 8px;color:#aaa">Gaudralek model · Req Lvl 1 · Warrior bot weapon</td>
+                </tr>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200004</td>
+                    <td style="padding:5px 8px">Blessed Spiritstaff of the Heyokah</td>
+                    <td style="padding:5px 8px;color:#ffbf7f">SHM</td>
+                    <td style="padding:5px 8px">33/26</td>
+                    <td style="padding:5px 8px;color:#aaa">320 HP · 35 AC · Proc: lifetap</td>
+                </tr>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200005</td>
+                    <td style="padding:5px 8px">Staff of Everliving Brambles</td>
+                    <td style="padding:5px 8px;color:#ffbf7f">DRU</td>
+                    <td style="padding:5px 8px">36/29</td>
+                    <td style="padding:5px 8px;color:#aaa">320 HP · 35 AC · Proc: lifetap</td>
+                </tr>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200006</td>
+                    <td style="padding:5px 8px">Deathwhisper</td>
+                    <td style="padding:5px 8px;color:#bf7fff">NEC</td>
+                    <td style="padding:5px 8px">36/30</td>
+                    <td style="padding:5px 8px;color:#aaa">320 HP · 30 AC · Proc: lifetap</td>
+                </tr>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200007</td>
+                    <td style="padding:5px 8px">Staff of Eternal Eloquence</td>
+                    <td style="padding:5px 8px;color:#bf7fff">ENC</td>
+                    <td style="padding:5px 8px">27/21</td>
+                    <td style="padding:5px 8px;color:#aaa">320 HP · 30 AC · Proc: lifetap</td>
+                </tr>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200008</td>
+                    <td style="padding:5px 8px">Spiritcaller Totem of the Feral</td>
+                    <td style="padding:5px 8px;color:#ffbf7f">BST</td>
+                    <td style="padding:5px 8px">38/23</td>
+                    <td style="padding:5px 8px;color:#aaa">340 HP · 40 AC · Proc: lifetap</td>
+                </tr>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200009</td>
+                    <td style="padding:5px 8px">Vengeful Taelosian Blood Axe</td>
+                    <td style="padding:5px 8px;color:#7fbfff">BER</td>
+                    <td style="padding:5px 8px">91/33</td>
+                    <td style="padding:5px 8px;color:#aaa">425 HP · 80 AC · Proc: lifetap</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MISC / CLICKIES -->
+        <div style="margin-bottom:1.5rem">
+            <div style="font-size:1rem;font-weight:700;color:#00d4ff;margin-bottom:0.5rem;padding-bottom:0.3rem;border-bottom:1px solid #333">🎒 Misc / Clickies</div>
+            <table style="width:100%;border-collapse:collapse;font-size:0.83rem">
+                <thead><tr style="color:#aaa;border-bottom:1px solid #444">
+                    <th style="text-align:left;padding:5px 8px">ID</th>
+                    <th style="text-align:left;padding:5px 8px">Name</th>
+                    <th style="text-align:left;padding:5px 8px">Effect</th>
+                </tr></thead>
+                <tbody>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200001</td>
+                    <td style="padding:5px 8px">Rad_Sack_of_Holding</td>
+                    <td style="padding:5px 8px;color:#aaa">All-class bag</td>
+                </tr>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200002</td>
+                    <td style="padding:5px 8px">Casino Chip</td>
+                    <td style="padding:5px 8px;color:#aaa">Lady Luck currency — used at the casino</td>
+                </tr>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200014</td>
+                    <td style="padding:5px 8px">Totem of the Wilds</td>
+                    <td style="padding:5px 8px;color:#aaa">Click: summons 3 skeleton swarm pets</td>
+                </tr>
+                <tr style="border-bottom:1px solid #222">
+                    <td style="padding:5px 8px;color:#ff9900">200015</td>
+                    <td style="padding:5px 8px">Mushroom Totem</td>
+                    <td style="padding:5px 8px;color:#aaa">Click: summons 3 sporali (mushroom) swarm pets</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+    </div><!-- /tab-custom -->
 
 </div>
 
