@@ -1729,6 +1729,38 @@
     <div class="tab-panel" id="tab-mq2">
 
     <!-- ============================================================ -->
+    <!-- MQ2 — QUICK MEMORY AIDS -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-memory">
+        <div class="section-header">
+            <span class="section-icon">🧠</span>
+            <span class="section-title">Commonly Forgotten Commands</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0.75rem;margin-bottom:0.5rem">
+            <div style="background:#1a2a1a;border:1px solid #2a5a2a;border-radius:6px;padding:0.75rem">
+                <div style="color:#00ff88;font-weight:700;font-size:0.95rem;margin-bottom:0.3rem">Auto-walk to target</div>
+                <code style="font-size:1rem;color:#fff">/nav target</code>
+                <div style="color:#aaa;font-size:0.8rem;margin-top:0.3rem">Pathfinds and walks to your current target. Uses MQ2Nav.</div>
+            </div>
+            <div style="background:#1a2a1a;border:1px solid #2a5a2a;border-radius:6px;padding:0.75rem">
+                <div style="color:#00ff88;font-weight:700;font-size:0.95rem;margin-bottom:0.3rem">Teleport to player/NPC (macro)</div>
+                <code style="font-size:0.85rem;color:#fff">/noparse #goto ${Target.Name}</code>
+                <div style="color:#aaa;font-size:0.8rem;margin-top:0.3rem">Target someone, then run this line. Or use <code>/mac goto</code> below.</div>
+            </div>
+            <div style="background:#1a2a1a;border:1px solid #2a5a2a;border-radius:6px;padding:0.75rem">
+                <div style="color:#00ff88;font-weight:700;font-size:0.95rem;margin-bottom:0.3rem">Stop all movement</div>
+                <code style="font-size:1rem;color:#fff">/nav stop &nbsp;/stick off &nbsp;/moveto off</code>
+                <div style="color:#aaa;font-size:0.8rem;margin-top:0.3rem">Use whichever movement command is active.</div>
+            </div>
+            <div style="background:#1a2a1a;border:1px solid #2a5a2a;border-radius:6px;padding:0.75rem">
+                <div style="color:#00ff88;font-weight:700;font-size:0.95rem;margin-bottom:0.3rem">Stop running macro</div>
+                <code style="font-size:1rem;color:#fff">/endmac</code>
+                <div style="color:#aaa;font-size:0.8rem;margin-top:0.3rem">Stops whichever macro is currently running.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
     <!-- MQ2 — GETTING STARTED -->
     <!-- ============================================================ -->
     <div class="section" id="mq2-start">
@@ -1805,6 +1837,59 @@
         </div>
         <div class="info-box" style="margin-top:0.75rem;">
             💡 Middle-click on map to add a waypoint. Map auto-centers on you.
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — NAV -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-nav-plugin">
+        <div class="section-header">
+            <span class="section-icon">🚶</span>
+            <span class="section-title">MQ2Nav — Pathfinding Navigation</span>
+        </div>
+        <div class="info-box">
+            <strong>MQ2Nav uses zone navmesh files to pathfind around obstacles.</strong> Much smarter than /moveto — avoids walls and terrain. Uses <code>MQ2Nav.dll</code> + navmesh files in <code>Navmesh/</code>.
+        </div>
+        <div class="cmd-grid">
+            <div class="cmd" data-search="nav target walk auto move pathfind go to">
+                <div class="cmd-name">/nav target</div>
+                <div><div class="cmd-desc">Auto-walk to your current target (pathfinds around obstacles)</div>
+                <div class="cmd-alias">⭐ Most used nav command</div></div>
+            </div>
+            <div class="cmd" data-search="nav loc coordinates y x z location walk go">
+                <div class="cmd-name">/nav loc [y] [x] [z]</div>
+                <div><div class="cmd-desc">Walk to specific coordinates</div>
+                <div class="cmd-syntax">/nav loc -1519 10 5</div></div>
+            </div>
+            <div class="cmd" data-search="nav spawn id specific npc player walk">
+                <div class="cmd-name">/nav spawn id [id]</div>
+                <div><div class="cmd-desc">Walk to a specific spawn by ID</div></div>
+            </div>
+            <div class="cmd" data-search="nav spawn name npc player walk">
+                <div class="cmd-name">/nav spawn [name]</div>
+                <div><div class="cmd-desc">Walk to an NPC or player by name</div>
+                <div class="cmd-syntax">/nav spawn Rad_Buffer</div></div>
+            </div>
+            <div class="cmd" data-search="nav waypoint wp named location">
+                <div class="cmd-name">/nav waypoint [name]</div>
+                <div><div class="cmd-desc">Walk to a named waypoint</div></div>
+            </div>
+            <div class="cmd" data-search="nav stop cancel end movement halt">
+                <div class="cmd-name">/nav stop</div>
+                <div><div class="cmd-desc">Stop current navigation</div></div>
+            </div>
+            <div class="cmd" data-search="nav pause resume hold">
+                <div class="cmd-name">/nav pause</div>
+                <div><div class="cmd-desc">Pause navigation (resume with /nav resume)</div></div>
+            </div>
+            <div class="cmd" data-search="nav status info active running">
+                <div class="cmd-name">/nav status</div>
+                <div><div class="cmd-desc">Show current nav status</div></div>
+            </div>
+        </div>
+        <div class="info-box" style="margin-top:0.75rem">
+            💡 If nav fails ("no navmesh"), the zone navmesh file may be missing from the <code>Navmesh/</code> folder. Fall back to <code>/moveto</code> for open flat zones.
         </div>
     </div>
 
@@ -1994,6 +2079,61 @@ End Sub</div>
         <div class="info-box">
             💡 Macros in <code>Macros/autoplay.mac</code> and <code>Macros/setup.mac</code> are included — look at them as examples.
         </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MQ2 — GOTO MACRO & SNIPPETS -->
+    <!-- ============================================================ -->
+    <div class="section" id="mq2-snippets">
+        <div class="section-header">
+            <span class="section-icon">📋</span>
+            <span class="section-title">Handy Macro Snippets</span>
+        </div>
+        <div class="info-box">
+            Save these as <code>.mac</code> files in your <code>MacroQuest2/Macros/</code> folder and run with <code>/mac [filename]</code>.
+        </div>
+
+        <div style="margin-bottom:1rem">
+            <div style="color:#00d4ff;font-weight:700;margin-bottom:0.4rem">goto.mac — Teleport to target (GM)</div>
+            <div class="cmd-example">Sub Main
+  /if (${Target.ID} == 0) {
+    /echo No target selected!
+    /endmac
+  }
+  /noparse #goto ${Target.Name}
+  /endmac
+End Sub</div>
+            <div style="color:#888;font-size:0.8rem;margin-top:0.3rem">Target a player or NPC, then <code>/mac goto</code> — teleports you to them.</div>
+        </div>
+
+        <div style="margin-bottom:1rem">
+            <div style="color:#00d4ff;font-weight:700;margin-bottom:0.4rem">walkto.mac — Nav-walk to target</div>
+            <div class="cmd-example">Sub Main
+  /if (${Target.ID} == 0) {
+    /echo No target selected!
+    /endmac
+  }
+  /nav target
+  /echo Walking to ${Target.Name}...
+  /endmac
+End Sub</div>
+            <div style="color:#888;font-size:0.8rem;margin-top:0.3rem">Target something and <code>/mac walkto</code> — pathfinds to it. Use <code>/nav stop</code> to cancel.</div>
+        </div>
+
+        <div style="margin-bottom:1rem">
+            <div style="color:#00d4ff;font-weight:700;margin-bottom:0.4rem">summon.mac — Summon item by ID (GM)</div>
+            <div class="cmd-example">Sub Main
+  /declare itemid string inner ${Macro.Args}
+  /if (${itemid} == "") {
+    /echo Usage: /mac summon [itemID]
+    /endmac
+  }
+  /noparse #summonitem ${itemid}
+  /endmac
+End Sub</div>
+            <div style="color:#888;font-size:0.8rem;margin-top:0.3rem">Example: <code>/mac summon 200001</code> — summons the Rad Sack of Holding.</div>
+        </div>
+
     </div>
 
     <!-- ============================================================ -->
