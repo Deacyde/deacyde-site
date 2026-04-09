@@ -60,8 +60,16 @@
 
   <!-- Loading overlay -->
   <div id="loading" class="absolute inset-0 z-30 bg-gray-950/90 flex flex-col items-center justify-center gap-4">
-    <div class="loader"></div>
+    <div class="loader" id="loading-spinner"></div>
     <p id="loading-text" class="text-gray-400 text-sm">Getting your location...</p>
+    <div id="manual-location" class="hidden flex-col items-center gap-2 text-sm">
+      <p class="text-yellow-400">Enter your coordinates manually:</p>
+      <div class="flex gap-2">
+        <input id="manual-lat" type="number" step="0.0001" placeholder="Latitude e.g. 39.5" class="bg-gray-800 border border-gray-600 text-white px-2 py-1 rounded w-40 text-sm" />
+        <input id="manual-lon" type="number" step="0.0001" placeholder="Longitude e.g. -98.3" class="bg-gray-800 border border-gray-600 text-white px-2 py-1 rounded w-44 text-sm" />
+      </div>
+      <button onclick="useManualLocation()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-sm font-medium">Go</button>
+    </div>
   </div>
 
   <!-- Map -->
@@ -296,11 +304,40 @@
     autoRefresh = setInterval(refresh, 15000);
   }
 
-  // Startup
-  async function init() {
+  async function useManualLocation() {
+    const lat = parseFloat(document.getElementById('manual-lat').value);
+    const lon = parseFloat(document.getElementById('manual-lon').value);
+    if (isNaN(lat) || isNaN(lon)) {
+      document.getElementById('loading-text').textContent = 'Enter valid lat/lon numbers.';
+      return;
+    }
+    userLat = lat; userLon = lon;
+    await startWithLocation();
+  }
+
+  async function startWithLocation() {
     const loading = document.getElementById('loading');
     const loadingText = document.getElementById('loading-text');
+    document.getElementById('manual-location').classList.add('hidden');
+    document.getElementById('loading-spinner').classList.remove('hidden');
+    try {
+      loadingText.textContent = 'Loading map...';
+      initMap(userLat, userLon);
+      loadingText.textContent = 'Scanning the skies...';
+      const radiusMi = parseInt(document.getElementById('radius-select').value);
+      const flights = await fetchFlights(userLat, userLon, radiusMi);
+      renderFlights(flights);
+      loading.classList.add('hidden');
+      startAutoRefresh();
+    } catch (err) {
+      loadingText.textContent = `Fetch error: ${err.message}`;
+      document.getElementById('loading-spinner').classList.add('hidden');
+    }
+  }
 
+  // Startup
+  async function init() {
+    const loadingText = document.getElementById('loading-text');
     try {
       loadingText.textContent = 'Getting your location...';
       const pos = await new Promise((resolve, reject) => {
@@ -308,23 +345,14 @@
           enableHighAccuracy: true, timeout: 10000,
         });
       });
-
       userLat = pos.coords.latitude;
       userLon = pos.coords.longitude;
-
-      loadingText.textContent = 'Loading map...';
-      initMap(userLat, userLon);
-
-      loadingText.textContent = 'Scanning the skies...';
-      const radiusMi = parseInt(document.getElementById('radius-select').value);
-      const flights = await fetchFlights(userLat, userLon, radiusMi);
-      renderFlights(flights);
-
-      loading.classList.add('hidden');
-      startAutoRefresh();
+      await startWithLocation();
     } catch (err) {
-      loadingText.textContent = `Error: ${err.message}. Check console for details.`;
-      console.error(err);
+      loadingText.textContent = `Location unavailable: ${err.message}`;
+      document.getElementById('loading-spinner').classList.add('hidden');
+      document.getElementById('manual-location').classList.remove('hidden');
+      document.getElementById('manual-location').classList.add('flex');
     }
   }
 
