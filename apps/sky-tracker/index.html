@@ -86,7 +86,7 @@
 
 <script>
   let map, userMarker, planeMarkers = [], userLat, userLon, rangeCircle;
-  const ADSB_URL = "https://api.adsb.lol/v2/lat/{lat}/lon/{lon}/dist/{dist}";
+  const ADSB_URL = "/.netlify/functions/adsb-proxy";
 
   // Plane icon using SVG rotated by heading
   function planeIcon(heading, altitude) {
@@ -131,15 +131,12 @@
     }).addTo(map).bindPopup('<strong>📍 You are here</strong>');
   }
 
-  // Fetch flights from ADS-B Exchange (api.adsb.lol)
+  // Fetch flights via Netlify proxy → api.adsb.lol
   async function fetchFlights(lat, lon, radiusMi) {
-    const url = ADSB_URL
-      .replace('{lat}', lat.toFixed(4))
-      .replace('{lon}', lon.toFixed(4))
-      .replace('{dist}', radiusMi);
+    const url = `${ADSB_URL}?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}&dist=${radiusMi}`;
 
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`ADS-B Exchange returned ${res.status}`);
+    if (!res.ok) throw new Error(`ADS-B proxy returned ${res.status}`);
     const data = await res.json();
     return (data.ac || []).map(a => ({
       icao24:       a.hex,
