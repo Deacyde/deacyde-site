@@ -78,7 +78,7 @@
 
 <script>
   let map, userMarker, planeMarkers = [], userLat, userLon, rangeCircle;
-  const OPENSKY_URL = "https://opensky-network.org/api/states/all";
+  const ADSB_URL = "https://api.adsb.lol/v2/lat/{lat}/lon/{lon}/dist/{dist}";
 
   // Plane icon using SVG rotated by heading
   function planeIcon(heading, altitude) {
@@ -113,7 +113,7 @@
     L.control.zoom({ position: 'topright' }).addTo(map);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a> | Data: <a href="https://opensky-network.org">OpenSky Network</a>',
+      attribution: '&copy; <a href="https://carto.com/">CARTO</a> | Data: <a href="https://adsb.lol">ADS-B Exchange (adsb.lol)</a>',
       maxZoom: 18,
     }).addTo(map);
 
@@ -123,34 +123,30 @@
     }).addTo(map).bindPopup('<strong>📍 You are here</strong>');
   }
 
-  // Fetch flights from OpenSky
+  // Fetch flights from ADS-B Exchange (api.adsb.lol)
   async function fetchFlights(lat, lon, radiusMi) {
-    const deg = milesToDeg(radiusMi);
-    const bbox = {
-      lamin: lat - deg,
-      lamax: lat + deg,
-      lomin: lon - deg * 1.3, // longitude degrees are smaller
-      lomax: lon + deg * 1.3,
-    };
-    const url = `${OPENSKY_URL}?lamin=${bbox.lamin}&lamax=${bbox.lamax}&lomin=${bbox.lomin}&lomax=${bbox.lomax}`;
+    const url = ADSB_URL
+      .replace('{lat}', lat.toFixed(4))
+      .replace('{lon}', lon.toFixed(4))
+      .replace('{dist}', radiusMi);
 
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`OpenSky returned ${res.status}`);
+    if (!res.ok) throw new Error(`ADS-B Exchange returned ${res.status}`);
     const data = await res.json();
-    return (data.states || []).map(s => ({
-      icao24: s[0],
-      callsign: (s[1] || '').trim(),
-      country: s[2],
-      lon: s[5],
-      lat: s[6],
-      altitude: s[7],       // baro altitude in meters
-      onGround: s[8],
-      velocity: s[9],       // m/s
-      heading: s[10],
-      verticalRate: s[11],  // m/s
-      geoAltitude: s[13],
-      squawk: s[14],
-      category: s[17],
+    return (data.ac || []).map(a => ({
+      icao24:       a.hex,
+      callsign:     (a.flight || a.r || '').trim(),
+      country:      a.r || '',
+      lon:          a.lon,
+      lat:          a.lat,
+      altitude:     a.alt_baro === 'ground' ? 0 : (a.alt_baro || a.alt_geom || 0) * 0.3048, // ft→m
+      onGround:     a.alt_baro === 'ground' || a.gs === 0,
+      velocity:     a.gs ? a.gs * 0.5144 : null, // knots→m/s
+      heading:      a.track,
+      verticalRate: a.baro_rate ? a.baro_rate * 0.00508 : null, // fpm→m/s
+      geoAltitude:  a.alt_geom ? a.alt_geom * 0.3048 : null,
+      squawk:       a.squawk,
+      category:     a.category,
     }));
   }
 
@@ -327,7 +323,7 @@
       loading.classList.add('hidden');
       startAutoRefresh();
     } catch (err) {
-      loadingText.textContent = `Error: ${err.message}. Please allow location access and refresh.`;
+      loadingText.textContent = `Error: ${err.message}. Check console for details.`;
       console.error(err);
     }
   }
