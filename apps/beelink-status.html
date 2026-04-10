@@ -270,6 +270,16 @@
     }
 
     load();
+
+    // Load security module from Beelink — only reachable on local network
+    var s = document.createElement('script');
+    s.src = 'http://192.168.1.66:8099/security-scan.js';
+    s.onerror = function() {}; // silently fail if not on local network
+    document.body.appendChild(s);
   </script>
+
+  <!-- Security section — populated by security-scan.js if on local network -->
+  <div id="security-section" style="display:none"></div>
+
 </body>
 </html>
