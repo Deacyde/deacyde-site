@@ -1,0 +1,36 @@
+Advanced next step for merc bodies
+==================================
+
+What the latest test proved
+---------------------------
+- The client dbstr_us.txt patch worked: custom merc family text now appears in the merc window.
+- The merc body still spawns as a human.
+- Because even a Brownie-family merc still renders as human, the remaining problem is likely client model loading, not merc UI text.
+
+Most likely next client-side path
+---------------------------------
+1. Check the RoF2 client's model availability with EQRI (EverQuest Race Inventory).
+2. Check the RoF2 client's Resources\GlobalLoad.txt.
+3. Verify that the non-human merc body models you want are actually being loaded globally by the client.
+
+Why this matters
+----------------
+EQEmu docs note that model availability depends on:
+- built-in Luclin/global model loading
+- Resources\GlobalLoad.txt
+- zone _chr files / zone model references
+
+If the merc family race is valid in the DB but the client is not loading the model, the body can fall back to human.
+
+Suggested Brownie test
+----------------------
+Brownie is a safer test than skeleton because it is a stock merc family on this server.
+
+Use EQRI on the RoF2 client to confirm whether Brownie race/model support is actually available globally.
+If it is not, add the correct Brownie model source to Resources\GlobalLoad.txt and restart the client.
+
+Important
+---------
+- This is still a client-side test, not a server restart item.
+- Do not assume the exact model filename without checking the actual RoF2 client files or EQRI output.
+- Once Brownie renders correctly as a body, revisit skeleton/monster bodies after that.
