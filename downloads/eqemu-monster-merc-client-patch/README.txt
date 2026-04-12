@@ -26,10 +26,11 @@ Install steps
 -------------
 Steam Deck / Linux:
 1. Extract this zip somewhere.
-2. Double-click: Run EQEmu Merc Patch.desktop
-3. If needed, terminal form is: ./apply-patch.sh
-4. If needed, explicit path form is: ./apply-patch.sh "/path/to/EverQuest"
-5. Launch the client again and retest the custom merc hire window.
+2. If double-click opens a text editor, right-click `Run EQEmu Merc Patch.desktop` -> Properties -> Permissions -> mark it executable / trusted.
+3. Then right-click it and choose Run, or double-click it again.
+4. If needed, terminal form is: ./apply-patch.sh
+5. If needed, explicit path form is: ./apply-patch.sh "/path/to/EverQuest"
+6. Launch the client again and retest the custom merc hire window.
 
 Windows:
 1. Extract this zip somewhere.
@@ -52,4 +53,4 @@ Important
 - The scripts do not touch GlobalLoad.txt yet because that still needs client-specific model verification.
 - By default, the scripts read the EQ path from `https://dev.deacyde.com/eqemu/patcher.txt`.
 - Browsers do not auto-run downloaded scripts, so the package includes double-click launchers instead of auto-executing itself.
-
+- On Steam Deck / KDE, `.desktop` launchers may open in a text editor until they are marked trusted/executable once.
