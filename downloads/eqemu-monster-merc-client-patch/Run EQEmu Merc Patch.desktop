@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Run EQEmu Merc Patch
+Comment=Apply the EQEmu merc client patch
+Exec=bash -lc 'cd "$(dirname "$1")" && chmod +x "./apply-patch.sh" && ./apply-patch.sh; echo; read -p "Press Enter to close..." _' _ %k
+Terminal=true
+Categories=Utility;
