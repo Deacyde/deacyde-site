@@ -1,0 +1,14 @@
+Monster merc client notes
+=========================
+
+This package addresses the current client-side merc text problem:
+- "Unknown DB String" in the merc hire window for the custom Frozen Skeleton merc family
+
+This package does NOT by itself guarantee monster merc bodies will render correctly.
+If custom monster mercs still appear as humans after the dbstr_us.txt patch, the next layer is
+likely client race/model support, such as:
+- race/model availability in the client
+- global model loading
+- custom race injection / client patching for non-standard merc bodies
+
+Current download contents are safe to apply first because they only add merc UI strings.

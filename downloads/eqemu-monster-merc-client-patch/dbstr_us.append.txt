@@ -1,0 +1,58 @@
+1367000100^21^Apprentice Mercenaries (Frozen Skeleton)
+1367000200^21^Journeyman Mercenaries (Frozen Skeleton)
+1367010101^22^Legendary Tank - Tier I
+1367010101^23^Race: Frozen Skeleton<br>Type: Tank<br>Rank: Legendary<br>Proficiency: Apprentice, Tier I<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367010102^22^Legendary Tank - Tier II
+1367010102^23^Race: Frozen Skeleton<br>Type: Tank<br>Rank: Legendary<br>Proficiency: Apprentice, Tier II<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367010103^22^Legendary Tank - Tier III
+1367010103^23^Race: Frozen Skeleton<br>Type: Tank<br>Rank: Legendary<br>Proficiency: Apprentice, Tier III<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367010104^22^Legendary Tank - Tier IV
+1367010104^23^Race: Frozen Skeleton<br>Type: Tank<br>Rank: Legendary<br>Proficiency: Apprentice, Tier IV<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367010105^22^Legendary Tank - Tier V
+1367010105^23^Race: Frozen Skeleton<br>Type: Tank<br>Rank: Legendary<br>Proficiency: Apprentice, Tier V<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367010201^22^Legendary Tank - Journeyman I
+1367010201^23^Race: Frozen Skeleton<br>Type: Tank<br>Rank: Legendary<br>Proficiency: Journeyman, Tier I<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367010202^22^Legendary Tank - Journeyman II
+1367010202^23^Race: Frozen Skeleton<br>Type: Tank<br>Rank: Legendary<br>Proficiency: Journeyman, Tier II<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367020101^22^Legendary Healer - Tier I
+1367020101^23^Race: Frozen Skeleton<br>Type: Healer<br>Rank: Legendary<br>Proficiency: Apprentice, Tier I<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367020102^22^Legendary Healer - Tier II
+1367020102^23^Race: Frozen Skeleton<br>Type: Healer<br>Rank: Legendary<br>Proficiency: Apprentice, Tier II<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367020103^22^Legendary Healer - Tier III
+1367020103^23^Race: Frozen Skeleton<br>Type: Healer<br>Rank: Legendary<br>Proficiency: Apprentice, Tier III<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367020104^22^Legendary Healer - Tier IV
+1367020104^23^Race: Frozen Skeleton<br>Type: Healer<br>Rank: Legendary<br>Proficiency: Apprentice, Tier IV<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367020105^22^Legendary Healer - Tier V
+1367020105^23^Race: Frozen Skeleton<br>Type: Healer<br>Rank: Legendary<br>Proficiency: Apprentice, Tier V<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367020201^22^Legendary Healer - Journeyman I
+1367020201^23^Race: Frozen Skeleton<br>Type: Healer<br>Rank: Legendary<br>Proficiency: Journeyman, Tier I<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367020202^22^Legendary Healer - Journeyman II
+1367020202^23^Race: Frozen Skeleton<br>Type: Healer<br>Rank: Legendary<br>Proficiency: Journeyman, Tier II<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367040101^22^Legendary Melee DPS - Tier I
+1367040101^23^Race: Frozen Skeleton<br>Type: Melee DPS<br>Rank: Legendary<br>Proficiency: Apprentice, Tier I<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367040102^22^Legendary Melee DPS - Tier II
+1367040102^23^Race: Frozen Skeleton<br>Type: Melee DPS<br>Rank: Legendary<br>Proficiency: Apprentice, Tier II<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367040103^22^Legendary Melee DPS - Tier III
+1367040103^23^Race: Frozen Skeleton<br>Type: Melee DPS<br>Rank: Legendary<br>Proficiency: Apprentice, Tier III<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367040104^22^Legendary Melee DPS - Tier IV
+1367040104^23^Race: Frozen Skeleton<br>Type: Melee DPS<br>Rank: Legendary<br>Proficiency: Apprentice, Tier IV<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367040105^22^Legendary Melee DPS - Tier V
+1367040105^23^Race: Frozen Skeleton<br>Type: Melee DPS<br>Rank: Legendary<br>Proficiency: Apprentice, Tier V<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367040201^22^Legendary Melee DPS - Journeyman I
+1367040201^23^Race: Frozen Skeleton<br>Type: Melee DPS<br>Rank: Legendary<br>Proficiency: Journeyman, Tier I<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367040202^22^Legendary Melee DPS - Journeyman II
+1367040202^23^Race: Frozen Skeleton<br>Type: Melee DPS<br>Rank: Legendary<br>Proficiency: Journeyman, Tier II<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367120101^22^Legendary Caster DPS - Tier I
+1367120101^23^Race: Frozen Skeleton<br>Type: Caster DPS<br>Rank: Legendary<br>Proficiency: Apprentice, Tier I<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367120102^22^Legendary Caster DPS - Tier II
+1367120102^23^Race: Frozen Skeleton<br>Type: Caster DPS<br>Rank: Legendary<br>Proficiency: Apprentice, Tier II<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367120103^22^Legendary Caster DPS - Tier III
+1367120103^23^Race: Frozen Skeleton<br>Type: Caster DPS<br>Rank: Legendary<br>Proficiency: Apprentice, Tier III<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367120104^22^Legendary Caster DPS - Tier IV
+1367120104^23^Race: Frozen Skeleton<br>Type: Caster DPS<br>Rank: Legendary<br>Proficiency: Apprentice, Tier IV<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367120105^22^Legendary Caster DPS - Tier V
+1367120105^23^Race: Frozen Skeleton<br>Type: Caster DPS<br>Rank: Legendary<br>Proficiency: Apprentice, Tier V<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367120201^22^Legendary Caster DPS - Journeyman I
+1367120201^23^Race: Frozen Skeleton<br>Type: Caster DPS<br>Rank: Legendary<br>Proficiency: Journeyman, Tier I<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.
+1367120202^22^Legendary Caster DPS - Journeyman II
+1367120202^23^Race: Frozen Skeleton<br>Type: Caster DPS<br>Rank: Legendary<br>Proficiency: Journeyman, Tier II<br><br>Description: This is a legendary mercenary with boosted max stats for your custom server.

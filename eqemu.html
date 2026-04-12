@@ -189,6 +189,25 @@
             color: #cccc88;
         }
         .warn-box strong { color: #ffff88; }
+        .download-link {
+            display: inline-block;
+            margin-top: 0.85rem;
+            padding: 0.7rem 1rem;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #00d4ff, #7b2fff);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .download-link:hover {
+            filter: brightness(1.08);
+        }
+        .muted-note {
+            margin-top: 0.6rem;
+            color: #888;
+            font-size: 0.82rem;
+        }
         
         .back-link {
             display: inline-block;
@@ -911,6 +930,12 @@
         <div class="warn-box" style="margin-top: 1rem;">
             <strong>Note:</strong> If Guardian NPCs aren't showing in PoK, run <code>#repop poknowledge</code> in-game after zoning to PoK.
             Their spawn expansion requirement has been set to always spawn regardless of server expansion.
+        </div>
+        <div class="info-box">
+            <strong>Monster merc client patch:</strong> custom mercenary text requires a client-side <code>dbstr_us.txt</code> update, and true monster-body merc testing may also need extra client model/race support.
+            <br>
+            <a class="download-link" href="/downloads/eqemu-monster-merc-client-patch.zip" download>Download merc client patch</a>
+            <div class="muted-note">Includes the current Frozen Skeleton merc string patch plus install notes for the client.</div>
         </div>
     </div>
 
