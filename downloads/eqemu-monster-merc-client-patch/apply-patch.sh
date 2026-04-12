@@ -1,13 +1,37 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -lt 1 ]]; then
-  echo "Usage: $0 /path/to/EverQuest"
-  exit 1
-fi
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-EQ_PATH="$1"
+PATCHER_URL="https://dev.deacyde.com/eqemu/patcher.txt"
+
+resolve_eq_path() {
+  if [[ $# -ge 1 && -n "${1:-}" ]]; then
+    printf '%s\n' "$1"
+    return 0
+  fi
+
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "curl is required when no EQ path is passed explicitly."
+    return 1
+  fi
+
+  local manifest
+  manifest="$(curl -fsSL "$PATCHER_URL")" || {
+    echo "Failed to fetch patch manifest: $PATCHER_URL"
+    return 1
+  }
+
+  local eq_path
+  eq_path="$(printf '%s\n' "$manifest" | awk '/^Client root:/{getline; print; exit}')" || true
+  if [[ -z "$eq_path" ]]; then
+    echo "Could not find 'Client root' in patch manifest."
+    return 1
+  fi
+
+  printf '%s\n' "$eq_path"
+}
+
+EQ_PATH="$(resolve_eq_path "${1:-}")"
 DBSTR_FILE="${EQ_PATH}/dbstr_us.txt"
 PATCH_FILE="${SCRIPT_DIR}/dbstr_us.append.txt"
 
@@ -33,7 +57,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   fi
 done < "$PATCH_FILE"
 
+echo "EQ path: $EQ_PATH"
 echo "Backup created: $BACKUP_FILE"
 echo "Lines added: $added"
 echo "Done. Restart the EQ client and test the merc window again."
-

@@ -20,14 +20,16 @@ Install steps
 -------------
 Steam Deck / Linux:
 1. Extract this zip somewhere.
-2. Run: ./apply-patch.sh "/path/to/EverQuest"
-3. Launch the client again and retest the custom merc hire window.
+2. Run: ./apply-patch.sh
+3. If needed, explicit path form is: ./apply-patch.sh "/path/to/EverQuest"
+4. Launch the client again and retest the custom merc hire window.
 
 Windows:
 1. Extract this zip somewhere.
 2. Right-click PowerShell in the folder or open PowerShell there.
-3. Run: .\apply-patch.ps1 -EqPath "C:\Path\To\EverQuest"
-4. Launch the client again and retest the custom merc hire window.
+3. Run: .\apply-patch.ps1
+4. If needed, explicit path form is: .\apply-patch.ps1 -EqPath "C:\Path\To\EverQuest"
+5. Launch the client again and retest the custom merc hire window.
 
 Manual fallback:
 1. Back up your existing dbstr_us.txt in the EverQuest client folder.
@@ -41,4 +43,5 @@ Important
 - It fixes the mercenary UI string side for the current custom Frozen Skeleton merc entries.
 - True monster merc bodies may still require additional client race/model support beyond dbstr_us.txt.
 - The scripts do not touch GlobalLoad.txt yet because that still needs client-specific model verification.
+- By default, the scripts read the EQ path from `https://dev.deacyde.com/eqemu/patcher.txt`.
 
