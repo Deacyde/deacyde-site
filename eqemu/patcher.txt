@@ -1,0 +1,19 @@
+EverQuest RoF2 client paths
+
+Client root:
+/home/deck/Games/EverQuest/Full_RoF2
+
+Executable:
+/home/deck/Games/EverQuest/Full_RoF2/eqgame.exe
+
+Config:
+/home/deck/Games/EverQuest/Full_RoF2/eqclient.ini
+
+Strings:
+/home/deck/Games/EverQuest/Full_RoF2/dbstr_us.txt
+
+Maps:
+/home/deck/Games/EverQuest/Full_RoF2/maps
+
+Default UI:
+/home/deck/Games/EverQuest/Full_RoF2/uifiles/default
