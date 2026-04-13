@@ -422,6 +422,16 @@
                 <div><div class="cmd-desc">Spawn a bot you've created</div>
                 <div class="cmd-syntax">^botspawn [botname]</div></div>
             </div>
+            <div class="cmd highlight" data-search="pullchain pull chain bot auto pull ignore camp">
+                <div class="cmd-name">^pullchain <span class="tag tag-essential">new</span></div>
+                <div><div class="cmd-desc">Have a bot keep pulling nearby mobs while camp is clear</div>
+                <div class="cmd-syntax">^pullchain on [radius] [byname BotName] | ^pullchain off | ^pullchain status</div></div>
+            </div>
+            <div class="cmd highlight" data-search="pullchain ignore unignore ignorelist clearignore target">
+                <div class="cmd-name">^pullchain ignore</div>
+                <div><div class="cmd-desc">Ignore a bad pull target by name or current target</div>
+                <div class="cmd-syntax">^pullchain ignore %T | ^pullchain unignore %T | ^pullchain ignorelist | ^pullchain clearignore</div></div>
+            </div>
         </div>
     </div>
 
@@ -591,6 +601,16 @@
             <div class="cmd" data-search="bot pull lure aggro">
                 <div class="cmd-name"><span class="bot-prefix">^</span>pull</div>
                 <div><div class="cmd-desc">Tell a bot to pull a target</div></div>
+            </div>
+            <div class="cmd" data-search="bot pullchain auto chain repeated pull nearby camp clear radius">
+                <div class="cmd-name"><span class="bot-prefix">^</span>pullchain</div>
+                <div><div class="cmd-desc">Repeatedly pull nearby NPCs with a chosen puller while camp stays clear</div>
+                <div class="cmd-syntax">^pullchain on [radius] [byname BotName] | ^pullchain off | ^pullchain status | ^pullchain radius [distance]</div></div>
+            </div>
+            <div class="cmd" data-search="bot pullchain ignore unignore ignorelist clearignore bad target skip blacklist">
+                <div class="cmd-name"><span class="bot-prefix">^</span>pullchain ignore</div>
+                <div><div class="cmd-desc">Blacklist NPC names from auto-pulls so pullchain skips them</div>
+                <div class="cmd-syntax">^pullchain ignore [name|%T] | ^pullchain unignore [name|%T] | ^pullchain ignorelist | ^pullchain clearignore</div></div>
             </div>
             <div class="cmd" data-search="bot taunt aggro tank threat">
                 <div class="cmd-name"><span class="bot-prefix">^</span>taunt</div>
