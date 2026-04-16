@@ -246,17 +246,20 @@
       <div class="mod-section">
         <div class="mod-section-title">🎮 Builder Wand Controls</div>
         <div class="key-list">
-          <div class="key-row"><span class="key-action">Set Position 1 (first corner)</span><div class="key-badges"><span class="key-badge mouse">Left-click</span><span class="key-badge">block</span></div></div>
-          <div class="key-row"><span class="key-action">Set Position 2 (second corner)</span><div class="key-badges"><span class="key-badge shift">Shift</span><span class="key-badge mouse">Left-click</span><span class="key-badge">block</span></div></div>
-          <div class="key-row"><span class="key-action">Delete / clear selected region</span><div class="key-badges"><span class="key-badge special">V</span></div></div>
+          <div class="key-row"><span class="key-action">Set Position 1 (first corner)</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">block</span></div></div>
+          <div class="key-row"><span class="key-action">Set Position 2 (second corner)</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">second block</span></div></div>
+          <div class="key-row"><span class="key-action">Clear selection (replace all with air)</span><div class="key-badges"><span class="key-badge special">X</span></div></div>
+          <div class="key-row"><span class="key-action">Fill — prompts for block name (fuzzy match)</span><div class="key-badges"><span class="key-badge special">F</span></div></div>
+          <div class="key-row"><span class="key-action">Flatten — levels selection to lowest Y</span><div class="key-badges"><span class="key-badge special">V</span></div></div>
         </div>
+        <div class="tip" style="margin-top:0.75rem;font-size:0.78rem;color:#666">Fill supports fuzzy matching — type <code style="color:#a78bfa">gold</code> → <code style="color:#a78bfa">gold_block</code>, <code style="color:#a78bfa">oak</code> → <code style="color:#a78bfa">oak_planks</code>.</div>
       </div>
 
       <div class="mod-section">
         <div class="mod-section-title">🎮 Schematic Copier Controls</div>
         <div class="key-list">
-          <div class="key-row"><span class="key-action">Set corner 1 of region to copy</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">block</span></div></div>
-          <div class="key-row"><span class="key-action">Set corner 2 of region to copy</span><div class="key-badges"><span class="key-badge shift">Shift</span><span class="key-badge mouse">Right-click</span><span class="key-badge">block</span></div></div>
+          <div class="key-row"><span class="key-action">Set corner 1 of region to copy</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">first block</span></div></div>
+          <div class="key-row"><span class="key-action">Set corner 2 of region to copy</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">second block</span></div></div>
           <div class="key-row"><span class="key-action">Save selection as .schem file</span><div class="key-badges"><span class="key-badge special">C</span></div></div>
         </div>
       </div>
@@ -264,10 +267,10 @@
       <div class="mod-section">
         <div class="mod-section-title">🎮 Schematic Placer Controls</div>
         <div class="key-list">
-          <div class="key-row"><span class="key-action">Open schematic selection GUI</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">air</span></div></div>
-          <div class="key-row"><span class="key-action">Rotate preview 90°</span><div class="key-badges"><span class="key-badge special">Scroll wheel</span></div></div>
-          <div class="key-row"><span class="key-action">Confirm placement at cursor position</span><div class="key-badges"><span class="key-badge mouse">Left-click</span></div></div>
-          <div class="key-row"><span class="key-action">Cancel preview</span><div class="key-badges"><span class="key-badge special">Esc</span></div></div>
+          <div class="key-row"><span class="key-action">Place schematic at preview location</span><div class="key-badges"><span class="key-badge mouse">Right-click</span></div></div>
+          <div class="key-row"><span class="key-action">Rotate preview 90°</span><div class="key-badges"><span class="key-badge special">R</span></div></div>
+          <div class="key-row"><span class="key-action">Orient to face you (auto-rotate to your direction)</span><div class="key-badges"><span class="key-badge special">V</span></div></div>
+          <div class="key-row"><span class="key-action">Cycle through saved schematics</span><div class="key-badges"><span class="key-badge special">Scroll wheel</span></div></div>
         </div>
       </div>
 
@@ -279,10 +282,10 @@
       <div class="mod-section">
         <div class="mod-section-title">🔄 Placement Modes</div>
         <div class="tip-list">
-          <div class="tip"><strong>Replace Air Only</strong> — Only places blocks where there is air. Existing blocks are preserved.</div>
+          <div class="tip"><strong>Replace Air Only</strong> — Only places blocks where there is air. Safe for surface builds — existing structures preserved.</div>
           <div class="tip"><strong>Replace Non-Solid</strong> — Replaces air and non-solid blocks (grass, flowers, etc.) but keeps solid blocks.</div>
-          <div class="tip"><strong>Replace Everything</strong> — Overwrites all blocks in the region including existing terrain.</div>
-          <div class="tip">Cycle through modes in the Schematic Placer GUI before placing.</div>
+          <div class="tip"><strong>Replace Everything</strong> — Overwrites all blocks including air. Use underground — properly carves out interior space.</div>
+          <div class="tip">Cycle modes using Scroll while holding the Schematic Placer.</div>
         </div>
       </div>
 
