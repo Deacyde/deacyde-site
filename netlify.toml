@@ -1,2 +1,7 @@
 [build]
   functions = "netlify/functions"
+
+[[redirects]]
+  from = "/apps/minecraft.html"
+  to = "/minecraft"
+  status = 301
