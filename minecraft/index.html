@@ -84,9 +84,15 @@
     .tip { font-size: 0.82rem; color: #888; line-height: 1.45; padding: 0.5rem 0.65rem; background: #0a0a0a; border-left: 2px solid #333; border-radius: 0 6px 6px 0; }
     .tip strong { color: #ddd; }
     .key-list { display: flex; flex-direction: column; gap: 0.4rem; }
-    .key-row { display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0.65rem; background: #0a0a0a; border-radius: 6px; }
+    .key-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.45rem 0.65rem; background: #0a0a0a; border-radius: 6px; }
+    .key-action { font-size: 0.82rem; color: #ddd; flex: 1; }
     .key-name { font-size: 0.82rem; color: #ddd; }
-    .key-badge { font-size: 0.7rem; padding: 2px 7px; border-radius: 5px; background: #1a1a1a; border: 1px solid #2a2a2a; color: #aaa; font-family: monospace; }
+    .key-badges { display: flex; gap: 0.3rem; flex-wrap: wrap; justify-content: flex-end; }
+    .key-badge { font-size: 0.7rem; padding: 2px 7px; border-radius: 5px; background: #1a1a1a; border: 1px solid #333; color: #e2e8f0; font-family: monospace; white-space: nowrap; }
+    .key-badge.mouse { border-color: #1e40af; background: #0a1628; color: #93c5fd; }
+    .key-badge.shift { border-color: #713f12; background: #1c0e00; color: #fbbf24; }
+    .key-badge.ctrl { border-color: #4a1d96; background: #130a24; color: #c4b5fd; }
+    .key-badge.special { border-color: #065f46; background: #032010; color: #6ee7b7; }
 
     @media (max-width: 600px) { .cmd-grid, .mod-sections { grid-template-columns: 1fr; } .tab { font-size: 0.78rem; padding: 0.45rem 0.7rem; } }
   </style>
@@ -141,31 +147,31 @@
   <div class="main">
     <div class="mod-header">
       <div class="mod-title">🪧 Admin Signs <span class="mod-version">v0.1.0</span></div>
-      <div class="mod-desc">Glowing wall signs that trigger admin actions when right-clicked by any player. Place them in lobbies, spawn areas, or admin rooms. Signs can toggle gamemode, set time/weather, heal, give items, toggle fly, or give a Nether kit.</div>
+      <div class="mod-desc">Glowing wall signs that trigger admin actions when right-clicked by any player. Place them in lobbies, spawn areas, or admin rooms.</div>
     </div>
     <div class="mod-sections">
+      <div class="mod-section">
+        <div class="mod-section-title">🎮 Controls</div>
+        <div class="key-list">
+          <div class="key-row"><span class="key-action">Trigger sign effect</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">sign block</span></div></div>
+          <div class="key-row"><span class="key-action">Break / remove sign</span><div class="key-badges"><span class="key-badge mouse">Left-click</span><span class="key-badge">any tool or fist</span></div></div>
+        </div>
+      </div>
       <div class="mod-section">
         <div class="mod-section-title">🎁 Give Signs</div>
         <div class="give-list" id="give-adminsigns"></div>
       </div>
       <div class="mod-section">
-        <div class="mod-section-title">💡 How Each Sign Works</div>
+        <div class="mod-section-title">💡 What Each Sign Does</div>
         <div class="tip-list">
-          <div class="tip"><strong>Gamemode Sign</strong> — Right-click cycles the clicker through Survival → Creative → Spectator → Adventure.</div>
-          <div class="tip"><strong>Time Sign</strong> — Right-click toggles between day and night.</div>
-          <div class="tip"><strong>Weather Sign</strong> — Right-click cycles Clear → Rain → Thunder.</div>
-          <div class="tip"><strong>Heal Sign</strong> — Right-click fully restores health and hunger of the clicker.</div>
-          <div class="tip"><strong>Give Sign</strong> — Right-click gives the clicker a preset item bundle (configure in sign NBT).</div>
-          <div class="tip"><strong>Fly Sign</strong> — Right-click toggles flight ability for the clicker.</div>
-          <div class="tip"><strong>Nether Kit Sign</strong> — Right-click gives fire resistance, a full set of armor, and weapons for Nether survival.</div>
-        </div>
-      </div>
-      <div class="mod-section" style="grid-column: 1/-1">
-        <div class="mod-section-title">📋 Usage Notes</div>
-        <div class="tip-list">
-          <div class="tip">Place the sign block like any other block — it attaches to a wall.</div>
-          <div class="tip">Signs are designed for <strong>OP/admin rooms</strong> — any player who right-clicks them will get the effect.</div>
-          <div class="tip">To remove, break the sign with any tool (or your hand).</div>
+          <div class="tip"><strong>Gamemode Sign</strong> — Cycles clicker through Survival → Creative → Spectator → Adventure.</div>
+          <div class="tip"><strong>Time Sign</strong> — Toggles between day and night.</div>
+          <div class="tip"><strong>Weather Sign</strong> — Cycles Clear → Rain → Thunder.</div>
+          <div class="tip"><strong>Heal Sign</strong> — Fully restores health and hunger of the clicker.</div>
+          <div class="tip"><strong>Give Sign</strong> — Gives the clicker a preset item bundle.</div>
+          <div class="tip"><strong>Fly Sign</strong> — Toggles flight ability for the clicker.</div>
+          <div class="tip"><strong>Nether Kit Sign</strong> — Gives fire resistance, full armor set, and weapons for Nether survival.</div>
+          <div class="tip">Signs work for <strong>any player</strong> who right-clicks — designed for admin/spawn rooms. Break with your hand to remove.</div>
         </div>
       </div>
     </div>
@@ -177,9 +183,19 @@
   <div class="main">
     <div class="mod-header">
       <div class="mod-title">⚙️ Conveyor Belts <span class="mod-version">v1.1.0</span></div>
-      <div class="mod-desc">Full conveyor belt system with straight, corner, slope, vertical belts at three speeds, plus splitters, mergers, detector belts, conveyor chests, vacuum plates, belt hoppers, and belt droppers. Use the Wrench to adjust direction.</div>
+      <div class="mod-desc">Full conveyor belt system with straight, corner, slope, vertical belts at three speeds, plus splitters, mergers, detector belts, conveyor chests, vacuum plates, belt hoppers, and belt droppers.</div>
     </div>
     <div class="mod-sections">
+      <div class="mod-section">
+        <div class="mod-section-title">🎮 Controls</div>
+        <div class="key-list">
+          <div class="key-row"><span class="key-action">Place belt (faces direction you're looking)</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">empty hand or belt</span></div></div>
+          <div class="key-row"><span class="key-action">Rotate belt 90°</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge special">Wrench</span></div></div>
+          <div class="key-row"><span class="key-action">Flip corner belt turn direction</span><div class="key-badges"><span class="key-badge shift">Shift</span><span class="key-badge mouse">Right-click</span><span class="key-badge special">Wrench</span></div></div>
+          <div class="key-row"><span class="key-action">Open Conveyor Chest / Hopper / Dropper GUI</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">block</span></div></div>
+          <div class="key-row"><span class="key-action">Break belt / block</span><div class="key-badges"><span class="key-badge mouse">Left-click</span><span class="key-badge">any tool</span></div></div>
+        </div>
+      </div>
       <div class="mod-section">
         <div class="mod-section-title">🔧 Tools</div>
         <div class="give-list" id="give-tools"></div>
@@ -200,19 +216,18 @@
         <div class="mod-section-title">🎁 Give Special Blocks</div>
         <div class="give-list" id="give-belts-special"></div>
       </div>
-      <div class="mod-section">
-        <div class="mod-section-title">💡 Tips</div>
+      <div class="mod-section" style="grid-column:1/-1">
+        <div class="mod-section-title">💡 Block Tips</div>
         <div class="tip-list">
-          <div class="tip"><strong>Wrench</strong> — Right-click a belt to rotate it 90°. Shift+right-click a corner belt to flip its turn direction.</div>
-          <div class="tip"><strong>Splitter Belt</strong> — Distributes items to left and right alternately.</div>
-          <div class="tip"><strong>Merger Belt</strong> — Combines two belt lines into one.</div>
+          <div class="tip"><strong>Splitter Belt</strong> — Distributes items alternately left and right.</div>
+          <div class="tip"><strong>Merger Belt</strong> — Combines two belt lines into one output.</div>
           <div class="tip"><strong>Detector Belt</strong> — Emits a redstone signal when an item passes over it.</div>
-          <div class="tip"><strong>Conveyor Chest</strong> — A chest that auto-inserts items into adjacent belts.</div>
-          <div class="tip"><strong>Vacuum Plate</strong> — A pressure plate that sucks nearby dropped items onto the belt.</div>
+          <div class="tip"><strong>Conveyor Chest</strong> — Chest that auto-inserts items onto adjacent belts.</div>
+          <div class="tip"><strong>Vacuum Plate</strong> — Pressure plate that sucks nearby dropped items onto the belt.</div>
           <div class="tip"><strong>Belt Hopper</strong> — Pulls items from a chest above and places them on the belt.</div>
           <div class="tip"><strong>Belt Dropper</strong> — Drops items from the belt into an inventory below.</div>
-          <div class="tip"><strong>Tube Exit</strong> — Endpoint for item transport tubes; items exit here onto a belt.</div>
-          <div class="tip"><strong>Slope Belts</strong> — Up/down variants move items vertically between floors.</div>
+          <div class="tip"><strong>Tube Exit</strong> — Endpoint for item transport; items exit here onto a belt.</div>
+          <div class="tip"><strong>Slope Belts</strong> — Up/Down variants move items vertically between floors.</div>
         </div>
       </div>
     </div>
@@ -224,35 +239,64 @@
   <div class="main">
     <div class="mod-header">
       <div class="mod-title">📐 Schem Builder <span class="mod-version">v0.1.0</span></div>
-      <div class="mod-desc">Load and place <code style="color:#a78bfa;background:#1a1a1a;padding:1px 5px;border-radius:4px">.schem</code> files in-world with preview, rotation, and incremental tick-based placement. Works with the Minecraft Build Studio app. Drop schematics in the server's <code style="color:#a78bfa;background:#1a1a1a;padding:1px 5px;border-radius:4px">schembuilder/schematics/</code> folder.</div>
+      <div class="mod-desc">Load and place <code style="color:#a78bfa;background:#1a1a1a;padding:1px 5px;border-radius:4px">.schem</code> files in-world with preview, rotation, and incremental tick-based placement. Drop schematics in <code style="color:#a78bfa;background:#1a1a1a;padding:1px 5px;border-radius:4px">schembuilder/schematics/</code> on the server.</div>
     </div>
     <div class="mod-sections">
+
+      <div class="mod-section">
+        <div class="mod-section-title">🎮 Builder Wand Controls</div>
+        <div class="key-list">
+          <div class="key-row"><span class="key-action">Set Position 1 (first corner)</span><div class="key-badges"><span class="key-badge mouse">Left-click</span><span class="key-badge">block</span></div></div>
+          <div class="key-row"><span class="key-action">Set Position 2 (second corner)</span><div class="key-badges"><span class="key-badge shift">Shift</span><span class="key-badge mouse">Left-click</span><span class="key-badge">block</span></div></div>
+          <div class="key-row"><span class="key-action">Delete / clear selected region</span><div class="key-badges"><span class="key-badge special">V</span></div></div>
+        </div>
+      </div>
+
+      <div class="mod-section">
+        <div class="mod-section-title">🎮 Schematic Copier Controls</div>
+        <div class="key-list">
+          <div class="key-row"><span class="key-action">Set corner 1 of region to copy</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">block</span></div></div>
+          <div class="key-row"><span class="key-action">Set corner 2 of region to copy</span><div class="key-badges"><span class="key-badge shift">Shift</span><span class="key-badge mouse">Right-click</span><span class="key-badge">block</span></div></div>
+          <div class="key-row"><span class="key-action">Save selection as .schem file</span><div class="key-badges"><span class="key-badge special">C</span></div></div>
+        </div>
+      </div>
+
+      <div class="mod-section">
+        <div class="mod-section-title">🎮 Schematic Placer Controls</div>
+        <div class="key-list">
+          <div class="key-row"><span class="key-action">Open schematic selection GUI</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">air</span></div></div>
+          <div class="key-row"><span class="key-action">Rotate preview 90°</span><div class="key-badges"><span class="key-badge special">Scroll wheel</span></div></div>
+          <div class="key-row"><span class="key-action">Confirm placement at cursor position</span><div class="key-badges"><span class="key-badge mouse">Left-click</span></div></div>
+          <div class="key-row"><span class="key-action">Cancel preview</span><div class="key-badges"><span class="key-badge special">Esc</span></div></div>
+        </div>
+      </div>
+
       <div class="mod-section">
         <div class="mod-section-title">🎁 Give Items</div>
         <div class="give-list" id="give-schembuilder"></div>
       </div>
+
       <div class="mod-section">
-        <div class="mod-section-title">📋 Workflow</div>
+        <div class="mod-section-title">🔄 Placement Modes</div>
         <div class="tip-list">
-          <div class="tip"><strong>Step 1 — Add schematic:</strong> Place your <code style="color:#a78bfa">.schem</code> file into the server folder <code style="color:#a78bfa">schembuilder/schematics/</code>. Files placed here are available to the Schematic Placer.</div>
-          <div class="tip"><strong>Step 2 — Get the Schematic Placer:</strong> <code style="color:#a78bfa">/give @s schembuilder:schematic_placer</code> — Right-click to open a GUI listing all available schematics.</div>
-          <div class="tip"><strong>Step 3 — Select &amp; preview:</strong> Choose a schematic from the list. A ghost preview appears at your cursor position.</div>
-          <div class="tip"><strong>Step 4 — Rotate:</strong> Scroll wheel or a hotkey rotates the preview in 90° increments before placing.</div>
-          <div class="tip"><strong>Step 5 — Place:</strong> Left-click to confirm placement. Large schematics are placed incrementally over multiple ticks to avoid lag.</div>
-          <div class="tip"><strong>Schematic Copier:</strong> Right-click two corners of an existing build to capture it as a <code style="color:#a78bfa">.schem</code> file saved to the schematics folder.</div>
+          <div class="tip"><strong>Replace Air Only</strong> — Only places blocks where there is air. Existing blocks are preserved.</div>
+          <div class="tip"><strong>Replace Non-Solid</strong> — Replaces air and non-solid blocks (grass, flowers, etc.) but keeps solid blocks.</div>
+          <div class="tip"><strong>Replace Everything</strong> — Overwrites all blocks in the region including existing terrain.</div>
+          <div class="tip">Cycle through modes in the Schematic Placer GUI before placing.</div>
         </div>
       </div>
+
       <div class="mod-section">
-        <div class="mod-section-title">⚙️ Config (server-side)</div>
+        <div class="mod-section-title">⚙️ Server Config</div>
         <div class="tip-list">
-          <div class="tip"><strong>placement.maxBlocks</strong> — Max blocks placed per operation (default: 50,000).</div>
-          <div class="tip"><strong>placement.maxDimension</strong> — Max schematic dimension in blocks (default: 128).</div>
-          <div class="tip"><strong>placement.blocksPerTick</strong> — How many blocks are placed per tick (default: 200).</div>
+          <div class="tip"><strong>placement.maxBlocks</strong> — Max blocks per operation (default: 50,000).</div>
+          <div class="tip"><strong>placement.blocksPerTick</strong> — Blocks placed per server tick (default: 200).</div>
           <div class="tip"><strong>placement.cooldownTicks</strong> — Ticks between placements per player (default: 200).</div>
-          <div class="tip"><strong>permissions.requiredOpLevel</strong> — Minimum OP level to use the placer (default: 2).</div>
-          <div class="tip"><strong>files.folder</strong> — Schematics folder path relative to server root (default: <code style="color:#a78bfa">schembuilder/schematics</code>).</div>
+          <div class="tip"><strong>permissions.requiredOpLevel</strong> — Min OP level to use the placer (default: 2).</div>
+          <div class="tip"><strong>files.folder</strong> — Schematics folder path (default: <code style="color:#a78bfa">schembuilder/schematics</code>).</div>
         </div>
       </div>
+
     </div>
   </div>
 </div>
@@ -262,44 +306,57 @@
   <div class="main">
     <div class="mod-header">
       <div class="mod-title">🔫 Mechanical Defense Turrets <span class="mod-version">v2.5.0</span></div>
-      <div class="mod-desc">17 mechanical defense turrets with targeting AI, internal ammo storage, overheat system, and configurable behavior. Place facing any direction. Right-click to open the turret GUI and load ammo.</div>
+      <div class="mod-desc">17 automated defense turrets with targeting AI, ammo storage, overheat system, and configurable behavior. Place facing any direction; right-click to load ammo and configure.</div>
     </div>
     <div class="mod-sections">
+
+      <div class="mod-section">
+        <div class="mod-section-title">🎮 Controls</div>
+        <div class="key-list">
+          <div class="key-row"><span class="key-action">Open GUI (load ammo, set target mode)</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">turret block</span></div></div>
+          <div class="key-row"><span class="key-action">Cycle target mode (in GUI)</span><div class="key-badges"><span class="key-badge mouse">Left-click</span><span class="key-badge special">Target Mode button</span></div></div>
+          <div class="key-row"><span class="key-action">Break / retrieve turret</span><div class="key-badges"><span class="key-badge mouse">Left-click</span><span class="key-badge">any tool</span></div></div>
+        </div>
+      </div>
+
+      <div class="mod-section">
+        <div class="mod-section-title">🎯 Target Modes</div>
+        <div class="tip-list">
+          <div class="tip"><strong>Hostile Mobs</strong> — Zombies, skeletons, creepers, spiders, etc. (default)</div>
+          <div class="tip"><strong>Players</strong> — All players within range. Use for PvP arenas.</div>
+          <div class="tip"><strong>All Entities</strong> — Everything including passive mobs and players.</div>
+          <div class="tip">Each turret has an overheat bar — rapid firing triggers a cooldown period.</div>
+        </div>
+      </div>
+
       <div class="mod-section">
         <div class="mod-section-title">🎁 Give Turrets</div>
         <div class="give-list" id="give-turrets"></div>
       </div>
+
       <div class="mod-section">
-        <div class="mod-section-title">💡 Tips</div>
+        <div class="mod-section-title">💡 Turret Types</div>
         <div class="tip-list">
-          <div class="tip"><strong>Arrow Turret</strong> — Standard ranged turret. Loads regular arrows.</div>
-          <div class="tip"><strong>Fire Arrow Turret</strong> — Fires flaming arrows. Loads arrows + flint &amp; steel.</div>
+          <div class="tip"><strong>Arrow Turret</strong> — Standard ranged. Loads arrows.</div>
+          <div class="tip"><strong>Fire Arrow Turret</strong> — Flaming arrows. Loads arrows + flint &amp; steel.</div>
           <div class="tip"><strong>Snowball Turret</strong> — Knockback projectiles. Loads snowballs.</div>
-          <div class="tip"><strong>TNT Turret</strong> — Launches lit TNT. High damage radius. Loads TNT blocks.</div>
-          <div class="tip"><strong>Splash Potion Turret</strong> — Fires any splash potion. Loads splash potions.</div>
-          <div class="tip"><strong>Lightning Turret</strong> — Calls lightning strikes on targets. No ammo needed.</div>
-          <div class="tip"><strong>Laser Turret</strong> — High-speed beam attack. No ammo needed.</div>
-          <div class="tip"><strong>Fireball Turret</strong> — Ghast-style fireball projectiles. No ammo needed.</div>
-          <div class="tip"><strong>Wither Skull Turret</strong> — Fires wither skulls applying the Wither effect.</div>
+          <div class="tip"><strong>TNT Turret</strong> — Launches lit TNT. Loads TNT blocks.</div>
+          <div class="tip"><strong>Splash Potion Turret</strong> — Fires any splash potion.</div>
+          <div class="tip"><strong>Lightning Turret</strong> — Strikes targets with lightning. No ammo.</div>
+          <div class="tip"><strong>Laser Turret</strong> — High-speed beam. No ammo.</div>
+          <div class="tip"><strong>Fireball Turret</strong> — Ghast-style fireballs. No ammo.</div>
+          <div class="tip"><strong>Wither Skull Turret</strong> — Wither skulls applying Wither status.</div>
           <div class="tip"><strong>Trident Turret</strong> — Throws tridents. Loads tridents.</div>
-          <div class="tip"><strong>Ender Turret</strong> — Teleports enemies randomly. No ammo needed.</div>
-          <div class="tip"><strong>Shulker Turret</strong> — Fires shulker bullets that apply levitation. No ammo needed.</div>
-          <div class="tip"><strong>Cobweb Turret</strong> — Entangles enemies in cobwebs. Loads string/cobwebs.</div>
-          <div class="tip"><strong>Knockback Turret</strong> — Massive knockback force. No ammo needed.</div>
+          <div class="tip"><strong>Ender Turret</strong> — Teleports enemies. No ammo.</div>
+          <div class="tip"><strong>Shulker Turret</strong> — Shulker bullets with levitation. No ammo.</div>
+          <div class="tip"><strong>Cobweb Turret</strong> — Entangles in cobwebs. Loads string.</div>
+          <div class="tip"><strong>Knockback Turret</strong> — Massive knockback force. No ammo.</div>
           <div class="tip"><strong>Anvil Turret</strong> — Drops anvils on targets. Loads anvils.</div>
-          <div class="tip"><strong>Dragon Breath Turret</strong> — Area-of-effect lingering damage cloud. Loads dragon's breath.</div>
-          <div class="tip"><strong>Ice Turret</strong> — Freezes targets in place. No ammo needed.</div>
+          <div class="tip"><strong>Dragon Breath Turret</strong> — Lingering AoE damage cloud. Loads dragon's breath.</div>
+          <div class="tip"><strong>Ice Turret</strong> — Freezes targets in place. No ammo.</div>
         </div>
       </div>
-      <div class="mod-section">
-        <div class="mod-section-title">📋 General Notes</div>
-        <div class="tip-list">
-          <div class="tip">Turrets target hostile mobs by default. Right-click GUI to configure targeting: mobs, players, or both.</div>
-          <div class="tip">Each turret has an overheat bar — rapid firing causes cooldown until it cools.</div>
-          <div class="tip">Turrets track facing direction when placed — place while looking in the direction you want coverage.</div>
-          <div class="tip">Break a turret to recover it (loot drops per the mod's loot table).</div>
-        </div>
-      </div>
+
     </div>
   </div>
 </div>
@@ -309,32 +366,49 @@
   <div class="main">
     <div class="mod-header">
       <div class="mod-title">🛸 UFO Mod <span class="mod-version">v0.1.0</span></div>
-      <div class="mod-desc">Adds a flyable UFO vehicle with weapons, a tractor beam, and internal inventory. Craft or spawn the UFO Item, then right-click to board. Use keybinds to fire weapons and toggle hover mode.</div>
+      <div class="mod-desc">Adds a flyable UFO vehicle with weapons, a tractor beam, and internal inventory. Spawn with the UFO Item, right-click to board. All keybinds configurable in Options → Controls → UFO Mod.</div>
     </div>
     <div class="mod-sections">
+
+      <div class="mod-section">
+        <div class="mod-section-title">🎮 Controls — On Ground</div>
+        <div class="key-list">
+          <div class="key-row"><span class="key-action">Spawn UFO at location</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge special">UFO Item</span><span class="key-badge">ground</span></div></div>
+          <div class="key-row"><span class="key-action">Board / mount UFO</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">UFO entity</span></div></div>
+        </div>
+      </div>
+
+      <div class="mod-section">
+        <div class="mod-section-title">🎮 Controls — While Piloting</div>
+        <div class="key-list">
+          <div class="key-row"><span class="key-action">Move forward / backward / strafe</span><div class="key-badges"><span class="key-badge special">W A S D</span></div></div>
+          <div class="key-row"><span class="key-action">Ascend</span><div class="key-badges"><span class="key-badge special">Space</span></div></div>
+          <div class="key-row"><span class="key-action">Descend</span><div class="key-badges"><span class="key-badge shift">Shift</span></div></div>
+          <div class="key-row"><span class="key-action">Toggle Hover / Fly mode</span><div class="key-badges"><span class="key-badge special">Toggle Hover key</span><span class="key-badge">set in Controls</span></div></div>
+          <div class="key-row"><span class="key-action">Cycle weapon</span><div class="key-badges"><span class="key-badge special">Cycle Weapon key</span><span class="key-badge">set in Controls</span></div></div>
+          <div class="key-row"><span class="key-action">Fire active weapon</span><div class="key-badges"><span class="key-badge special">Fire key</span><span class="key-badge">set in Controls</span></div></div>
+          <div class="key-row"><span class="key-action">Use tractor beam (secondary action)</span><div class="key-badges"><span class="key-badge mouse">Right-click</span><span class="key-badge">while piloting</span></div></div>
+          <div class="key-row"><span class="key-action">Dismount UFO</span><div class="key-badges"><span class="key-badge shift">Sneak</span></div></div>
+        </div>
+        <div class="tip" style="margin-top:0.75rem;font-size:0.78rem;color:#666">⚠️ Set <strong>Toggle Hover</strong>, <strong>Cycle Weapon</strong>, and <strong>Fire</strong> keybinds in <strong>Options → Controls → UFO Mod</strong> before flying.</div>
+      </div>
+
       <div class="mod-section">
         <div class="mod-section-title">🎁 Give &amp; Summon</div>
         <div class="give-list" id="give-ufomod"></div>
       </div>
-      <div class="mod-section">
-        <div class="mod-section-title">⌨️ Keybinds</div>
-        <div class="key-list">
-          <div class="key-row"><span class="key-name">Toggle Hover / Fly Mode</span><span class="key-badge">configurable</span></div>
-          <div class="key-row"><span class="key-name">Cycle Weapon</span><span class="key-badge">configurable</span></div>
-          <div class="key-row"><span class="key-name">Fire Weapon</span><span class="key-badge">configurable</span></div>
-        </div>
-        <div class="tip" style="margin-top:0.75rem;font-size:0.78rem;color:#666">Set keybinds in Options → Controls → UFO Mod category.</div>
-      </div>
+
       <div class="mod-section">
         <div class="mod-section-title">💡 Tips</div>
         <div class="tip-list">
-          <div class="tip"><strong>Board the UFO:</strong> Right-click the UFO entity to enter. Right-click again (or press Sneak) to exit.</div>
-          <div class="tip"><strong>Hover Mode:</strong> Toggle hover to stay at a fixed altitude — easier for aiming weapons and using the tractor beam.</div>
-          <div class="tip"><strong>Tractor Beam:</strong> Lifts mobs and items beneath the UFO. Useful for moving animals or trolling players.</div>
-          <div class="tip"><strong>Internal Inventory:</strong> The UFO has storage accessible while piloting — useful for collected items.</div>
-          <div class="tip"><strong>Spawning via command:</strong> Use <code style="color:#a78bfa">/summon ufomod:ufo ~ ~ ~</code> to spawn a UFO entity at your location without the item.</div>
+          <div class="tip"><strong>Hover Mode</strong> — Keeps UFO at a fixed altitude for precise targeting or tractor beam use.</div>
+          <div class="tip"><strong>Tractor Beam</strong> — Lifts mobs and items beneath the UFO. Great for moving animals.</div>
+          <div class="tip"><strong>Internal Inventory</strong> — The UFO has storage accessible while piloting.</div>
+          <div class="tip"><strong>HUD</strong> — A <code style="color:#a78bfa">[HOVER]</code> indicator appears on screen when hover mode is active.</div>
+          <div class="tip"><strong>Summon without item:</strong> <code style="color:#a78bfa">/summon ufomod:ufo ~ ~ ~</code></div>
         </div>
       </div>
+
     </div>
   </div>
 </div>
