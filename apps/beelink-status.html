@@ -40,6 +40,21 @@
     .bar { height:6px; background:#1e1e1e; border-radius:3px; overflow:hidden; }
     .bar-fill { height:100%; border-radius:3px; transition:width 0.5s; }
 
+    /* MC section */
+    .mc-section { margin-bottom:1.5rem; }
+    .mc-title { font-size:1.1rem; font-weight:600; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
+    .mc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:0.75rem; margin-bottom:0.75rem; }
+    .mc-card { background:#111; border:1px solid #222; border-radius:8px; padding:1rem; }
+    .mc-card-name { font-size:0.78rem; color:#888; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem; }
+    .mc-card-status { font-size:0.95rem; font-weight:700; margin-bottom:0.35rem; }
+    .mc-card-status.running { color:#4ade80; }
+    .mc-card-status.stopped { color:#f87171; }
+    .mc-card-detail { font-size:0.75rem; color:#555; }
+    .mc-card-connect { font-size:0.72rem; color:#4285f4; margin-top:0.4rem; font-family:monospace; }
+    .mc-crafty-row { display:flex; align-items:center; gap:0.75rem; }
+    .btn-crafty { padding:0.4rem 0.9rem; background:#1a1a2e; border:1px solid #2a2a4e; border-radius:6px; color:#818cf8; font-size:0.82rem; text-decoration:none; transition:background .2s; }
+    .btn-crafty:hover { background:#25254a; color:#a5b4fc; }
+
     /* EQ section */
     .eq-section { margin-bottom:1.5rem; }
     .eq-title { font-size:1.1rem; font-weight:600; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
@@ -80,6 +95,17 @@
   </div>
 
   <div id="error-wrap" style="display:none" class="error-msg"></div>
+
+  <!-- Minecraft Section -->
+  <div class="mc-section" id="mc-section" style="display:none">
+    <div class="mc-title">🎮 Minecraft</div>
+    <div class="mc-grid" id="mc-grid"></div>
+    <div class="mc-crafty-row">
+      <span style="font-size:0.82rem;color:#555;">Managed via</span>
+      <a class="btn-crafty" href="https://192.168.1.66:8443" target="_blank">🕹️ Open Crafty Panel</a>
+      <span class="metric-value" id="mc-crafty-status" style="font-size:0.82rem;"></span>
+    </div>
+  </div>
 
   <!-- EQ Server Section -->
   <div class="eq-section" id="eq-section" style="display:none">
@@ -198,6 +224,25 @@
         const pill = document.getElementById('pill');
         pill.className = 'status-pill online';
         pill.innerHTML = '<span class="dot"></span> Online';
+
+        // Minecraft
+        const mc = d.minecraft;
+        const mcGrid = document.getElementById('mc-grid');
+        mcGrid.innerHTML = '';
+        mc.servers.forEach(srv => {
+          const card = document.createElement('div');
+          card.className = 'mc-card';
+          card.innerHTML = `
+            <div class="mc-card-name">${srv.name}</div>
+            <div class="mc-card-status ${srv.running ? 'running' : 'stopped'}">${srv.running ? '● Online' : '● Offline'}</div>
+            <div class="mc-card-detail">${srv.running ? `${srv.memMB} MB RAM` : 'Server stopped'}</div>
+            <div class="mc-card-connect">${srv.connect}</div>`;
+          mcGrid.appendChild(card);
+        });
+        const craftyEl = document.getElementById('mc-crafty-status');
+        craftyEl.textContent = mc.crafty.running ? '● Running' : '● Stopped';
+        craftyEl.style.color = mc.crafty.running ? '#4ade80' : '#f87171';
+        document.getElementById('mc-section').style.display = '';
 
         // EQ Server
         const eq = d.eqemu;
