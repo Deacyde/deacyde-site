@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minecraft Admin Commands | Deacyde</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d0d0d; color: #fff; min-height: 100vh; }
+
+    .page-header { padding: 2rem 1.5rem 1rem; max-width: 1400px; margin: 0 auto; }
+    .back { color: #888; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 1.25rem; }
+    .back:hover { color: #fff; }
+    .page-header h1 { font-size: 1.9rem; margin-bottom: 0.35rem; }
+    .page-header p { color: #888; font-size: 0.95rem; }
+
+    .search-wrap { max-width: 1400px; margin: 0 auto; padding: 1rem 1.5rem; position: relative; }
+    .search-input { width: 100%; padding: 0.75rem 1rem 0.75rem 2.75rem; background: #1a1a1a; border: 1px solid #333; border-radius: 10px; color: #fff; font-size: 0.95rem; outline: none; }
+    .search-input:focus { border-color: #22c55e; }
+    .search-icon { position: absolute; left: 2.5rem; top: 50%; transform: translateY(-50%); color: #555; pointer-events: none; }
+
+    .filter-bar { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .filter-btn { background: #111; border: 1px solid #222; border-radius: 8px; padding: 0.4rem 0.9rem; font-size: 0.8rem; color: #aaa; cursor: pointer; transition: all .15s; }
+    .filter-btn:hover { border-color: #444; color: #fff; }
+    .filter-btn.active { border-color: #22c55e; background: #052e16; color: #4ade80; }
+
+    .main { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem 3rem; }
+
+    .category-section { margin-bottom: 2rem; }
+    .category-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #555; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .category-title::after { content: ''; flex: 1; height: 1px; background: #1e1e1e; }
+
+    .cmd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 0.6rem; }
+
+    .cmd-card { background: #111; border: 1px solid #1e1e1e; border-radius: 10px; padding: 1rem 1.1rem; cursor: pointer; transition: border-color .15s, background .15s; position: relative; }
+    .cmd-card:hover { border-color: #333; background: #161616; }
+    .cmd-card.copied { border-color: #22c55e; }
+
+    .cmd-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.4rem; }
+    .cmd-name { font-family: 'Courier New', monospace; font-size: 0.88rem; color: #4ade80; font-weight: 700; word-break: break-all; flex: 1; }
+    .cmd-op { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; background: #1a1a1a; color: #888; white-space: nowrap; border: 1px solid #2a2a2a; }
+    .cmd-op.op4 { color: #f87171; background: #2d0a0a; border-color: #5a1010; }
+    .cmd-op.op2 { color: #fb923c; background: #2d1500; border-color: #5a2a00; }
+    .cmd-op.op1 { color: #facc15; background: #2d2200; border-color: #5a4400; }
+    .cmd-op.op0 { color: #60a5fa; background: #0a1f3d; border-color: #1e3a5f; }
+
+    .cmd-desc { font-size: 0.82rem; color: #888; line-height: 1.45; margin-bottom: 0.55rem; }
+
+    .cmd-syntax { font-family: 'Courier New', monospace; font-size: 0.78rem; color: #666; background: #0a0a0a; border-radius: 6px; padding: 0.4rem 0.6rem; border: 1px solid #1a1a1a; word-break: break-all; }
+    .cmd-syntax .arg { color: #38bdf8; }
+    .cmd-syntax .opt { color: #a78bfa; }
+
+    .copy-hint { position: absolute; bottom: 0.5rem; right: 0.8rem; font-size: 0.65rem; color: #333; }
+    .cmd-card.copied .copy-hint { color: #22c55e; }
+
+    .no-results { text-align: center; padding: 4rem 0; color: #555; font-size: 0.95rem; }
+
+    .legend { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: #666; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+    @media (max-width: 600px) { .cmd-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <a href="/" class="back">← Back</a>
+  <h1>⚔️ Minecraft Admin Commands</h1>
+  <p>All server admin &amp; operator commands — click any card to copy</p>
+</div>
+
+<div class="search-wrap">
+  <span class="search-icon">🔍</span>
+  <input class="search-input" id="search" type="text" placeholder="Search commands, e.g. kick, ban, gamemode…" autocomplete="off" />
+</div>
+
+<div class="legend">
+  <span class="legend-item"><span class="legend-dot" style="background:#5a1010"></span> OP 4 — Owner only</span>
+  <span class="legend-item"><span class="legend-dot" style="background:#5a2a00"></span> OP 2 — Admin</span>
+  <span class="legend-item"><span class="legend-dot" style="background:#5a4400"></span> OP 1 — Moderator</span>
+  <span class="legend-item"><span class="legend-dot" style="background:#1e3a5f"></span> OP 0 — All players</span>
+</div>
+
+<div class="filter-bar" id="filterBar">
+  <button class="filter-btn active" data-cat="all">All</button>
+  <button class="filter-btn" data-cat="player">Player</button>
+  <button class="filter-btn" data-cat="world">World</button>
+  <button class="filter-btn" data-cat="server">Server</button>
+  <button class="filter-btn" data-cat="combat">Combat</button>
+  <button class="filter-btn" data-cat="items">Items</button>
+  <button class="filter-btn" data-cat="entities">Entities</button>
+  <button class="filter-btn" data-cat="time">Time &amp; Weather</button>
+  <button class="filter-btn" data-cat="permissions">Permissions</button>
+  <button class="filter-btn" data-cat="debug">Debug</button>
+</div>
+
+<div class="main" id="main"></div>
+
+<script>
+const CMDS = [
+  // ── PLAYER ──
+  { cat:'player', op:4, name:'/kick', desc:'Remove a player from the server with an optional message.', syntax:'kick <player> [reason]' },
+  { cat:'player', op:3, name:'/ban', desc:'Permanently ban a player by username.', syntax:'ban <player> [reason]' },
+  { cat:'player', op:3, name:'/ban-ip', desc:'Ban a player by IP address.', syntax:'ban-ip <address|player> [reason]' },
+  { cat:'player', op:3, name:'/pardon', desc:'Remove a username ban.', syntax:'pardon <player>' },
+  { cat:'player', op:3, name:'/pardon-ip', desc:'Remove an IP ban.', syntax:'pardon-ip <address>' },
+  { cat:'player', op:3, name:'/banlist', desc:'List all banned players or IPs.', syntax:'banlist [ips|players]' },
+  { cat:'player', op:2, name:'/whitelist add', desc:'Add a player to the whitelist.', syntax:'whitelist add <player>' },
+  { cat:'player', op:2, name:'/whitelist remove', desc:'Remove a player from the whitelist.', syntax:'whitelist remove <player>' },
+  { cat:'player', op:2, name:'/whitelist list', desc:'List all whitelisted players.', syntax:'whitelist list' },
+  { cat:'player', op:2, name:'/whitelist on/off', desc:'Enable or disable the whitelist.', syntax:'whitelist <on|off>' },
+  { cat:'player', op:2, name:'/whitelist reload', desc:'Reload whitelist from disk.', syntax:'whitelist reload' },
+  { cat:'player', op:2, name:'/gamemode', desc:"Change a player's game mode.", syntax:'gamemode <survival|creative|adventure|spectator> [player]' },
+  { cat:'player', op:2, name:'/tp', desc:'Teleport a player to coordinates or another player.', syntax:'tp [target] <x y z | destination> [<yRot> <xRot>]' },
+  { cat:'player', op:2, name:'/teleport', desc:'Alias for /tp with full selector support.', syntax:'teleport <targets> (<x> <y> <z> | <destination>)' },
+  { cat:'player', op:2, name:'/heal', desc:'Restore a player to full health (Forge servers).', syntax:'heal [player]' },
+  { cat:'player', op:2, name:'/feed', desc:'Restore a player to full hunger (Forge servers).', syntax:'feed [player]' },
+  { cat:'player', op:2, name:'/fly', desc:'Toggle flight for a player (Forge/plugin servers).', syntax:'fly [player] [on|off]' },
+  { cat:'player', op:2, name:'/god', desc:'Toggle invincibility (Forge/plugin servers).', syntax:'god [player]' },
+  { cat:'player', op:2, name:'/vanish', desc:'Make yourself invisible to other players (plugin).', syntax:'vanish [player]' },
+  { cat:'player', op:0, name:'/list', desc:'Show all connected players.', syntax:'list [uuids]' },
+  { cat:'player', op:0, name:'/me', desc:'Broadcast an action message in chat.', syntax:'me <action>' },
+  { cat:'player', op:0, name:'/msg', desc:'Send a private message to a player.', syntax:'msg <player> <message>' },
+  { cat:'player', op:0, name:'/tell', desc:'Alias for /msg.', syntax:'tell <player> <message>' },
+  { cat:'player', op:0, name:'/teammsg', desc:'Send a message to all team members.', syntax:'teammsg <message>' },
+  { cat:'player', op:2, name:'/attribute', desc:'Read or modify a player/entity attribute.', syntax:'attribute <target> <attribute> <get|base|modifier> [value|scale]' },
+  { cat:'player', op:2, name:'/effect give', desc:'Apply a potion effect to a player.', syntax:'effect give <targets> <effect> [seconds] [amplifier] [hideParticles]' },
+  { cat:'player', op:2, name:'/effect clear', desc:'Remove all or a specific effect from a target.', syntax:'effect clear [targets] [effect]' },
+  { cat:'player', op:2, name:'/experience add', desc:'Add experience points or levels to a player.', syntax:'experience add <targets> <amount> [points|levels]' },
+  { cat:'player', op:2, name:'/experience set', desc:'Set exact experience points or levels.', syntax:'experience set <targets> <amount> [points|levels]' },
+  { cat:'player', op:2, name:'/experience query', desc:'Query current XP of a player.', syntax:'experience query <target> <points|levels>' },
+
+  // ── ITEMS ──
+  { cat:'items', op:2, name:'/give', desc:'Give a player any item with optional count and NBT.', syntax:'give <targets> <item> [count]' },
+  { cat:'items', op:2, name:'/clear', desc:"Clear a player's inventory, optionally by item.", syntax:'clear [targets] [item] [count]' },
+  { cat:'items', op:2, name:'/enchant', desc:'Enchant a held item.', syntax:'enchant <targets> <enchantment> [level]' },
+  { cat:'items', op:2, name:'/item modify', desc:'Apply item modifiers to a container slot.', syntax:'item modify <entity|block> <slot> <modifier>' },
+  { cat:'items', op:2, name:'/item replace', desc:'Replace an item in an inventory slot.', syntax:'item replace <entity|block> <slot> with <item> [count]' },
+  { cat:'items', op:2, name:'/loot give', desc:'Give loot table drops to a player.', syntax:'loot give <players> <loot source>' },
+  { cat:'items', op:2, name:'/loot spawn', desc:'Spawn loot table drops at a location.', syntax:'loot spawn <x> <y> <z> <loot source>' },
+
+  // ── WORLD ──
+  { cat:'world', op:2, name:'/setblock', desc:'Place any block at exact coordinates.', syntax:'setblock <x> <y> <z> <block> [destroy|keep|replace]' },
+  { cat:'world', op:2, name:'/fill', desc:'Fill a region with a block.', syntax:'fill <x1> <y1> <z1> <x2> <y2> <z2> <block> [destroy|hollow|keep|outline|replace]' },
+  { cat:'world', op:2, name:'/fillbiome', desc:'Change the biome in a region.', syntax:'fillbiome <x1> <y1> <z1> <x2> <y2> <z2> <biome>' },
+  { cat:'world', op:2, name:'/clone', desc:'Copy blocks from one region to another.', syntax:'clone <x1> <y1> <z1> <x2> <y2> <z2> <dx> <dy> <dz> [filtered|masked|replace] [force|move|normal]' },
+  { cat:'world', op:2, name:'/place structure', desc:'Place a structure file at a location.', syntax:'place structure <structure> <x> <y> <z>' },
+  { cat:'world', op:2, name:'/place feature', desc:'Force generate a world feature.', syntax:'place feature <feature> [<x> <y> <z>]' },
+  { cat:'world', op:2, name:'/place jigsaw', desc:'Generate a jigsaw structure.', syntax:'place jigsaw <pool> <target> <maxdepth> [<x> <y> <z>]' },
+  { cat:'world', op:2, name:'/spawnpoint', desc:"Set a player's spawn point.", syntax:'spawnpoint [targets] [<x> <y> <z>] [angle]' },
+  { cat:'world', op:2, name:'/setworldspawn', desc:'Set the world default spawn.', syntax:'setworldspawn [<x> <y> <z>] [angle]' },
+  { cat:'world', op:2, name:'/spreadplayers', desc:'Scatter players/entities randomly in an area.', syntax:'spreadplayers <x> <z> <spreadDistance> <maxRange> [under <maxHeight>] <respectTeams> <targets>' },
+  { cat:'world', op:2, name:'/locate structure', desc:'Find the nearest structure of a type.', syntax:'locate structure <structure>' },
+  { cat:'world', op:2, name:'/locate biome', desc:'Find nearest biome of a type.', syntax:'locate biome <biome>' },
+  { cat:'world', op:2, name:'/locate poi', desc:'Find nearest point of interest.', syntax:'locate poi <poi_type>' },
+  { cat:'world', op:2, name:'/worldborder set', desc:'Set the world border diameter.', syntax:'worldborder set <sizeInBlocks> [timeInSeconds]' },
+  { cat:'world', op:2, name:'/worldborder center', desc:'Move the world border center.', syntax:'worldborder center <x> <z>' },
+  { cat:'world', op:2, name:'/worldborder add', desc:'Expand or shrink the border by amount.', syntax:'worldborder add <sizeInBlocks> [timeInSeconds]' },
+  { cat:'world', op:2, name:'/worldborder damage', desc:'Set damage per block outside border.', syntax:'worldborder damage <amount|buffer> <damagePerBlock|distance>' },
+  { cat:'world', op:2, name:'/worldborder warning', desc:'Set visual warning distance or time.', syntax:'worldborder warning <distance|time> <value>' },
+  { cat:'world', op:2, name:'/worldborder get', desc:'Get current world border size.', syntax:'worldborder get' },
+
+  // ── TIME & WEATHER ──
+  { cat:'time', op:2, name:'/time set', desc:'Set the world time. 0=dawn, 6000=noon, 12000=dusk, 18000=midnight.', syntax:'time set <day|night|noon|midnight|sunrise|sunset|number>' },
+  { cat:'time', op:2, name:'/time add', desc:'Fast-forward time by a tick amount.', syntax:'time add <amount>' },
+  { cat:'time', op:2, name:'/time query', desc:'Query current time value.', syntax:'time query <daytime|gametime|day>' },
+  { cat:'time', op:2, name:'/weather clear', desc:'Set weather to clear.', syntax:'weather clear [seconds]' },
+  { cat:'time', op:2, name:'/weather rain', desc:'Make it rain.', syntax:'weather rain [seconds]' },
+  { cat:'time', op:2, name:'/weather thunder', desc:'Set a thunderstorm.', syntax:'weather thunder [seconds]' },
+  { cat:'time', op:2, name:'/gamerule doDaylightCycle', desc:'Toggle day/night cycle on or off.', syntax:'gamerule doDaylightCycle <true|false>' },
+  { cat:'time', op:2, name:'/gamerule doWeatherCycle', desc:'Toggle weather changes on or off.', syntax:'gamerule doWeatherCycle <true|false>' },
+
+  // ── SERVER ──
+  { cat:'server', op:4, name:'/stop', desc:'Gracefully stop the server.', syntax:'stop' },
+  { cat:'server', op:4, name:'/restart', desc:'Restart the server (plugin/Forge).', syntax:'restart' },
+  { cat:'server', op:4, name:'/reload', desc:'Reload datapacks and resources without restart.', syntax:'reload' },
+  { cat:'server', op:2, name:'/save-all', desc:'Force save all world data to disk.', syntax:'save-all [flush]' },
+  { cat:'server', op:4, name:'/save-off', desc:'Disable automatic world saving.', syntax:'save-off' },
+  { cat:'server', op:4, name:'/save-on', desc:'Re-enable automatic world saving.', syntax:'save-on' },
+  { cat:'server', op:2, name:'/publish', desc:'Open a LAN game (singleplayer only).', syntax:'publish [allowCommands] [gamemode] [port]' },
+  { cat:'server', op:2, name:'/perf start', desc:'Start 10-second performance profiling.', syntax:'perf start' },
+  { cat:'server', op:2, name:'/perf stop', desc:'Stop performance profiling and save report.', syntax:'perf stop' },
+  { cat:'server', op:2, name:'/debug start', desc:'Start a debug profiling session.', syntax:'debug start' },
+  { cat:'server', op:2, name:'/debug stop', desc:'Stop debug profiling.', syntax:'debug stop' },
+  { cat:'server', op:2, name:'/debug function', desc:'Profile a function for one tick.', syntax:'debug function <function>' },
+  { cat:'server', op:2, name:'/msg broadcast', desc:'Broadcast a message to all players.', syntax:'say <message>' },
+
+  // ── PERMISSIONS ──
+  { cat:'permissions', op:4, name:'/op', desc:'Grant operator status to a player.', syntax:'op <player>' },
+  { cat:'permissions', op:4, name:'/deop', desc:'Remove operator status from a player.', syntax:'deop <player>' },
+  { cat:'permissions', op:2, name:'/team add', desc:'Create a new team.', syntax:'team add <team> [displayName]' },
+  { cat:'permissions', op:2, name:'/team remove', desc:'Delete a team.', syntax:'team remove <team>' },
+  { cat:'permissions', op:2, name:'/team join', desc:'Add players to a team.', syntax:'team join <team> [members]' },
+  { cat:'permissions', op:2, name:'/team leave', desc:'Remove players from their current team.', syntax:'team leave <members>' },
+  { cat:'permissions', op:2, name:'/team list', desc:'List all teams and their members.', syntax:'team list [team]' },
+  { cat:'permissions', op:2, name:'/team option', desc:'Configure team options (friendly fire, nametag, etc).', syntax:'team option <team> <option> <value>' },
+
+  // ── ENTITIES ──
+  { cat:'entities', op:2, name:'/summon', desc:'Spawn any entity at a location.', syntax:'summon <entity> [<x> <y> <z>] [nbt]' },
+  { cat:'entities', op:2, name:'/kill', desc:'Kill a player, entity, or selector.', syntax:'kill [targets]' },
+  { cat:'entities', op:2, name:'/ride', desc:'Make a target ride another entity.', syntax:'ride <target> <mount|dismount|summon_ride|summon_any_ride> [options]' },
+  { cat:'entities', op:2, name:'/data get', desc:'Read NBT data from an entity or block.', syntax:'data get <entity|block|storage> <target> [path] [scale]' },
+  { cat:'entities', op:2, name:'/data merge', desc:'Merge NBT data into an entity or block.', syntax:'data merge <entity|block|storage> <target> <nbt>' },
+  { cat:'entities', op:2, name:'/data modify', desc:'Modify a specific NBT path.', syntax:'data modify <entity|block|storage> <target> <path> <operation> <source>' },
+  { cat:'entities', op:2, name:'/data remove', desc:'Remove an NBT path from a target.', syntax:'data remove <entity|block|storage> <target> <path>' },
+
+  // ── COMBAT ──
+  { cat:'combat', op:2, name:'/difficulty', desc:'Set server difficulty.', syntax:'difficulty <peaceful|easy|normal|hard>' },
+  { cat:'combat', op:2, name:'/gamerule pvp', desc:'Toggle PvP damage between players (plugin).', syntax:'gamerule pvp <true|false>' },
+  { cat:'combat', op:2, name:'/gamerule keepInventory', desc:'Keep inventory on death.', syntax:'gamerule keepInventory <true|false>' },
+  { cat:'combat', op:2, name:'/gamerule doMobSpawning', desc:'Toggle mob spawning.', syntax:'gamerule doMobSpawning <true|false>' },
+  { cat:'combat', op:2, name:'/gamerule doMobLoot', desc:'Toggle mob loot drops.', syntax:'gamerule doMobLoot <true|false>' },
+  { cat:'combat', op:2, name:'/gamerule naturalRegeneration', desc:'Toggle natural health regeneration.', syntax:'gamerule naturalRegeneration <true|false>' },
+  { cat:'combat', op:2, name:'/gamerule doImmediateRespawn', desc:'Skip death screen and respawn instantly.', syntax:'gamerule doImmediateRespawn <true|false>' },
+  { cat:'combat', op:2, name:'/gamerule forgiveDeadPlayers', desc:'Hostile mobs stop targeting a dead player.', syntax:'gamerule forgiveDeadPlayers <true|false>' },
+  { cat:'combat', op:2, name:'/damage', desc:'Deal a set amount of damage to a target.', syntax:'damage <target> <amount> [<damageType>] [at <location> | by <entity> [from <cause>]]' },
+
+  // ── DEBUG ──
+  { cat:'debug', op:2, name:'/scoreboard objectives add', desc:'Create a scoreboard objective.', syntax:'scoreboard objectives add <name> <criterion> [displayName]' },
+  { cat:'debug', op:2, name:'/scoreboard objectives remove', desc:'Remove a scoreboard objective.', syntax:'scoreboard objectives remove <name>' },
+  { cat:'debug', op:2, name:'/scoreboard objectives setdisplay', desc:'Display scoreboard in sidebar/list/etc.', syntax:'scoreboard objectives setdisplay <slot> [objective]' },
+  { cat:'debug', op:2, name:'/scoreboard players set', desc:'Set a player score.', syntax:'scoreboard players set <targets> <objective> <score>' },
+  { cat:'debug', op:2, name:'/scoreboard players add', desc:'Add to a player score.', syntax:'scoreboard players add <targets> <objective> <score>' },
+  { cat:'debug', op:2, name:'/scoreboard players reset', desc:'Reset a player score.', syntax:'scoreboard players reset <targets> [objective]' },
+  { cat:'debug', op:2, name:'/execute', desc:'Run commands conditionally, at locations, as entities.', syntax:'execute [as|at|if|unless|run|positioned|align|anchored|in|rotated|store|facing|on] ...' },
+  { cat:'debug', op:2, name:'/function', desc:'Run a .mcfunction file.', syntax:'function <namespace:path>' },
+  { cat:'debug', op:2, name:'/tag add', desc:'Add a tag to a target entity.', syntax:'tag <targets> add <name>' },
+  { cat:'debug', op:2, name:'/tag remove', desc:'Remove a tag from a target entity.', syntax:'tag <targets> remove <name>' },
+  { cat:'debug', op:2, name:'/tag list', desc:'List all tags on a target.', syntax:'tag <targets> list' },
+  { cat:'debug', op:2, name:'/forceload add', desc:'Force chunks to stay loaded.', syntax:'forceload add <from> [<to>]' },
+  { cat:'debug', op:2, name:'/forceload remove', desc:'Stop force-loading chunks.', syntax:'forceload remove <from> [<to>|all]' },
+  { cat:'debug', op:2, name:'/forceload query', desc:'Check if a chunk is force-loaded.', syntax:'forceload query [<pos>]' },
+  { cat:'debug', op:2, name:'/trigger', desc:'Allow players to modify their own trigger scores.', syntax:'trigger <objective> [add|set] [value]' },
+  { cat:'debug', op:2, name:'/tick rate', desc:'Change the server tick rate (1.21+).', syntax:'tick rate <rate>' },
+  { cat:'debug', op:2, name:'/tick freeze', desc:'Freeze the game tick.', syntax:'tick freeze' },
+  { cat:'debug', op:2, name:'/tick unfreeze', desc:'Resume frozen ticks.', syntax:'tick unfreeze' },
+  { cat:'debug', op:2, name:'/tick step', desc:'Advance game by N ticks while frozen.', syntax:'tick step [<count>]' },
+];
+
+const OP_LABELS = { 4:'OP 4', 3:'OP 3', 2:'OP 2', 1:'OP 1', 0:'OP 0' };
+const OP_CLASS  = { 4:'op4', 3:'op4', 2:'op2', 1:'op1', 0:'op0' };
+
+const CATS = {
+  player:      '👤 Player Management',
+  items:       '🎒 Items & Inventory',
+  world:       '🌍 World Editing',
+  time:        '⏰ Time & Weather',
+  server:      '🖥️ Server Control',
+  permissions: '🔑 Permissions & Teams',
+  entities:    '🐾 Entities & NBT',
+  combat:      '⚔️ Combat & Gamerules',
+  debug:       '🔧 Debug & Scripting',
+};
+
+let activeFilter = 'all';
+let searchVal = '';
+
+function opClass(op) { return OP_CLASS[op] || 'op0'; }
+
+function buildCards(list) {
+  if (!list.length) return '<div class="no-results">No commands match your search.</div>';
+  const byCat = {};
+  list.forEach(c => { (byCat[c.cat] = byCat[c.cat] || []).push(c); });
+  return Object.entries(CATS)
+    .filter(([k]) => byCat[k])
+    .map(([k, label]) => `
+      <div class="category-section" data-cat="${k}">
+        <div class="category-title">${label}</div>
+        <div class="cmd-grid">
+          ${byCat[k].map(cmd => `
+            <div class="cmd-card" onclick="copyCmd(this,'${cmd.syntax.replace(/'/g,"\\'")}')">
+              <div class="cmd-top">
+                <span class="cmd-name">${cmd.name}</span>
+                <span class="cmd-op ${opClass(cmd.op)}">${OP_LABELS[cmd.op]}</span>
+              </div>
+              <div class="cmd-desc">${cmd.desc}</div>
+              <div class="cmd-syntax">${fmtSyntax(cmd.syntax)}</div>
+              <span class="copy-hint">click to copy</span>
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
+}
+
+function fmtSyntax(s) {
+  return s
+    .replace(/&lt;([^>]+)&gt;/g, '<span class="arg">&lt;$1&gt;</span>')
+    .replace(/\[([^\]]+)\]/g, '<span class="opt">[$1]</span>')
+    .replace(/<([^/][^>]*)>/g, '<span class="arg">&lt;$1&gt;</span>')
+    .replace(/\[([^\]]+)\]/g, '<span class="opt">[$1]</span>');
+}
+
+function render() {
+  const q = searchVal.toLowerCase();
+  let list = CMDS.filter(c => {
+    const matchCat = activeFilter === 'all' || c.cat === activeFilter;
+    const matchQ = !q || c.name.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q) || c.syntax.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+  document.getElementById('main').innerHTML = buildCards(list);
+}
+
+function copyCmd(el, syntax) {
+  navigator.clipboard.writeText('/' + syntax).catch(() => {});
+  el.classList.add('copied');
+  el.querySelector('.copy-hint').textContent = '✓ copied!';
+  setTimeout(() => {
+    el.classList.remove('copied');
+    el.querySelector('.copy-hint').textContent = 'click to copy';
+  }, 1500);
+}
+
+document.getElementById('search').addEventListener('input', e => {
+  searchVal = e.target.value;
+  render();
+});
+
+document.getElementById('filterBar').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = btn.dataset.cat;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
