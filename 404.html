@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>404 — Under Construction</title>
+  <title>404 — Bridge Out</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin:0; padding:0; box-sizing:border-box; }
 
     body {
-      background: #1a1a2e;
+      background: #0d0d1a;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -20,266 +19,184 @@
       overflow: hidden;
     }
 
-    /* ── SKY ── */
+    /* SKY */
     .sky {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(180deg, #0d0d1a 0%, #1a1a3e 40%, #2d1b4e 70%, #3d2244 100%);
+      position: fixed; inset: 0;
+      background: linear-gradient(180deg, #0d0d1a 0%, #1a1a3e 45%, #2d1b4e 72%, #1a3a5c 88%, #0a2030 100%);
       z-index: 0;
     }
 
-    /* ── STARS ── */
-    .stars {
-      position: fixed;
-      inset: 0;
-      z-index: 1;
-    }
+    /* STARS */
+    .stars { position:fixed; inset:0; z-index:1; }
     .star {
-      position: absolute;
-      background: #fff;
-      border-radius: 50%;
+      position:absolute; background:#fff; border-radius:50%;
       animation: twinkle 2s infinite alternate;
     }
-
     @keyframes twinkle {
-      from { opacity: 0.2; }
-      to   { opacity: 1; }
+      from { opacity:0.15; } to { opacity:1; }
     }
 
-    /* ── MOON ── */
-    .moon {
-      position: fixed;
-      top: 8%;
-      right: 12%;
-      width: 56px;
-      height: 56px;
-      z-index: 2;
-      image-rendering: pixelated;
-    }
+    /* MOON */
+    .moon { position:fixed; top:7%; right:11%; width:52px; height:52px; z-index:2; image-rendering:pixelated; }
 
-    /* ── CITY SILHOUETTE ── */
+    /* CITY — pushed up, sits above bridge */
     .city {
-      position: fixed;
-      bottom: 180px;
-      left: 0;
-      width: 100%;
-      height: 120px;
-      z-index: 3;
+      position:fixed;
+      bottom: 42%;   /* sits above bridge */
+      left:0; width:100%; height:130px;
+      z-index:3;
     }
 
-    /* ── BRIDGE ── */
+    /* BRIDGE — sits at ~30% from bottom */
     .bridge-wrap {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 220px;
-      z-index: 4;
+      position:fixed;
+      bottom: 28%;
+      left:0; width:100%; height:22px;
+      z-index:6;
+      display:flex;
+      align-items:flex-end;
     }
 
-    /* ── ROAD / GROUND ── */
-    .ground {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 60px;
-      background: #1c1c1c;
-      z-index: 5;
-    }
-    .road-line {
-      position: absolute;
-      top: 28px;
-      height: 5px;
-      width: 60px;
-      background: #f5c518;
-      animation: roadScroll 0.6s linear infinite;
-    }
-
-    @keyframes roadScroll {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-80px); }
-    }
-
-    /* ── BRIDGE DECK ── */
-    .bridge-deck {
-      position: fixed;
-      bottom: 60px;
-      left: 0;
-      width: 100%;
-      height: 18px;
-      z-index: 6;
-      display: flex;
-    }
-    .bridge-segment {
-      flex: 1;
-      height: 18px;
+    /* Left intact half */
+    .bridge-left {
+      width: 58%;
+      height: 20px;
       background: #3a3a3a;
       border-top: 3px solid #555;
-      border-right: 1px solid #222;
+      border-right: none;
+      flex-shrink:0;
+      position:relative;
     }
-    /* Gap in the middle — the missing section */
-    .bridge-gap {
-      flex: 0 0 180px;
-      height: 18px;
-      background: transparent;
+    /* Jagged broken edge */
+    .bridge-left::after {
+      content:'';
+      position:absolute;
+      right:-14px; top:-3px;
+      width:14px; height:23px;
+      background: linear-gradient(to bottom right, #3a3a3a 50%, transparent 50%);
+      clip-path: polygon(0 0, 100% 0, 100% 30%, 70% 60%, 100% 80%, 60% 100%, 0 100%);
     }
+    /* Road markings on bridge */
+    .bridge-road-lines {
+      position:absolute; top:6px; left:0; width:100%; height:5px;
+      overflow:hidden;
+    }
+    .brl { position:absolute; width:50px; height:4px; background:#f5c518; animation: roadScroll 0.55s linear infinite; }
+    @keyframes roadScroll { from{transform:translateX(0)} to{transform:translateX(-70px)} }
 
-    /* ── BRIDGE CABLES ── */
+    /* CABLES */
     .cables {
-      position: fixed;
-      bottom: 78px;
-      left: 0;
-      width: 100%;
-      height: 120px;
-      z-index: 6;
-      pointer-events: none;
+      position:fixed;
+      bottom: calc(28% + 20px);
+      left:0; width:58%; height:130px;
+      z-index:5;
+      pointer-events:none;
     }
 
-    /* ── CONSTRUCTION SIGN ── */
-    .construction-sign {
-      position: fixed;
-      bottom: 78px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-      text-align: center;
-      animation: signBob 1s ease-in-out infinite alternate;
+    /* CONSTRUCTION SIGN at broken edge */
+    .sign {
+      position:fixed;
+      bottom: calc(28% + 20px);
+      left: 56%;
+      z-index:10;
+      text-align:center;
+      animation: signBob 1.1s ease-in-out infinite alternate;
     }
-    .construction-sign .sign-post {
-      width: 6px;
-      height: 36px;
-      background: #aaa;
-      margin: 0 auto;
+    .sign .board {
+      background:#f5c518; border:3px solid #111;
+      padding:5px 8px; font-size:6px; color:#111; line-height:1.8;
     }
-    .construction-sign .sign-board {
-      background: #f5c518;
-      border: 3px solid #111;
-      padding: 6px 10px;
-      font-size: 7px;
-      color: #111;
-      white-space: nowrap;
-      line-height: 1.6;
-    }
-
+    .sign .post { width:5px; height:28px; background:#aaa; margin:0 auto; }
     @keyframes signBob {
-      from { transform: translateX(-50%) rotate(-2deg); }
-      to   { transform: translateX(-50%) rotate(2deg); }
+      from { transform:rotate(-3deg); } to { transform:rotate(3deg); }
     }
 
-    /* ── WORKER ── */
+    /* WORKERS */
     .worker {
-      position: fixed;
-      bottom: 78px;
-      z-index: 11;
-      image-rendering: pixelated;
-      animation: workerWalk 0.5s steps(2) infinite;
+      position:fixed;
+      bottom: calc(28% + 20px);
+      z-index:11; image-rendering:pixelated;
     }
-    .worker-left  { left:  calc(50% - 120px); }
-    .worker-right { right: calc(50% - 120px); }
+    .worker-a { left:48%; }
+    .worker-b { left:52%; animation-delay:0.25s; }
 
-    @keyframes workerWalk {
-      0%   { transform: scaleX(1); }
-      50%  { transform: scaleX(-1); }
-      100% { transform: scaleX(1); }
+    /* WATER at bottom */
+    .water {
+      position:fixed;
+      bottom:0; left:0; width:100%; height:27%;
+      z-index:4;
+      background: linear-gradient(180deg, #0a2a45 0%, #0d3d66 40%, #0a2a45 100%);
+      overflow:hidden;
+    }
+    .wave {
+      position:absolute; top:0; left:-200px;
+      width:calc(100% + 400px); height:40px;
+      background: rgba(30,100,160,0.5);
+      border-radius:50%;
+      animation: wave linear infinite;
+    }
+    .wave1 { animation-duration:4s; top:4px; }
+    .wave2 { animation-duration:6s; top:14px; opacity:0.6; animation-direction:reverse; }
+    .wave3 { animation-duration:8s; top:24px; opacity:0.4; }
+    @keyframes wave {
+      from { transform:translateX(0) scaleY(1); }
+      50%  { transform:translateX(80px) scaleY(1.3); }
+      to   { transform:translateX(0) scaleY(1); }
     }
 
-    /* ── CARS ── */
-    .car-lane {
-      position: fixed;
-      bottom: 63px;
-      width: 100%;
-      height: 18px;
-      z-index: 9;
-      overflow: hidden;
+    /* CAR LAYER */
+    .car-layer {
+      position:fixed; bottom:0; left:0; width:100%; height:100%;
+      z-index:8; pointer-events:none; overflow:hidden;
     }
-
     .car {
-      position: absolute;
-      bottom: 0;
-      image-rendering: pixelated;
-      animation: drive linear infinite;
+      position:absolute;
+      image-rendering:pixelated;
     }
 
-    .car.falling {
-      animation: driveAndFall linear forwards;
+    /* SPLASH */
+    .splash {
+      position:absolute;
+      font-size:22px;
+      z-index:12;
+      pointer-events:none;
+      animation: splashAnim 0.9s ease-out forwards;
+    }
+    @keyframes splashAnim {
+      0%   { transform:scale(0.4); opacity:1; }
+      50%  { transform:scale(1.5); opacity:1; }
+      100% { transform:scale(2); opacity:0; }
     }
 
-    @keyframes drive {
-      from { transform: translateX(-120px); }
-      to   { transform: translateX(110vw); }
-    }
-
-    @keyframes driveAndFall {
-      0%   { transform: translateX(var(--start-x)) translateY(0) rotate(0deg);   opacity: 1; }
-      60%  { transform: translateX(var(--gap-x))   translateY(0) rotate(0deg);   opacity: 1; }
-      75%  { transform: translateX(var(--gap-x))   translateY(0) rotate(-5deg);  opacity: 1; }
-      100% { transform: translateX(calc(var(--gap-x) + 40px)) translateY(300px) rotate(-80deg); opacity: 0; }
-    }
-
-    /* ── UI OVERLAY ── */
+    /* UI TEXT */
     .ui {
-      position: relative;
-      z-index: 20;
-      text-align: center;
-      margin-bottom: 260px;
-      padding: 0 16px;
+      position:relative; z-index:20;
+      text-align:center;
+      margin-bottom: 34%;
+      padding:0 16px;
     }
-
     .error-code {
-      font-size: clamp(48px, 10vw, 80px);
-      color: #f5c518;
+      font-size: clamp(48px, 9vw, 76px);
+      color:#f5c518;
       text-shadow: 4px 4px 0 #a8860f, -2px -2px 0 #000;
-      animation: glitch 3s infinite;
-      letter-spacing: 4px;
+      animation: glitch 3.5s infinite;
+      letter-spacing:4px;
     }
-
     @keyframes glitch {
-      0%, 90%, 100% { text-shadow: 4px 4px 0 #a8860f, -2px -2px 0 #000; transform: none; }
-      92% { transform: translateX(-3px); text-shadow: 4px 4px 0 #f00, -2px -2px 0 #0ff; }
-      94% { transform: translateX(3px);  text-shadow: 4px 4px 0 #0ff, -2px -2px 0 #f00; }
-      96% { transform: none; }
+      0%,88%,100% { text-shadow:4px 4px 0 #a8860f,-2px -2px 0 #000; transform:none; }
+      90% { transform:translateX(-3px); text-shadow:4px 4px 0 #f00,-2px -2px 0 #0ff; }
+      92% { transform:translateX(3px);  text-shadow:4px 4px 0 #0ff,-2px -2px 0 #f00; }
+      94% { transform:none; }
     }
-
-    .subtitle {
-      font-size: clamp(7px, 1.5vw, 10px);
-      color: #ccc;
-      margin-top: 18px;
-      line-height: 2;
-    }
-
+    .subtitle { font-size:clamp(6px,1.4vw,9px); color:#bbb; margin-top:16px; line-height:2.2; }
     .home-btn {
-      display: inline-block;
-      margin-top: 28px;
-      padding: 12px 24px;
-      background: #f5c518;
-      color: #111;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 8px;
-      text-decoration: none;
-      border: 3px solid #111;
-      box-shadow: 4px 4px 0 #000;
-      transition: transform 0.1s, box-shadow 0.1s;
+      display:inline-block; margin-top:24px; padding:11px 22px;
+      background:#f5c518; color:#111;
+      font-family:'Press Start 2P',monospace; font-size:7px;
+      text-decoration:none; border:3px solid #111; box-shadow:4px 4px 0 #000;
+      transition:transform 0.1s,box-shadow 0.1s;
     }
-    .home-btn:hover {
-      transform: translate(2px, 2px);
-      box-shadow: 2px 2px 0 #000;
-    }
-
-    /* ── EXPLOSION ── */
-    .explosion {
-      position: fixed;
-      z-index: 15;
-      pointer-events: none;
-      font-size: 28px;
-      animation: explode 0.8s ease-out forwards;
-      display: none;
-    }
-    @keyframes explode {
-      0%   { transform: scale(0.3); opacity: 1; }
-      60%  { transform: scale(1.6); opacity: 1; }
-      100% { transform: scale(2);   opacity: 0; }
-    }
+    .home-btn:hover { transform:translate(2px,2px); box-shadow:2px 2px 0 #000; }
   </style>
 </head>
 <body>
@@ -287,291 +204,322 @@
 <div class="sky"></div>
 <div class="stars" id="stars"></div>
 
-<!-- Moon (pixel SVG) -->
+<!-- Moon -->
 <svg class="moon" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
   <rect x="4" y="0" width="6" height="2" fill="#ffffcc"/>
   <rect x="2" y="2" width="10" height="2" fill="#ffffcc"/>
   <rect x="1" y="4" width="12" height="6" fill="#ffffcc"/>
   <rect x="2" y="10" width="10" height="2" fill="#ffffcc"/>
   <rect x="4" y="12" width="6" height="2" fill="#ffffcc"/>
-  <!-- crater -->
   <rect x="8" y="5" width="2" height="2" fill="#ddd9a0"/>
   <rect x="4" y="7" width="3" height="2" fill="#ddd9a0"/>
 </svg>
 
-<!-- City skyline (pixel SVG) -->
-<svg class="city" viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="0"    y="60"  width="40"  height="60"  fill="#12122a"/>
-  <rect x="5"    y="40"  width="30"  height="80"  fill="#12122a"/>
-  <rect x="10"   y="20"  width="20"  height="100" fill="#12122a"/>
-  <rect x="60"   y="50"  width="50"  height="70"  fill="#12122a"/>
-  <rect x="70"   y="30"  width="30"  height="90"  fill="#12122a"/>
-  <rect x="130"  y="70"  width="35"  height="50"  fill="#12122a"/>
-  <rect x="140"  y="45"  width="15"  height="75"  fill="#12122a"/>
-  <rect x="200"  y="55"  width="60"  height="65"  fill="#12122a"/>
-  <rect x="215"  y="35"  width="30"  height="85"  fill="#12122a"/>
-  <rect x="285"  y="65"  width="45"  height="55"  fill="#12122a"/>
-  <rect x="295"  y="40"  width="25"  height="80"  fill="#12122a"/>
-  <rect x="360"  y="50"  width="55"  height="70"  fill="#12122a"/>
-  <rect x="375"  y="25"  width="25"  height="95"  fill="#12122a"/>
-  <rect x="440"  y="60"  width="40"  height="60"  fill="#12122a"/>
-  <rect x="500"  y="55"  width="50"  height="65"  fill="#12122a"/>
-  <rect x="515"  y="30"  width="20"  height="90"  fill="#12122a"/>
-  <rect x="580"  y="70"  width="35"  height="50"  fill="#12122a"/>
-  <rect x="640"  y="50"  width="55"  height="70"  fill="#12122a"/>
-  <rect x="655"  y="28"  width="25"  height="92"  fill="#12122a"/>
-  <rect x="720"  y="60"  width="40"  height="60"  fill="#12122a"/>
-  <rect x="790"  y="45"  width="50"  height="75"  fill="#12122a"/>
-  <rect x="805"  y="22"  width="20"  height="98"  fill="#12122a"/>
-  <rect x="870"  y="65"  width="40"  height="55"  fill="#12122a"/>
-  <rect x="940"  y="50"  width="55"  height="70"  fill="#12122a"/>
-  <rect x="955"  y="25"  width="25"  height="95"  fill="#12122a"/>
-  <rect x="1020" y="60"  width="40"  height="60"  fill="#12122a"/>
-  <rect x="1080" y="45"  width="50"  height="75"  fill="#12122a"/>
-  <rect x="1095" y="18"  width="20"  height="102" fill="#12122a"/>
-  <rect x="1150" y="55"  width="50"  height="65"  fill="#12122a"/>
-  <!-- windows (yellow lit) -->
-  <rect x="12" y="28" width="4" height="4" fill="#f5c518" opacity="0.8"/>
-  <rect x="20" y="36" width="4" height="4" fill="#f5c518" opacity="0.6"/>
-  <rect x="75" y="38" width="4" height="4" fill="#f5c518" opacity="0.8"/>
-  <rect x="83" y="50" width="4" height="4" fill="#f5c518" opacity="0.5"/>
-  <rect x="217" y="42" width="4" height="4" fill="#f5c518" opacity="0.7"/>
-  <rect x="225" y="55" width="4" height="4" fill="#f5c518" opacity="0.9"/>
-  <rect x="377" y="32" width="4" height="4" fill="#f5c518" opacity="0.8"/>
-  <rect x="385" y="44" width="4" height="4" fill="#f5c518" opacity="0.6"/>
-  <rect x="516" y="38" width="4" height="4" fill="#f5c518" opacity="0.7"/>
-  <rect x="657" y="35" width="4" height="4" fill="#f5c518" opacity="0.8"/>
-  <rect x="665" y="48" width="4" height="4" fill="#f5c518" opacity="0.5"/>
-  <rect x="806" y="30" width="4" height="4" fill="#f5c518" opacity="0.9"/>
-  <rect x="814" y="42" width="4" height="4" fill="#f5c518" opacity="0.7"/>
-  <rect x="956" y="33" width="4" height="4" fill="#f5c518" opacity="0.8"/>
-  <rect x="1096" y="26" width="4" height="4" fill="#f5c518" opacity="0.6"/>
+<!-- City skyline -->
+<svg class="city" viewBox="0 0 1200 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0"    y="70"  width="40"  height="60"  fill="#0e0e22"/>
+  <rect x="5"    y="45"  width="30"  height="85"  fill="#0e0e22"/>
+  <rect x="10"   y="20"  width="20"  height="110" fill="#0e0e22"/>
+  <rect x="55"   y="55"  width="50"  height="75"  fill="#0e0e22"/>
+  <rect x="68"   y="32"  width="28"  height="98"  fill="#0e0e22"/>
+  <rect x="125"  y="68"  width="38"  height="62"  fill="#0e0e22"/>
+  <rect x="135"  y="42"  width="18"  height="88"  fill="#0e0e22"/>
+  <rect x="195"  y="52"  width="62"  height="78"  fill="#0e0e22"/>
+  <rect x="212"  y="28"  width="28"  height="102" fill="#0e0e22"/>
+  <rect x="285"  y="62"  width="48"  height="68"  fill="#0e0e22"/>
+  <rect x="298"  y="36"  width="22"  height="94"  fill="#0e0e22"/>
+  <rect x="365"  y="48"  width="58"  height="82"  fill="#0e0e22"/>
+  <rect x="382"  y="22"  width="24"  height="108" fill="#0e0e22"/>
+  <rect x="450"  y="58"  width="42"  height="72"  fill="#0e0e22"/>
+  <rect x="510"  y="52"  width="52"  height="78"  fill="#0e0e22"/>
+  <rect x="526"  y="28"  width="20"  height="102" fill="#0e0e22"/>
+  <rect x="590"  y="68"  width="38"  height="62"  fill="#0e0e22"/>
+  <rect x="648"  y="48"  width="56"  height="82"  fill="#0e0e22"/>
+  <rect x="664"  y="24"  width="24"  height="106" fill="#0e0e22"/>
+  <rect x="730"  y="58"  width="44"  height="72"  fill="#0e0e22"/>
+  <rect x="800"  y="42"  width="52"  height="88"  fill="#0e0e22"/>
+  <rect x="816"  y="18"  width="20"  height="112" fill="#0e0e22"/>
+  <rect x="880"  y="62"  width="42"  height="68"  fill="#0e0e22"/>
+  <rect x="945"  y="48"  width="56"  height="82"  fill="#0e0e22"/>
+  <rect x="962"  y="22"  width="22"  height="108" fill="#0e0e22"/>
+  <rect x="1028" y="58"  width="42"  height="72"  fill="#0e0e22"/>
+  <rect x="1090" y="42"  width="52"  height="88"  fill="#0e0e22"/>
+  <rect x="1106" y="15"  width="20"  height="115" fill="#0e0e22"/>
+  <rect x="1160" y="52"  width="40"  height="78"  fill="#0e0e22"/>
+  <!-- lit windows -->
+  <rect x="12"  y="28"  width="4" height="4" fill="#f5c518" opacity="0.7"/>
+  <rect x="20"  y="40"  width="4" height="4" fill="#f5c518" opacity="0.5"/>
+  <rect x="70"  y="40"  width="4" height="4" fill="#f5c518" opacity="0.8"/>
+  <rect x="78"  y="54"  width="4" height="4" fill="#f5c518" opacity="0.5"/>
+  <rect x="214" y="36"  width="4" height="4" fill="#f5c518" opacity="0.7"/>
+  <rect x="222" y="50"  width="4" height="4" fill="#f5c518" opacity="0.9"/>
+  <rect x="384" y="30"  width="4" height="4" fill="#f5c518" opacity="0.8"/>
+  <rect x="528" y="36"  width="4" height="4" fill="#f5c518" opacity="0.7"/>
+  <rect x="666" y="32"  width="4" height="4" fill="#f5c518" opacity="0.8"/>
+  <rect x="818" y="26"  width="4" height="4" fill="#f5c518" opacity="0.9"/>
+  <rect x="964" y="30"  width="4" height="4" fill="#f5c518" opacity="0.8"/>
+  <rect x="1108" y="23" width="4" height="4" fill="#f5c518" opacity="0.6"/>
 </svg>
 
-<!-- Bridge deck with gap -->
-<div class="bridge-deck" id="bridgeDeck">
-  <div class="bridge-segment" style="flex: 1 1 calc(50% - 90px)"></div>
-  <div class="bridge-gap"></div>
-  <div class="bridge-segment" style="flex: 1 1 calc(50% - 90px)"></div>
-</div>
-
-<!-- Bridge cables (SVG) -->
-<svg class="cables" viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Left tower -->
-  <rect x="280" y="0" width="10" height="120" fill="#555"/>
-  <!-- Right tower -->
-  <rect x="910" y="0" width="10" height="120" fill="#555"/>
-  <!-- Main cables -->
-  <path d="M 0 30 Q 290 110 600 115" stroke="#888" stroke-width="3" fill="none"/>
-  <path d="M 1200 30 Q 910 110 600 115" stroke="#888" stroke-width="3" fill="none"/>
-  <!-- Suspenders left -->
-  <line x1="100" y1="58"  x2="100" y2="120" stroke="#666" stroke-width="1.5"/>
-  <line x1="160" y1="72"  x2="160" y2="120" stroke="#666" stroke-width="1.5"/>
-  <line x1="220" y1="84"  x2="220" y2="120" stroke="#666" stroke-width="1.5"/>
-  <line x1="280" y1="94"  x2="280" y2="120" stroke="#666" stroke-width="1.5"/>
-  <!-- Suspenders right -->
-  <line x1="920" y1="94"  x2="920" y2="120" stroke="#666" stroke-width="1.5"/>
-  <line x1="980" y1="84"  x2="980" y2="120" stroke="#666" stroke-width="1.5"/>
-  <line x1="1040" y1="72" x2="1040" y2="120" stroke="#666" stroke-width="1.5"/>
-  <line x1="1100" y1="58" x2="1100" y2="120" stroke="#666" stroke-width="1.5"/>
+<!-- Bridge cables (left side only) -->
+<svg class="cables" viewBox="0 0 700 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="230" y="0" width="10" height="130" fill="#555"/>
+  <path d="M 0 25 Q 240 115 696 120" stroke="#888" stroke-width="3" fill="none"/>
+  <line x1="80"  y1="52"  x2="80"  y2="130" stroke="#666" stroke-width="1.5"/>
+  <line x1="145" y1="68"  x2="145" y2="130" stroke="#666" stroke-width="1.5"/>
+  <line x1="210" y1="82"  x2="210" y2="130" stroke="#666" stroke-width="1.5"/>
+  <line x1="330" y1="92"  x2="330" y2="130" stroke="#666" stroke-width="1.5"/>
+  <line x1="430" y1="100" x2="430" y2="130" stroke="#666" stroke-width="1.5"/>
+  <line x1="530" y1="108" x2="530" y2="130" stroke="#666" stroke-width="1.5"/>
+  <line x1="630" y1="114" x2="630" y2="130" stroke="#666" stroke-width="1.5"/>
 </svg>
 
-<!-- Ground / road -->
-<div class="ground">
-  <div id="roadLines"></div>
+<!-- Bridge deck (left half only, broken edge right side) -->
+<div class="bridge-wrap">
+  <div class="bridge-left" id="bridgeLeft">
+    <div class="bridge-road-lines" id="roadLines"></div>
+  </div>
 </div>
 
-<!-- Cars lane -->
-<div class="car-lane" id="carLane"></div>
-
-<!-- Construction sign in the gap -->
-<div class="construction-sign">
-  <div class="sign-board">⚠ BRIDGE OUT ⚠<br>PAGE NOT FOUND</div>
-  <div class="sign-post"></div>
+<!-- Construction sign at broken edge -->
+<div class="sign" id="signEl">
+  <div class="board">⚠ BRIDGE OUT ⚠<br>404 NOT FOUND</div>
+  <div class="post"></div>
 </div>
 
-<!-- Pixel workers -->
-<svg class="worker worker-left" width="16" height="24" viewBox="0 0 8 12">
-  <rect x="2" y="0" width="4" height="4" fill="#f5c518"/> <!-- hard hat -->
+<!-- Workers -->
+<svg class="worker worker-a" width="16" height="24" viewBox="0 0 8 12">
+  <rect x="2" y="0" width="4" height="3" fill="#f5c518"/>
   <rect x="1" y="1" width="6" height="2" fill="#e6a800"/>
-  <rect x="2" y="4" width="4" height="4" fill="#ff6b35"/> <!-- body -->
-  <rect x="0" y="5" width="2" height="3" fill="#ff6b35"/> <!-- arm L -->
-  <rect x="6" y="5" width="2" height="3" fill="#ff6b35"/> <!-- arm R -->
-  <rect x="2" y="8" width="2" height="4" fill="#333"/>    <!-- leg L -->
-  <rect x="4" y="8" width="2" height="4" fill="#333"/>    <!-- leg R -->
-  <rect x="6" y="7" width="3" height="2" fill="#888"/>    <!-- shovel -->
+  <rect x="2" y="3" width="4" height="4" fill="#ff6b35"/>
+  <rect x="0" y="4" width="2" height="3" fill="#ff6b35"/>
+  <rect x="6" y="4" width="2" height="3" fill="#ff6b35"/>
+  <rect x="2" y="7" width="2" height="5" fill="#333"/>
+  <rect x="4" y="7" width="2" height="5" fill="#444"/>
+  <rect x="6" y="6" width="3" height="2" fill="#888"/>
 </svg>
-
-<svg class="worker worker-right" width="16" height="24" viewBox="0 0 8 12">
-  <rect x="2" y="0" width="4" height="4" fill="#f5c518"/>
+<svg class="worker worker-b" width="16" height="24" viewBox="0 0 8 12">
+  <rect x="2" y="0" width="4" height="3" fill="#f5c518"/>
   <rect x="1" y="1" width="6" height="2" fill="#e6a800"/>
-  <rect x="2" y="4" width="4" height="4" fill="#ff6b35"/>
-  <rect x="0" y="5" width="2" height="3" fill="#ff6b35"/>
-  <rect x="6" y="5" width="2" height="3" fill="#ff6b35"/>
-  <rect x="2" y="8" width="2" height="4" fill="#333"/>
-  <rect x="4" y="8" width="2" height="4" fill="#333"/>
-  <rect x="-1" y="7" width="3" height="2" fill="#888"/>
+  <rect x="2" y="3" width="4" height="4" fill="#e55"/>
+  <rect x="0" y="4" width="2" height="3" fill="#e55"/>
+  <rect x="6" y="4" width="2" height="3" fill="#e55"/>
+  <rect x="2" y="7" width="2" height="5" fill="#333"/>
+  <rect x="4" y="7" width="2" height="5" fill="#444"/>
+  <rect x="-1" y="6" width="3" height="2" fill="#888"/>
 </svg>
 
-<!-- Text overlay -->
+<!-- Water -->
+<div class="water">
+  <div class="wave wave1"></div>
+  <div class="wave wave2"></div>
+  <div class="wave wave3"></div>
+</div>
+
+<!-- Cars rendered here by JS -->
+<div class="car-layer" id="carLayer"></div>
+
+<!-- UI -->
 <div class="ui">
   <div class="error-code">404</div>
-  <div class="subtitle">
-    PAGE NOT FOUND<br><br>
-    THIS ROUTE IS UNDER CONSTRUCTION
-  </div>
+  <div class="subtitle">PAGE NOT FOUND<br><br>THIS ROAD ENDS HERE</div>
   <a class="home-btn" href="/">← GO HOME</a>
 </div>
-
-<!-- Explosions container -->
-<div id="explosions"></div>
 
 <script>
   // ── Stars ──
   const starsEl = document.getElementById('stars');
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 130; i++) {
     const s = document.createElement('div');
     s.className = 'star';
-    const size = Math.random() < 0.2 ? 2 : 1;
-    s.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*65}%;left:${Math.random()*100}%;animation-delay:${Math.random()*2}s;animation-duration:${1.5+Math.random()*2}s`;
+    const sz = Math.random() < 0.18 ? 2 : 1;
+    s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*60}%;left:${Math.random()*100}%;animation-delay:${Math.random()*2}s;animation-duration:${1.5+Math.random()*2}s`;
     starsEl.appendChild(s);
   }
 
-  // ── Road dashes ──
-  const roadLines = document.getElementById('roadLines');
-  for (let i = 0; i < 25; i++) {
+  // ── Road dashes on bridge ──
+  const rl = document.getElementById('roadLines');
+  for (let i = 0; i < 20; i++) {
     const d = document.createElement('div');
-    d.className = 'road-line';
-    d.style.left = (i * 80) + 'px';
-    d.style.animationDelay = (-i * 0.1) + 's';
-    roadLines.appendChild(d);
+    d.className = 'brl';
+    d.style.left = (i * 70) + 'px';
+    d.style.top = '5px';
+    d.style.animationDelay = (-i * 0.08) + 's';
+    rl.appendChild(d);
   }
 
-  // ── Car pixel SVGs ──
+  // ── Car SVGs ──
   const carSVGs = [
-    // red car
-    `<svg width="48" height="20" viewBox="0 0 24 10" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated">
-      <rect x="2"  y="4" width="20" height="5" fill="#c0392b"/>
-      <rect x="5"  y="1" width="12" height="4" fill="#e74c3c"/>
-      <rect x="6"  y="2" width="4"  height="3" fill="#85c1e9" opacity="0.9"/>
-      <rect x="12" y="2" width="4"  height="3" fill="#85c1e9" opacity="0.9"/>
-      <rect x="0"  y="6" width="3"  height="3" fill="#f39c12"/>
-      <rect x="21" y="6" width="3"  height="3" fill="#e74c3c" opacity="0.6"/>
-      <rect x="4"  y="8" width="4"  height="4" fill="#222" rx="2"/>
-      <rect x="16" y="8" width="4"  height="4" fill="#222" rx="2"/>
-      <rect x="5"  y="9" width="2"  height="2" fill="#888"/>
-      <rect x="17" y="9" width="2"  height="2" fill="#888"/>
+    // red
+    `<svg width="44" height="18" viewBox="0 0 22 9" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated">
+      <rect x="1" y="4" width="20" height="4" fill="#c0392b"/>
+      <rect x="4" y="1" width="12" height="4" fill="#e74c3c"/>
+      <rect x="5" y="2" width="4" height="3" fill="#85c1e9" opacity="0.85"/>
+      <rect x="11" y="2" width="4" height="3" fill="#85c1e9" opacity="0.85"/>
+      <rect x="0" y="5" width="3" height="3" fill="#f9ca24"/>
+      <rect x="19" y="5" width="3" height="3" fill="#c0392b" opacity="0.5"/>
+      <rect x="3" y="7" width="4" height="4" fill="#111"/>
+      <rect x="15" y="7" width="4" height="4" fill="#111"/>
+      <rect x="4" y="8" width="2" height="2" fill="#777"/>
+      <rect x="16" y="8" width="2" height="2" fill="#777"/>
     </svg>`,
-    // blue car
-    `<svg width="48" height="20" viewBox="0 0 24 10" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated">
-      <rect x="2"  y="4" width="20" height="5" fill="#2471a3"/>
-      <rect x="5"  y="1" width="12" height="4" fill="#2e86c1"/>
-      <rect x="6"  y="2" width="4"  height="3" fill="#85c1e9" opacity="0.9"/>
-      <rect x="12" y="2" width="4"  height="3" fill="#85c1e9" opacity="0.9"/>
-      <rect x="0"  y="6" width="3"  height="3" fill="#f39c12"/>
-      <rect x="21" y="6" width="3"  height="3" fill="#c0392b" opacity="0.6"/>
-      <rect x="4"  y="8" width="4"  height="4" fill="#222"/>
-      <rect x="16" y="8" width="4"  height="4" fill="#222"/>
-      <rect x="5"  y="9" width="2"  height="2" fill="#888"/>
-      <rect x="17" y="9" width="2"  height="2" fill="#888"/>
+    // blue
+    `<svg width="44" height="18" viewBox="0 0 22 9" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated">
+      <rect x="1" y="4" width="20" height="4" fill="#1a5276"/>
+      <rect x="4" y="1" width="12" height="4" fill="#2e86c1"/>
+      <rect x="5" y="2" width="4" height="3" fill="#85c1e9" opacity="0.85"/>
+      <rect x="11" y="2" width="4" height="3" fill="#85c1e9" opacity="0.85"/>
+      <rect x="0" y="5" width="3" height="3" fill="#f9ca24"/>
+      <rect x="19" y="5" width="3" height="3" fill="#c0392b" opacity="0.5"/>
+      <rect x="3" y="7" width="4" height="4" fill="#111"/>
+      <rect x="15" y="7" width="4" height="4" fill="#111"/>
+      <rect x="4" y="8" width="2" height="2" fill="#777"/>
+      <rect x="16" y="8" width="2" height="2" fill="#777"/>
     </svg>`,
     // yellow taxi
-    `<svg width="48" height="20" viewBox="0 0 24 10" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated">
-      <rect x="2"  y="4" width="20" height="5" fill="#d4ac0d"/>
-      <rect x="5"  y="1" width="12" height="4" fill="#f5c518"/>
-      <rect x="6"  y="2" width="4"  height="3" fill="#85c1e9" opacity="0.9"/>
-      <rect x="12" y="2" width="4"  height="3" fill="#85c1e9" opacity="0.9"/>
-      <rect x="0"  y="6" width="3"  height="3" fill="#f39c12"/>
-      <rect x="21" y="6" width="3"  height="3" fill="#c0392b" opacity="0.6"/>
-      <rect x="9"  y="0" width="6"  height="2" fill="#111"/>
-      <rect x="4"  y="8" width="4"  height="4" fill="#222"/>
-      <rect x="16" y="8" width="4"  height="4" fill="#222"/>
-      <rect x="5"  y="9" width="2"  height="2" fill="#888"/>
-      <rect x="17" y="9" width="2"  height="2" fill="#888"/>
+    `<svg width="44" height="18" viewBox="0 0 22 9" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated">
+      <rect x="1" y="4" width="20" height="4" fill="#d4ac0d"/>
+      <rect x="4" y="1" width="12" height="4" fill="#f5c518"/>
+      <rect x="5" y="2" width="4" height="3" fill="#85c1e9" opacity="0.85"/>
+      <rect x="11" y="2" width="4" height="3" fill="#85c1e9" opacity="0.85"/>
+      <rect x="8" y="0" width="5" height="2" fill="#111"/>
+      <rect x="0" y="5" width="3" height="3" fill="#f9ca24"/>
+      <rect x="19" y="5" width="3" height="3" fill="#c0392b" opacity="0.5"/>
+      <rect x="3" y="7" width="4" height="4" fill="#111"/>
+      <rect x="15" y="7" width="4" height="4" fill="#111"/>
+      <rect x="4" y="8" width="2" height="2" fill="#777"/>
+      <rect x="16" y="8" width="2" height="2" fill="#777"/>
     </svg>`,
-    // green car
-    `<svg width="48" height="20" viewBox="0 0 24 10" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated">
-      <rect x="2"  y="4" width="20" height="5" fill="#1e8449"/>
-      <rect x="5"  y="1" width="12" height="4" fill="#27ae60"/>
-      <rect x="6"  y="2" width="4"  height="3" fill="#85c1e9" opacity="0.9"/>
-      <rect x="12" y="2" width="4"  height="3" fill="#85c1e9" opacity="0.9"/>
-      <rect x="0"  y="6" width="3"  height="3" fill="#f39c12"/>
-      <rect x="21" y="6" width="3"  height="3" fill="#c0392b" opacity="0.6"/>
-      <rect x="4"  y="8" width="4"  height="4" fill="#222"/>
-      <rect x="16" y="8" width="4"  height="4" fill="#222"/>
-      <rect x="5"  y="9" width="2"  height="2" fill="#888"/>
-      <rect x="17" y="9" width="2"  height="2" fill="#888"/>
+    // green
+    `<svg width="44" height="18" viewBox="0 0 22 9" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated">
+      <rect x="1" y="4" width="20" height="4" fill="#1e8449"/>
+      <rect x="4" y="1" width="12" height="4" fill="#27ae60"/>
+      <rect x="5" y="2" width="4" height="3" fill="#85c1e9" opacity="0.85"/>
+      <rect x="11" y="2" width="4" height="3" fill="#85c1e9" opacity="0.85"/>
+      <rect x="0" y="5" width="3" height="3" fill="#f9ca24"/>
+      <rect x="19" y="5" width="3" height="3" fill="#c0392b" opacity="0.5"/>
+      <rect x="3" y="7" width="4" height="4" fill="#111"/>
+      <rect x="15" y="7" width="4" height="4" fill="#111"/>
+      <rect x="4" y="8" width="2" height="2" fill="#777"/>
+      <rect x="16" y="8" width="2" height="2" fill="#777"/>
     </svg>`,
   ];
 
-  const lane = document.getElementById('carLane');
-  const gap  = document.getElementById('bridgeDeck').querySelector('.bridge-gap');
-  const explosions = document.getElementById('explosions');
+  const layer = document.getElementById('carLayer');
 
-  function getGapCenter() {
-    const rect = gap.getBoundingClientRect();
-    return rect.left + rect.width / 2;
+  // Get bridge edge X position in viewport
+  function getBridgeEdgeX() {
+    const bridge = document.getElementById('bridgeLeft');
+    const rect = bridge.getBoundingClientRect();
+    return rect.right;
   }
 
-  let carCount = 0;
+  // Get bridge Y position
+  function getBridgeY() {
+    const bridge = document.getElementById('bridgeLeft');
+    const rect = bridge.getBoundingClientRect();
+    return rect.top;
+  }
+
+  // Get water surface Y
+  function getWaterY() {
+    return window.innerHeight * 0.73;
+  }
 
   function spawnCar() {
-    const willFall = Math.random() < 0.35; // 35% chance car falls
-    const svg = carSVGs[Math.floor(Math.random() * carSVGs.length)];
-    const speed = 3 + Math.random() * 3; // seconds to cross screen
+    const svgStr = carSVGs[Math.floor(Math.random() * carSVGs.length)];
+    const speed  = 2.8 + Math.random() * 2.2; // seconds to cross screen
+    const carH   = 18;
+
+    const edgeX  = getBridgeEdgeX();
+    const bridgeY = getBridgeY();
+    const waterY = getWaterY();
+    const fallDist = waterY - bridgeY;
+
     const car = document.createElement('div');
     car.className = 'car';
-    car.innerHTML = svg;
-    car.style.bottom = '0px';
+    car.innerHTML = svgStr;
 
-    if (willFall) {
-      const gapX = getGapCenter();
-      const startX = -60;
-      car.style.setProperty('--start-x', startX + 'px');
-      car.style.setProperty('--gap-x', gapX + 'px');
-      car.style.left = '0px';
-      car.style.animation = `driveAndFall ${speed * 1.4}s linear forwards`;
-      car.classList.add('falling');
+    // Start off-screen left, at bridge height
+    car.style.left = '-60px';
+    car.style.top  = (bridgeY - carH + 4) + 'px';
 
-      // Explosion when it falls
-      car.addEventListener('animationend', () => {
-        spawnExplosion(gapX, window.innerHeight - 140);
-        car.remove();
-      });
-    } else {
-      car.style.animation = `drive ${speed}s linear forwards`;
-      car.addEventListener('animationend', () => car.remove());
+    layer.appendChild(car);
+
+    // Phase 1: drive across bridge to edge
+    const vw = window.innerWidth;
+    const driveTime = (edgeX / vw) * speed * 1000; // ms to reach edge
+
+    // Animate drive phase with JS (requestAnimationFrame for smooth arc)
+    const startTime = performance.now();
+    const totalDrivePx = edgeX + 60; // from -60 to edgeX
+
+    function driveTick(now) {
+      const elapsed = now - startTime;
+      const t = elapsed / driveTime;
+      if (t >= 1) {
+        // Start fall phase
+        startFall(car, edgeX, bridgeY - carH + 4, fallDist, speed);
+        return;
+      }
+      car.style.left = (-60 + totalDrivePx * t) + 'px';
+      requestAnimationFrame(driveTick);
     }
-
-    lane.appendChild(car);
-    carCount++;
+    requestAnimationFrame(driveTick);
   }
 
-  function spawnExplosion(x, y) {
-    const emojis = ['💥','🔥','💣','😱'];
+  function startFall(car, startX, startY, fallDist, speed) {
+    const fallDuration = 1400 + Math.random() * 400; // ms
+    const horizontalDrift = 80 + Math.random() * 60;  // px forward during fall
+    const startTime = performance.now();
+    const waterSurfaceY = getWaterY();
+
+    function fallTick(now) {
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / fallDuration, 1);
+
+      // Elliptical arc: x moves linearly, y follows t^1.8 (gravity-ish)
+      const x = startX + horizontalDrift * t;
+      const y = startY + fallDist * Math.pow(t, 1.6);
+      const rotation = t * 110; // spin as it falls
+
+      car.style.left      = x + 'px';
+      car.style.top       = y + 'px';
+      car.style.transform = `rotate(${rotation}deg)`;
+      car.style.opacity   = t > 0.85 ? (1 - (t - 0.85) / 0.15) : 1;
+
+      if (t < 1) {
+        requestAnimationFrame(fallTick);
+      } else {
+        // Splash!
+        spawnSplash(x, waterSurfaceY);
+        car.remove();
+      }
+    }
+    requestAnimationFrame(fallTick);
+  }
+
+  function spawnSplash(x, y) {
+    const emojis = ['💦','🌊','💧','😱','💥'];
     const e = document.createElement('div');
-    e.className = 'explosion';
+    e.className = 'splash';
     e.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-    e.style.left = (x - 20) + 'px';
-    e.style.top  = (y - 20) + 'px';
-    e.style.display = 'block';
-    explosions.appendChild(e);
-    setTimeout(() => e.remove(), 900);
+    e.style.left = (x - 14) + 'px';
+    e.style.top  = (y - 14) + 'px';
+    layer.appendChild(e);
+    setTimeout(() => e.remove(), 950);
   }
 
-  // Spawn cars at random intervals
-  function scheduleNextCar() {
-    const delay = 800 + Math.random() * 2000;
-    setTimeout(() => {
-      spawnCar();
-      scheduleNextCar();
-    }, delay);
+  // Continuous car spawning
+  function scheduleNext() {
+    const delay = 900 + Math.random() * 1800;
+    setTimeout(() => { spawnCar(); scheduleNext(); }, delay);
   }
 
-  // Initial burst
-  setTimeout(() => spawnCar(), 300);
-  setTimeout(() => spawnCar(), 900);
-  scheduleNextCar();
+  // Initial cars
+  setTimeout(() => spawnCar(), 400);
+  setTimeout(() => spawnCar(), 1200);
+  scheduleNext();
 </script>
 </body>
 </html>
