@@ -39,12 +39,20 @@
     /* MOON */
     .moon { position:fixed; top:7%; right:11%; width:52px; height:52px; z-index:2; image-rendering:pixelated; }
 
-    /* CITY — pushed up, sits above bridge */
+    /* CITY — bottoms sit at water horizon, tops stay high */
     .city {
       position:fixed;
-      bottom: 42%;   /* sits above bridge */
-      left:0; width:100%; height:130px;
+      bottom: 27%;
+      left:0; width:100%; height:220px;
       z-index:3;
+    }
+    /* Window SVG overlay (same position as city) */
+    .city-windows {
+      position:fixed;
+      bottom: 27%;
+      left:0; width:100%; height:220px;
+      z-index:4;
+      pointer-events:none;
     }
 
     /* BRIDGE — sits at ~30% from bottom */
@@ -215,51 +223,42 @@
   <rect x="4" y="7" width="3" height="2" fill="#ddd9a0"/>
 </svg>
 
-<!-- City skyline -->
-<svg class="city" viewBox="0 0 1200 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="0"    y="70"  width="40"  height="60"  fill="#0e0e22"/>
-  <rect x="5"    y="45"  width="30"  height="85"  fill="#0e0e22"/>
-  <rect x="10"   y="20"  width="20"  height="110" fill="#0e0e22"/>
-  <rect x="55"   y="55"  width="50"  height="75"  fill="#0e0e22"/>
-  <rect x="68"   y="32"  width="28"  height="98"  fill="#0e0e22"/>
-  <rect x="125"  y="68"  width="38"  height="62"  fill="#0e0e22"/>
-  <rect x="135"  y="42"  width="18"  height="88"  fill="#0e0e22"/>
-  <rect x="195"  y="52"  width="62"  height="78"  fill="#0e0e22"/>
-  <rect x="212"  y="28"  width="28"  height="102" fill="#0e0e22"/>
-  <rect x="285"  y="62"  width="48"  height="68"  fill="#0e0e22"/>
-  <rect x="298"  y="36"  width="22"  height="94"  fill="#0e0e22"/>
-  <rect x="365"  y="48"  width="58"  height="82"  fill="#0e0e22"/>
-  <rect x="382"  y="22"  width="24"  height="108" fill="#0e0e22"/>
-  <rect x="450"  y="58"  width="42"  height="72"  fill="#0e0e22"/>
-  <rect x="510"  y="52"  width="52"  height="78"  fill="#0e0e22"/>
-  <rect x="526"  y="28"  width="20"  height="102" fill="#0e0e22"/>
-  <rect x="590"  y="68"  width="38"  height="62"  fill="#0e0e22"/>
-  <rect x="648"  y="48"  width="56"  height="82"  fill="#0e0e22"/>
-  <rect x="664"  y="24"  width="24"  height="106" fill="#0e0e22"/>
-  <rect x="730"  y="58"  width="44"  height="72"  fill="#0e0e22"/>
-  <rect x="800"  y="42"  width="52"  height="88"  fill="#0e0e22"/>
-  <rect x="816"  y="18"  width="20"  height="112" fill="#0e0e22"/>
-  <rect x="880"  y="62"  width="42"  height="68"  fill="#0e0e22"/>
-  <rect x="945"  y="48"  width="56"  height="82"  fill="#0e0e22"/>
-  <rect x="962"  y="22"  width="22"  height="108" fill="#0e0e22"/>
-  <rect x="1028" y="58"  width="42"  height="72"  fill="#0e0e22"/>
-  <rect x="1090" y="42"  width="52"  height="88"  fill="#0e0e22"/>
-  <rect x="1106" y="15"  width="20"  height="115" fill="#0e0e22"/>
-  <rect x="1160" y="52"  width="40"  height="78"  fill="#0e0e22"/>
-  <!-- lit windows -->
-  <rect x="12"  y="28"  width="4" height="4" fill="#f5c518" opacity="0.7"/>
-  <rect x="20"  y="40"  width="4" height="4" fill="#f5c518" opacity="0.5"/>
-  <rect x="70"  y="40"  width="4" height="4" fill="#f5c518" opacity="0.8"/>
-  <rect x="78"  y="54"  width="4" height="4" fill="#f5c518" opacity="0.5"/>
-  <rect x="214" y="36"  width="4" height="4" fill="#f5c518" opacity="0.7"/>
-  <rect x="222" y="50"  width="4" height="4" fill="#f5c518" opacity="0.9"/>
-  <rect x="384" y="30"  width="4" height="4" fill="#f5c518" opacity="0.8"/>
-  <rect x="528" y="36"  width="4" height="4" fill="#f5c518" opacity="0.7"/>
-  <rect x="666" y="32"  width="4" height="4" fill="#f5c518" opacity="0.8"/>
-  <rect x="818" y="26"  width="4" height="4" fill="#f5c518" opacity="0.9"/>
-  <rect x="964" y="30"  width="4" height="4" fill="#f5c518" opacity="0.8"/>
-  <rect x="1108" y="23" width="4" height="4" fill="#f5c518" opacity="0.6"/>
+<!-- City skyline — buildings extend to water horizon, tops preserved -->
+<svg class="city" id="citySvg" viewBox="0 0 1200 220" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- each building: same top Y as before, height now reaches 220 (water level) -->
+  <rect x="0"    y="70"  width="40"  height="150" fill="#0e0e22"/>
+  <rect x="5"    y="45"  width="30"  height="175" fill="#0e0e22"/>
+  <rect x="10"   y="20"  width="20"  height="200" fill="#0e0e22"/>
+  <rect x="55"   y="55"  width="50"  height="165" fill="#0e0e22"/>
+  <rect x="68"   y="32"  width="28"  height="188" fill="#0e0e22"/>
+  <rect x="125"  y="68"  width="38"  height="152" fill="#0e0e22"/>
+  <rect x="135"  y="42"  width="18"  height="178" fill="#0e0e22"/>
+  <rect x="195"  y="52"  width="62"  height="168" fill="#0e0e22"/>
+  <rect x="212"  y="28"  width="28"  height="192" fill="#0e0e22"/>
+  <rect x="285"  y="62"  width="48"  height="158" fill="#0e0e22"/>
+  <rect x="298"  y="36"  width="22"  height="184" fill="#0e0e22"/>
+  <rect x="365"  y="48"  width="58"  height="172" fill="#0e0e22"/>
+  <rect x="382"  y="22"  width="24"  height="198" fill="#0e0e22"/>
+  <rect x="450"  y="58"  width="42"  height="162" fill="#0e0e22"/>
+  <rect x="510"  y="52"  width="52"  height="168" fill="#0e0e22"/>
+  <rect x="526"  y="28"  width="20"  height="192" fill="#0e0e22"/>
+  <rect x="590"  y="68"  width="38"  height="152" fill="#0e0e22"/>
+  <rect x="648"  y="48"  width="56"  height="172" fill="#0e0e22"/>
+  <rect x="664"  y="24"  width="24"  height="196" fill="#0e0e22"/>
+  <rect x="730"  y="58"  width="44"  height="162" fill="#0e0e22"/>
+  <rect x="800"  y="42"  width="52"  height="178" fill="#0e0e22"/>
+  <rect x="816"  y="18"  width="20"  height="202" fill="#0e0e22"/>
+  <rect x="880"  y="62"  width="42"  height="158" fill="#0e0e22"/>
+  <rect x="945"  y="48"  width="56"  height="172" fill="#0e0e22"/>
+  <rect x="962"  y="22"  width="22"  height="198" fill="#0e0e22"/>
+  <rect x="1028" y="58"  width="42"  height="162" fill="#0e0e22"/>
+  <rect x="1090" y="42"  width="52"  height="178" fill="#0e0e22"/>
+  <rect x="1106" y="15"  width="20"  height="205" fill="#0e0e22"/>
+  <rect x="1160" y="52"  width="40"  height="168" fill="#0e0e22"/>
 </svg>
+
+<!-- Animated windows overlay (populated by JS) -->
+<svg class="city-windows" id="windowsSvg" viewBox="0 0 1200 220" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"></svg>
 
 <!-- Bridge cables (left side only) -->
 <svg class="cables" viewBox="0 0 700 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -336,6 +335,117 @@
     s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*60}%;left:${Math.random()*100}%;animation-delay:${Math.random()*2}s;animation-duration:${1.5+Math.random()*2}s`;
     starsEl.appendChild(s);
   }
+
+  // ── Windows ──
+  // Buildings defined as {x, top, w} — bottom is always 220 (water level)
+  const BUILDINGS = [
+    {x:5,  top:45, w:30}, {x:10,  top:20, w:20},
+    {x:68, top:32, w:28}, {x:135, top:42, w:18},
+    {x:212,top:28, w:28}, {x:298, top:36, w:22},
+    {x:382,top:22, w:24}, {x:526, top:28, w:20},
+    {x:664,top:24, w:24}, {x:816, top:18, w:20},
+    {x:962,top:22, w:22}, {x:1106,top:15, w:20},
+    // wider buildings
+    {x:55, top:55, w:50}, {x:195, top:52, w:62},
+    {x:285,top:62, w:48}, {x:365, top:48, w:58},
+    {x:450,top:58, w:42}, {x:510, top:52, w:52},
+    {x:590,top:68, w:38}, {x:648, top:48, w:56},
+    {x:730,top:58, w:44}, {x:800, top:42, w:52},
+    {x:880,top:62, w:42}, {x:945, top:48, w:56},
+    {x:1028,top:58,w:42}, {x:1090,top:42, w:52},
+    {x:1160,top:52,w:40},
+  ];
+
+  const BOTTOM    = 218;
+  const WIN_W     = 4, WIN_H = 4;
+  const COL_GAP   = 3, ROW_GAP = 5;
+  const MARGIN    = 3;
+  const svgNS     = 'http://www.w3.org/2000/svg';
+  const winSvg    = document.getElementById('windowsSvg');
+
+  // Window colours: warm yellow, white, blue-white, orange
+  const WIN_COLORS = ['#f5c518','#fffde7','#c8e6ff','#ffb347'];
+
+  // Build all windows
+  const allWindows   = [];   // {el, building index, floor}
+  const byBuilding   = [];   // array of arrays
+
+  BUILDINGS.forEach((b, bi) => {
+    byBuilding[bi] = [];
+    const cols   = Math.max(1, Math.floor((b.w - MARGIN*2) / (WIN_W + COL_GAP)));
+    const height = BOTTOM - b.top;
+    const rows   = Math.max(1, Math.floor((height - MARGIN*2) / (WIN_H + ROW_GAP)));
+    const colStart = b.x + MARGIN + Math.floor(((b.w - MARGIN*2) - cols*(WIN_W+COL_GAP) + COL_GAP) / 2);
+
+    for (let row = 0; row < rows; row++) {
+      const wy = b.top + MARGIN + row * (WIN_H + ROW_GAP);
+      for (let col = 0; col < cols; col++) {
+        const wx = colStart + col * (WIN_W + COL_GAP);
+        const el = document.createElementNS(svgNS, 'rect');
+        el.setAttribute('x', wx);
+        el.setAttribute('y', wy);
+        el.setAttribute('width',  WIN_W);
+        el.setAttribute('height', WIN_H);
+        el.setAttribute('fill', WIN_COLORS[Math.floor(Math.random() * WIN_COLORS.length)]);
+        el.setAttribute('opacity', Math.random() < 0.55 ? (0.5 + Math.random()*0.5).toFixed(2) : '0');
+        winSvg.appendChild(el);
+        const w = {el, bi, floor: row, col};
+        allWindows.push(w);
+        byBuilding[bi].push(w);
+      }
+    }
+  });
+
+  // ── Random "left on" blinkers — occasional slow flicker ──
+  allWindows.forEach(w => {
+    if (Math.random() < 0.12) {
+      // randomly blinks now and then (forgotten light, maybe a fish tank)
+      const blinkInterval = 4000 + Math.random() * 12000;
+      setInterval(() => {
+        const cur = parseFloat(w.el.getAttribute('opacity'));
+        if (cur > 0) {
+          // brief flicker off then back on
+          w.el.setAttribute('opacity', '0');
+          setTimeout(() => w.el.setAttribute('opacity', (0.6+Math.random()*0.4).toFixed(2)), 120 + Math.random()*200);
+        }
+      }, blinkInterval);
+    }
+  });
+
+  // ── Janitor sweeper — per building, sweeps floors off one by one then restarts ──
+  function runJanitor(bi) {
+    const wins = byBuilding[bi];
+    if (!wins.length) return;
+    const floors = [...new Set(wins.map(w => w.floor))].sort((a,b) => b-a); // top to bottom
+
+    let fi = 0;
+    function sweepNextFloor() {
+      if (fi >= floors.length) {
+        // Done — pause then turn some lights back on and restart
+        setTimeout(() => {
+          wins.forEach(w => {
+            if (Math.random() < 0.5) w.el.setAttribute('opacity', (0.5+Math.random()*0.5).toFixed(2));
+          });
+          fi = 0;
+          setTimeout(sweepNextFloor, 3000 + Math.random() * 6000);
+        }, 2000 + Math.random() * 4000);
+        return;
+      }
+      const floor = floors[fi++];
+      wins.filter(w => w.floor === floor).forEach(w => {
+        w.el.setAttribute('opacity', '0');
+      });
+      setTimeout(sweepNextFloor, 300 + Math.random() * 600);
+    }
+
+    // Stagger janitor start per building
+    setTimeout(sweepNextFloor, Math.random() * 20000);
+  }
+
+  // Assign ~40% of buildings a janitor
+  BUILDINGS.forEach((_, bi) => {
+    if (Math.random() < 0.4) runJanitor(bi);
+  });
 
   // ── Road dashes on bridge ──
   const rl = document.getElementById('roadLines');
