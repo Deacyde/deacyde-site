@@ -428,73 +428,69 @@
 
   function spawnCar() {
     const svgStr = carSVGs[Math.floor(Math.random() * carSVGs.length)];
-    const speed  = 2.8 + Math.random() * 2.2; // seconds to cross screen
+    const speed  = 2.8 + Math.random() * 2.2; // seconds to cross full screen
     const carH   = 18;
 
-    const edgeX  = getBridgeEdgeX();
+    const edgeX   = getBridgeEdgeX();
     const bridgeY = getBridgeY();
-    const waterY = getWaterY();
-    const fallDist = waterY - bridgeY;
 
     const car = document.createElement('div');
     car.className = 'car';
     car.innerHTML = svgStr;
-
-    // Start off-screen left, at bridge height
     car.style.left = '-60px';
     car.style.top  = (bridgeY - carH + 4) + 'px';
-
     layer.appendChild(car);
 
-    // Phase 1: drive across bridge to edge
-    const vw = window.innerWidth;
-    const driveTime = (edgeX / vw) * speed * 1000; // ms to reach edge
+    const vw           = window.innerWidth;
+    const totalDrivePx = edgeX + 60;           // px from start to edge
+    const driveTimeMs  = speed * 1000 * (totalDrivePx / vw); // proportional time
+    const vx           = totalDrivePx / driveTimeMs; // px/ms — constant horizontal velocity
 
-    // Animate drive phase with JS (requestAnimationFrame for smooth arc)
     const startTime = performance.now();
-    const totalDrivePx = edgeX + 60; // from -60 to edgeX
 
     function driveTick(now) {
       const elapsed = now - startTime;
-      const t = elapsed / driveTime;
-      if (t >= 1) {
-        // Start fall phase
-        startFall(car, edgeX, bridgeY - carH + 4, fallDist, speed);
+      if (elapsed >= driveTimeMs) {
+        // Hand off to fall with exact same vx
+        startFall(car, edgeX, bridgeY - carH + 4, vx);
         return;
       }
-      car.style.left = (-60 + totalDrivePx * t) + 'px';
+      car.style.left = (-60 + vx * elapsed) + 'px';
       requestAnimationFrame(driveTick);
     }
     requestAnimationFrame(driveTick);
   }
 
-  function startFall(car, startX, startY, fallDist, speed) {
-    const fallDuration = 1400 + Math.random() * 400; // ms
-    const horizontalDrift = 80 + Math.random() * 60;  // px forward during fall
+  function startFall(car, startX, startY, vx) {
+    // Real projectile physics: constant vx, vy starts at 0 and accelerates
+    const gravity   = 0.00055; // px/ms^2  — tune for feel
+    const waterY    = getWaterY();
     const startTime = performance.now();
-    const waterSurfaceY = getWaterY();
+    let   vy        = 0;
+    let   prevTime  = startTime;
+    let   x         = startX;
+    let   y         = startY;
 
     function fallTick(now) {
-      const elapsed = now - startTime;
-      const t = Math.min(elapsed / fallDuration, 1);
+      const dt = now - prevTime;
+      prevTime = now;
 
-      // Elliptical arc: x moves linearly, y follows t^1.8 (gravity-ish)
-      const x = startX + horizontalDrift * t;
-      const y = startY + fallDist * Math.pow(t, 1.6);
-      const rotation = t * 110; // spin as it falls
+      vy += gravity * dt;   // gravity accelerates downward
+      x  += vx * dt;        // constant forward momentum
+      y  += vy * dt;
 
+      // Nose-down rotation based on vertical vs horizontal velocity ratio
+      const angle = Math.atan2(vy, vx) * (180 / Math.PI);
       car.style.left      = x + 'px';
       car.style.top       = y + 'px';
-      car.style.transform = `rotate(${rotation}deg)`;
-      car.style.opacity   = t > 0.85 ? (1 - (t - 0.85) / 0.15) : 1;
+      car.style.transform = `rotate(${angle}deg)`;
 
-      if (t < 1) {
-        requestAnimationFrame(fallTick);
-      } else {
-        // Splash!
-        spawnSplash(x, waterSurfaceY);
+      if (y >= waterY) {
+        spawnSplash(x, waterY);
         car.remove();
+        return;
       }
+      requestAnimationFrame(fallTick);
     }
     requestAnimationFrame(fallTick);
   }
