@@ -418,28 +418,32 @@
     if (!wins.length) return;
     const floors = [...new Set(wins.map(w => w.floor))].sort((a,b) => b-a); // top to bottom
 
+    // 3% of windows in this building are "always on" — stubborn lights, never swept
+    const alwaysOn = new Set(wins.filter(() => Math.random() < 0.03).map(w => w.el));
+
     let fi = 0;
     function sweepNextFloor() {
       if (fi >= floors.length) {
-        // Done — pause then turn some lights back on and restart
+        // Done — long pause, then lights come back on and janitor restarts
         setTimeout(() => {
           wins.forEach(w => {
             if (Math.random() < 0.5) w.el.setAttribute('opacity', (0.5+Math.random()*0.5).toFixed(2));
           });
           fi = 0;
-          setTimeout(sweepNextFloor, 3000 + Math.random() * 6000);
-        }, 2000 + Math.random() * 4000);
+          setTimeout(sweepNextFloor, 8000 + Math.random() * 12000);
+        }, 5000 + Math.random() * 8000);
         return;
       }
       const floor = floors[fi++];
       wins.filter(w => w.floor === floor).forEach(w => {
-        w.el.setAttribute('opacity', '0');
+        if (!alwaysOn.has(w.el)) w.el.setAttribute('opacity', '0');
       });
-      setTimeout(sweepNextFloor, 300 + Math.random() * 600);
+      // Much slower sweep — 1.2s to 3.5s per floor
+      setTimeout(sweepNextFloor, 1200 + Math.random() * 2300);
     }
 
-    // Stagger janitor start per building
-    setTimeout(sweepNextFloor, Math.random() * 20000);
+    // Stagger janitor start per building — spread over 60s so they're never in sync
+    setTimeout(sweepNextFloor, 5000 + Math.random() * 55000);
   }
 
   // Assign ~40% of buildings a janitor
@@ -757,19 +761,31 @@
   setTimeout(spawnPlane, 20000 + Math.random() * 15000); // second plane lane
 
   // ── HELICOPTER ──
-  const heliSVG = `<svg width="48" height="28" viewBox="0 0 24 14" xmlns="http://www.w3.org/2000/svg">
-    <rect x="4"  y="7"  width="14" height="5"  fill="#888"/>
-    <rect x="14" y="6"  width="6"  height="3"  fill="#777"/>
-    <rect x="3"  y="8"  width="3"  height="3"  fill="#85c1e9" opacity="0.8"/>
-    <rect x="7"  y="8"  width="3"  height="3"  fill="#85c1e9" opacity="0.8"/>
-    <rect x="18" y="7"  width="5"  height="2"  fill="#666"/>
-    <rect x="22" y="6"  width="2"  height="4"  fill="#555"/>
-    <!-- skids -->
-    <rect x="5"  y="12" width="8"  height="1"  fill="#666"/>
-    <rect x="6"  y="11" width="1"  height="2"  fill="#555"/>
-    <rect x="11" y="11" width="1"  height="2"  fill="#555"/>
-    <!-- spotlight beam hint -->
-    <rect x="7"  y="13" width="3"  height="1"  fill="#ffffe0" opacity="0.5"/>
+  // SVG faces RIGHT — cockpit/nose at the right side (high x), tail at left.
+  // So: moving right = 'none', moving left = 'scaleX(-1)' (already correct in moveHeli).
+  const heliSVG = `<svg width="52" height="22" viewBox="0 0 52 22" xmlns="http://www.w3.org/2000/svg">
+    <!-- tail rotor (far left, spinning blades) -->
+    <rect x="0" y="3"  width="2"  height="15" fill="#999" opacity="0.6"/>
+    <!-- tail vertical fin -->
+    <rect x="2" y="4"  width="4"  height="10" fill="#5a5a6a"/>
+    <!-- tail boom (thin tube to body) -->
+    <rect x="4" y="9"  width="20" height="4"  fill="#6a6a7a"/>
+    <!-- main cabin body -->
+    <rect x="22" y="4" width="20" height="14" fill="#7a7a8a"/>
+    <!-- cabin top highlight -->
+    <rect x="22" y="4" width="20" height="3"  fill="#9a9aaa"/>
+    <!-- cabin windows -->
+    <rect x="25" y="6" width="5"  height="6"  fill="#5da8d4" opacity="0.6"/>
+    <rect x="32" y="6" width="4"  height="6"  fill="#5da8d4" opacity="0.4"/>
+    <!-- cockpit bubble (right side) -->
+    <rect x="40" y="5" width="9"  height="11" fill="#5da8d4" opacity="0.85"/>
+    <!-- nose tip -->
+    <rect x="48" y="8" width="4"  height="5"  fill="#6a6a7a"/>
+    <!-- skid struts -->
+    <rect x="27" y="17" width="2" height="4"  fill="#555"/>
+    <rect x="36" y="17" width="2" height="4"  fill="#555"/>
+    <!-- landing skids -->
+    <rect x="24" y="20" width="16" height="2" fill="#555"/>
   </svg>`;
 
   let heliEl = null;
@@ -783,23 +799,23 @@
       animation: 'heliHover 2s ease-in-out infinite',
     }, heliSVG);
 
-    // Spinning rotor on top
+    // Main rotor — centered over cabin (cabin x=22-42 → center=32px)
     const rotor = document.createElement('div');
     Object.assign(rotor.style, {
-      position:'absolute', top:'-4px', left:'4px',
-      width:'36px', height:'3px',
+      position:'absolute', top:'0px', left:'18px',
+      width:'28px', height:'3px',
       background:'linear-gradient(90deg,transparent 0%,#aaa 20%,#aaa 80%,transparent 100%)',
       transformOrigin:'center center',
       animation:'rotorSpin 0.12s linear infinite',
     });
     heliEl.appendChild(rotor);
 
-    // Red blink light
+    // Red blink light on underside
     const hBlink = document.createElement('div');
     Object.assign(hBlink.style, {
       position:'absolute', width:'3px', height:'3px',
       background:'#ff2222', borderRadius:'50%',
-      top:'5px', right:'3px',
+      bottom:'2px', left:'30px',
       animation:'planeBlink 0.9s step-end infinite',
     });
     heliEl.appendChild(hBlink);
@@ -807,7 +823,6 @@
 
   function moveHeli() {
     if (!heliEl) createHeli();
-    // Pick new target near city buildings
     const targetX = vw() * (0.1 + Math.random() * 0.75);
     const targetY = vh() * (0.08 + Math.random() * 0.45);
     const dist    = Math.hypot(targetX - heliX, targetY - heliY);
@@ -816,7 +831,7 @@
     const startX  = heliX, startY = heliY;
     const startT  = performance.now();
 
-    // Flip direction
+    // SVG faces right: moving right=none, moving left=flip
     heliEl.style.transform = targetX > heliX ? 'none' : 'scaleX(-1)';
 
     function fly(now) {
@@ -833,62 +848,89 @@
   setTimeout(moveHeli, 3000);
 
   // ── BOATS ──
-  const boatSVGs = [
-    // tugboat
-    `<svg width="50" height="22" viewBox="0 0 25 11" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2"  y="6"  width="21" height="4"  fill="#8B4513"/>
-      <rect x="4"  y="3"  width="10" height="3"  fill="#cc6633"/>
-      <rect x="6"  y="1"  width="3"  height="2"  fill="#aaa"/>
-      <rect x="9"  y="2"  width="1"  height="3"  fill="#888"/>
-      <polygon points="0,10 2,6 23,6 25,10" fill="#6B3410"/>
-      <rect x="5"  y="4"  width="2"  height="2"  fill="#85c1e9" opacity="0.7"/>
-    </svg>`,
-    // sailboat (no sail at night — just hull)
-    `<svg width="44" height="20" viewBox="0 0 22 10" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1"  y="5"  width="20" height="3"  fill="#2c3e50"/>
-      <rect x="3"  y="3"  width="8"  height="2"  fill="#34495e"/>
-      <rect x="10" y="2"  width="1"  height="4"  fill="#aaa"/>
-      <polygon points="0,8 1,5 21,5 22,8" fill="#1a252f"/>
-      <rect x="3"  y="4"  width="2"  height="1"  fill="#f5c518" opacity="0.8"/>
-    </svg>`,
+  // Three boat types: small fishing boat, medium tugboat, large tug/barge
+  const boatDefs = [
+    // Small fishing boat — low profile, single light
+    { w: 38, h: 16, wakeOff: 32, svg:
+      `<svg width="38" height="16" viewBox="0 0 38 16" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="2,10 4,7 34,7 38,10 36,13 2,13" fill="#2a3a4a"/>
+        <rect x="8"  y="4"  width="10" height="3" fill="#1e2e3a"/>
+        <rect x="10" y="2"  width="1"  height="2" fill="#aaa"/>
+        <rect x="9"  y="5"  width="2"  height="2" fill="#85c1e9" opacity="0.7"/>
+        <rect x="9"  y="12" width="4"  height="2" fill="#f5c518" opacity="0.5"/>
+      </svg>` },
+    // Medium tugboat — chunky cab, smoke stack
+    { w: 58, h: 24, wakeOff: 52, svg:
+      `<svg width="58" height="24" viewBox="0 0 58 24" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="0,22 4,14 54,14 58,18 56,22" fill="#6B3410"/>
+        <rect x="4"  y="7"  width="24" height="7"  fill="#8B4513"/>
+        <rect x="6"  y="3"  width="4"  height="4"  fill="#aaa"/>
+        <rect x="10" y="4"  width="1"  height="5"  fill="#888"/>
+        <rect x="28" y="10" width="6"  height="4"  fill="#7a3810"/>
+        <rect x="5"  y="8"  width="3"  height="3"  fill="#85c1e9" opacity="0.7"/>
+        <rect x="10" y="8"  width="3"  height="3"  fill="#85c1e9" opacity="0.6"/>
+        <rect x="3"  y="17" width="6"  height="3"  fill="#f5c518" opacity="0.4"/>
+      </svg>` },
+    // Large tug / container barge — wide, flat deck, big cab, two stacks
+    { w: 90, h: 30, wakeOff: 82, svg:
+      `<svg width="90" height="30" viewBox="0 0 90 30" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="0,28 6,18 84,18 90,22 88,28" fill="#3a2a18"/>
+        <rect x="6"  y="8"  width="30" height="10" fill="#5a3a20"/>
+        <rect x="8"  y="4"  width="5"  height="4"  fill="#999"/>
+        <rect x="14" y="5"  width="1"  height="5"  fill="#777"/>
+        <rect x="20" y="5"  width="5"  height="4"  fill="#999"/>
+        <rect x="26" y="6"  width="1"  height="4"  fill="#777"/>
+        <rect x="40" y="12" width="30" height="6"   fill="#4a3218"/>
+        <rect x="44" y="9"  width="8"  height="3"   fill="#3a2810"/>
+        <rect x="6"  y="9"  width="3"  height="4"  fill="#85c1e9" opacity="0.7"/>
+        <rect x="14" y="9"  width="3"  height="4"  fill="#85c1e9" opacity="0.6"/>
+        <rect x="22" y="9"  width="3"  height="4"  fill="#85c1e9" opacity="0.5"/>
+        <rect x="5"  y="22" width="8"  height="4"  fill="#f5c518" opacity="0.35"/>
+        <rect x="20" y="22" width="5"  height="3"  fill="#f5c518" opacity="0.25"/>
+      </svg>` },
   ];
 
   function spawnBoat() {
     const goRight = Math.random() < 0.5;
-    const svg     = boatSVGs[Math.floor(Math.random() * boatSVGs.length)];
-    const speed   = 20 + Math.random() * 30; // seconds
-    const yOffset = vh() * (0.75 + Math.random() * 0.12); // float on water surface
+    const def     = boatDefs[Math.floor(Math.random() * boatDefs.length)];
+    // Larger boats ride lower and slower
+    const sizeScale = def.w / 58;
+    const speed   = (22 + Math.random() * 28) / sizeScale; // bigger = slower
+    const yOffset = vh() * (0.74 + Math.random() * 0.1);
 
     const boat = el('div', {
       top: yOffset + 'px',
-      left: goRight ? '-60px' : (vw() + 10) + 'px',
+      left: goRight ? (-def.w - 10) + 'px' : (vw() + 10) + 'px',
       zIndex: '7',
       transform: goRight ? 'none' : 'scaleX(-1)',
-      animation: 'boatBob 3s ease-in-out infinite',
-    }, svg);
+      animation: `boatBob ${2 + sizeScale}s ease-in-out infinite`,
+    }, def.svg);
 
-    // Wake ripples behind boat
+    // Wake trail behind boat
     const wake = document.createElement('div');
     Object.assign(wake.style, {
-      position:'absolute', top:'12px',
-      [goRight ? 'right' : 'left']: '42px',
-      width:'30px', height:'4px',
-      background:'linear-gradient(' + (goRight?'90deg':'270deg') + ',rgba(255,255,255,0.3),transparent)',
+      position:'absolute', top: Math.round(def.h * 0.7) + 'px',
+      [goRight ? 'right' : 'left']: def.wakeOff + 'px',
+      width: Math.round(def.w * 0.6) + 'px', height:'4px',
+      background:'linear-gradient(' + (goRight?'90deg':'270deg') + ',rgba(255,255,255,0.25),transparent)',
       borderRadius:'50%',
     });
     boat.appendChild(wake);
 
     const startTime = performance.now();
-    const totalPx   = vw() + 100;
+    const totalPx   = vw() + def.w + 20;
 
     function tick(now) {
       const t = (now - startTime) / (speed * 1000);
-      const x = goRight ? (-60 + totalPx * t) : (vw() + 10 - totalPx * t);
+      const x = goRight ? (-(def.w + 10) + totalPx * t) : (vw() + 10 - totalPx * t);
       boat.style.left = x + 'px';
       if (t < 1) requestAnimationFrame(tick);
       else boat.remove();
     }
     requestAnimationFrame(tick);
+
+    setTimeout(spawnBoat, 18000 + Math.random() * 40000);
+  }
 
     setTimeout(spawnBoat, 18000 + Math.random() * 40000);
   }
