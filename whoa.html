@@ -52,33 +52,20 @@
   </div>
 
   <div class="card">
-    <h2>2. On the Beelink, open PowerShell as Administrator</h2>
+    <h2>2. On the Beelink, open PowerShell as Administrator and paste this whole block</h2>
     <pre>Set-Service sshd -StartupType Automatic
-Start-Service sshd</pre>
-  </div>
-
-  <div class="card">
-    <h2>3. Add the key</h2>
-    <ol>
-      <li>Open this file in Notepad:</li>
-    </ol>
-    <pre>C:\ProgramData\ssh\administrators_authorized_keys</pre>
-    <ol start="2">
-      <li>Paste the public key from step 1 as a single line.</li>
-      <li>Save the file.</li>
-    </ol>
-  </div>
-
-  <div class="card">
-    <h2>4. Fix permissions and restart SSH</h2>
-    <pre>icacls "C:\ProgramData\ssh\administrators_authorized_keys" /inheritance:r
+Start-Service sshd
+@'
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2C9tiey7SINMNIpiJwWKw/UNDsBb19b2+m6ATmubLG beelink-cli@steamdeck
+'@ | Set-Content "C:\ProgramData\ssh\administrators_authorized_keys"
+icacls "C:\ProgramData\ssh\administrators_authorized_keys" /inheritance:r
 icacls "C:\ProgramData\ssh\administrators_authorized_keys" /grant "SYSTEM:F"
 icacls "C:\ProgramData\ssh\administrators_authorized_keys" /grant "Administrators:F"
 Restart-Service sshd</pre>
   </div>
 
   <div class="card">
-    <h2>5. Then come back here</h2>
+    <h2>3. Then come back here</h2>
     <p>After that is done, tell Copilot <strong>done</strong> and it will test SSH and fix the Beelink status service.</p>
   </div>
 </body>
