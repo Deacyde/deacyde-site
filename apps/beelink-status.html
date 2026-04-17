@@ -73,7 +73,10 @@
     .auto-label { font-size:0.8rem; color:#555; }
     .updated { font-size:0.78rem; color:#444; margin-left:auto; }
     .error-msg { color:#f87171; font-size:0.85rem; padding:1rem; background:#1a0a0a; border:1px solid #3b0a0a; border-radius:8px; margin-bottom:1.5rem; }
-    .local-notice { font-size:0.78rem; color:#555; background:#111; border:1px solid #222; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem; }
+    .local-notice { font-size:0.78rem; color:#555; background:#111; border:1px solid #222; border-radius:8px; padding:0.75rem 1rem; margin-bottom:1.5rem; }
+    .local-links { margin-top:0.6rem; display:flex; flex-wrap:wrap; gap:0.5rem; }
+    .local-link { display:inline-block; padding:0.45rem 0.75rem; background:#1a1a1a; border:1px solid #333; border-radius:8px; color:#9ec5fe; text-decoration:none; font-size:0.78rem; }
+    .local-link:hover { border-color:#666; color:#fff; }
   </style>
 </head>
 <body>
@@ -84,7 +87,10 @@
   </div>
   <p class="subtitle">Beelink SER5 MAX — EverQuest server, database, and more</p>
 
-  <div class="local-notice">🔒 Local network only — this page requires a connection to your home network.</div>
+  <div class="local-notice" id="local-notice">
+    <div>🔒 Local network only — this page requires a connection to your home network.</div>
+    <div class="local-links" id="local-links"></div>
+  </div>
 
   <div class="toolbar">
     <button class="btn-ghost" onclick="load()">↻ Refresh</button>
@@ -192,7 +198,19 @@
 
   <script>
     const STATUS_URL = 'http://192.168.1.66:8099/status';
+    const LOCAL_LINKS = [
+      { label: 'Open 192.168.1.66 status', url: 'http://192.168.1.66:8099/status' },
+      { label: 'Open 192.168.1.66 root', url: 'http://192.168.1.66:8099/' },
+      { label: 'Open 192.168.1.90 Spire', url: 'http://192.168.1.90:3007' }
+    ];
     let autoTimer = null;
+
+    function renderLocalLinks() {
+      const wrap = document.getElementById('local-links');
+      wrap.innerHTML = LOCAL_LINKS
+        .map(link => `<a class="local-link" href="${link.url}" target="_blank" rel="noopener noreferrer">${link.label}</a>`)
+        .join('');
+    }
 
     function fmt(s) {
       const d = Math.floor(s / 86400);
@@ -217,7 +235,11 @@
     async function load() {
       document.getElementById('updated').textContent = 'Refreshing…';
       try {
+        if (window.location.protocol === 'https:' && STATUS_URL.startsWith('http://')) {
+          throw new Error('Browser blocked an insecure local HTTP request from this HTTPS page. Open one of the local links below instead.');
+        }
         const res = await fetch(STATUS_URL, { signal: AbortSignal.timeout(8000) });
+        if (!res.ok) throw new Error(`Beelink status endpoint returned HTTP ${res.status}`);
         const d = await res.json();
 
         // Status pill
@@ -314,6 +336,7 @@
       if (on) autoTimer = setInterval(load, 30000);
     }
 
+    renderLocalLinks();
     load();
 
     // Load security module from Beelink — only reachable on local network
