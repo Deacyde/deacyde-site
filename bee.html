@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+    <script>document.documentElement.classList.remove('no-js');</script>
+    <meta charset="utf-8">
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Temporary Beelink SSH access page for adding the Fedora machine public key.">
+    <meta name="author" content="Deacyde">
+    <title>Beelink SSH Access | Deacyde</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="shortcut icon" href="https://deacyde.com/images/ico/favicon.ico">
+    <style>
+        .page-hero {
+            padding: 8rem 0 3rem;
+            text-align: center;
+        }
+        .page-hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 1rem;
+        }
+        .page-hero p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+        .badge {
+            display: inline-block;
+            background: rgba(255, 180, 0, 0.12);
+            color: #f5c842;
+            border: 1px solid rgba(255, 180, 0, 0.4);
+            border-radius: 999px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        .doc-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        .doc-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+        }
+        .doc-card h2, .doc-card h3 {
+            margin-bottom: 0.75rem;
+        }
+        .doc-card p, .doc-card li {
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+        .doc-card ul, .doc-card ol {
+            margin-left: 1.25rem;
+        }
+        pre {
+            background: #0d0d14;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1rem 1.25rem;
+            overflow-x: auto;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+        code {
+            font-family: "Courier New", Courier, monospace;
+            color: var(--success);
+        }
+        .note {
+            border-left: 4px solid var(--accent);
+            background: rgba(108, 99, 255, 0.08);
+            padding: 1rem 1.1rem;
+            border-radius: var(--radius-sm);
+            margin-top: 1rem;
+            color: var(--text);
+        }
+        .warn {
+            border-left-color: #f5c842;
+            background: rgba(255, 180, 0, 0.08);
+        }
+        @media (max-width: 640px) {
+            .page-hero h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="index.html" class="nav-brand"><img src="logo.png" alt="Deacyde" class="nav-logo"></a>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html#services">Services</a></li>
+                <li><a href="index.html#apps">Apps</a></li>
+                <li><a href="eqemu.html">EQEmu</a></li>
+                <li><a href="pi5.html">Pi 5</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="page-hero">
+        <div class="container">
+            <div class="badge">Temporary page</div>
+            <h1>Beelink SSH Access</h1>
+            <p>Open this page on the Beelink and paste the PowerShell block below into a PowerShell window running as <strong>deacyde-minipc</strong>. This adds the Fedora machine public key so Copilot can SSH in from this box.</p>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="doc-grid">
+                <div class="doc-card">
+                    <h2>What this does</h2>
+                    <ol>
+                        <li>Installs or verifies the Windows OpenSSH server</li>
+                        <li>Starts <code>sshd</code> and sets it to auto-start</li>
+                        <li>Opens the firewall rule for SSH</li>
+                        <li>Adds this Fedora machine's public key to <code>C:\Users\deacyde-minipc\.ssh\authorized_keys</code></li>
+                        <li>Fixes file permissions so OpenSSH accepts the key</li>
+                    </ol>
+                    <div class="note warn">
+                        After I confirm I can log in, this page can be deleted.
+                    </div>
+                </div>
+
+                <div class="doc-card">
+                    <h2>PowerShell to run on the Beelink</h2>
+<pre><code>$pub = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDbsaKyg1yPB+f3jGRkLPMTDGXvP8VT19hFoUa7E1Lgr deacyde@fedora'
+
+$cap = Get-WindowsCapability -Online | Where-Object Name -like 'OpenSSH.Server*'
+if ($cap.State -ne 'Installed') {
+    Add-WindowsCapability -Online -Name $cap.Name
+}
+
+Start-Service sshd
+Set-Service -Name sshd -StartupType Automatic
+
+if (-not (Get-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -ErrorAction SilentlyContinue)) {
+    New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' `
+        -DisplayName 'OpenSSH Server (sshd)' `
+        -Enabled True `
+        -Direction Inbound `
+        -Protocol TCP `
+        -Action Allow `
+        -LocalPort 22
+}
+
+$sshDir = Join-Path $env:USERPROFILE '.ssh'
+$keyFile = Join-Path $sshDir 'authorized_keys'
+
+New-Item -ItemType Directory -Force -Path $sshDir | Out-Null
+if (-not (Test-Path $keyFile)) {
+    New-Item -ItemType File -Force -Path $keyFile | Out-Null
+}
+
+$existing = if (Test-Path $keyFile) { Get-Content $keyFile -Raw } else { '' }
+if ($existing -notmatch [regex]::Escape($pub)) {
+    Add-Content -Path $keyFile -Value $pub
+}
+
+icacls $sshDir /inheritance:r | Out-Null
+icacls $sshDir /grant:r "$env:USERNAME:(OI)(CI)F" "SYSTEM:(OI)(CI)F" | Out-Null
+icacls $keyFile /inheritance:r | Out-Null
+icacls $keyFile /grant:r "$env:USERNAME:F" "SYSTEM:F" | Out-Null
+
+Write-Host ''
+Write-Host 'Done. SSH key added for:' $env:USERNAME
+Write-Host 'Host:' $env:COMPUTERNAME
+Write-Host 'IP test target: 192.168.1.66'</code></pre>
+                </div>
+
+                <div class="doc-card">
+                    <h2>Quick verify on the Beelink</h2>
+<pre><code>Get-Service sshd
+Test-NetConnection -ComputerName 127.0.0.1 -Port 22
+Get-Content $env:USERPROFILE\.ssh\authorized_keys</code></pre>
+                    <div class="note">
+                        Once that finishes, tell Copilot you ran the block and I can retest SSH from Fedora.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const navToggle = document.getElementById('navToggle');
+        const navLinks = document.getElementById('navLinks');
+        if (navToggle && navLinks) {
+            navToggle.addEventListener('click', () => navLinks.classList.toggle('active'));
+        }
+    </script>
+</body>
+</html>
