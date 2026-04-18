@@ -10,13 +10,13 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Inter', sans-serif;
-            background: #0a0a0a;
-            color: #e6e6e6;
-            line-height: 1.65;
+            font-family: "Inter", sans-serif;
+            background: #09090b;
+            color: #e4e4e7;
+            line-height: 1.6;
         }
         .container {
-            max-width: 1100px;
+            max-width: 1180px;
             margin: 0 auto;
             padding: 2rem;
         }
@@ -29,74 +29,150 @@
         }
         .back-link:hover { text-decoration: underline; }
         .hero {
-            padding: 1.5rem 0 2rem;
-            border-bottom: 1px solid #1f2937;
-            margin-bottom: 2rem;
+            padding: 1rem 0 1.5rem;
+            border-bottom: 1px solid #27272a;
+            margin-bottom: 1.5rem;
         }
         .hero h1 {
-            font-size: 2.4rem;
+            font-size: 2.5rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #38bdf8, #a855f7);
+            margin-bottom: 0.75rem;
+            background: linear-gradient(135deg, #38bdf8, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 0.75rem;
         }
         .hero p {
             color: #a1a1aa;
             max-width: 760px;
         }
-        .tip-box, .code-box {
+        .search-wrap {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: rgba(9, 9, 11, 0.94);
+            backdrop-filter: blur(8px);
+            padding: 1rem 0 1.1rem;
+            border-bottom: 1px solid #18181b;
+            margin-bottom: 1.5rem;
+        }
+        .search-input {
+            width: 100%;
+            background: #111827;
+            color: #f4f4f5;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 0.95rem 1rem;
+            font-size: 1rem;
+            outline: none;
+        }
+        .search-input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+        .search-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 0.6rem;
+            color: #71717a;
+            font-size: 0.86rem;
+        }
+        .info-box {
             background: #111827;
             border: 1px solid #1f2937;
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 1rem 1.1rem;
-            margin: 1rem 0 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #cbd5e1;
         }
-        .tip-box strong, .code-box strong { color: #f8fafc; }
-        .tip-box code, .code-box code, .cmd-name code {
+        .info-box strong { color: #f8fafc; }
+        .info-box code,
+        .cmd-name code,
+        pre code,
+        .toc a code {
             font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        .info-box code {
             background: #0f172a;
             color: #67e8f9;
             padding: 0.15rem 0.35rem;
             border-radius: 6px;
         }
-        .section {
-            margin-bottom: 2.5rem;
+        .toc {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.8rem;
+            margin-bottom: 2rem;
         }
+        .toc a {
+            display: block;
+            background: #111111;
+            border: 1px solid #232326;
+            border-radius: 12px;
+            padding: 0.9rem 1rem;
+            color: #e4e4e7;
+            text-decoration: none;
+            transition: border-color 0.18s, transform 0.18s;
+        }
+        .toc a:hover {
+            border-color: #38bdf8;
+            transform: translateY(-1px);
+        }
+        .toc-title {
+            display: block;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 0.25rem;
+        }
+        .toc-desc {
+            color: #a1a1aa;
+            font-size: 0.88rem;
+        }
+        .section {
+            margin-bottom: 2.25rem;
+        }
+        .section.hidden { display: none; }
         .section h2 {
-            font-size: 1.3rem;
+            font-size: 1.35rem;
             font-weight: 800;
             color: #f8fafc;
+            margin-bottom: 0.35rem;
+        }
+        .section-intro {
+            color: #a1a1aa;
+            font-size: 0.94rem;
             margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #1f2937;
         }
         .cmd-list {
             display: grid;
-            gap: 0.7rem;
+            gap: 0.75rem;
         }
         .cmd {
             display: grid;
-            grid-template-columns: minmax(220px, 320px) 1fr;
+            grid-template-columns: minmax(230px, 330px) 1fr;
             gap: 1rem;
-            background: #111111;
-            border: 1px solid #1f1f1f;
-            border-left: 4px solid #1d4ed8;
-            border-radius: 10px;
-            padding: 0.9rem 1rem;
+            background: #101012;
+            border: 1px solid #232326;
+            border-left: 4px solid #2563eb;
+            border-radius: 12px;
+            padding: 0.95rem 1rem;
         }
+        .cmd.hidden { display: none; }
         .cmd-name {
             font-weight: 700;
             color: #7dd3fc;
         }
+        .cmd-name code {
+            white-space: nowrap;
+        }
         .cmd-desc {
-            color: #c4c4c5;
+            color: #d4d4d8;
             font-size: 0.95rem;
         }
         .cmd-desc small {
             display: block;
             margin-top: 0.35rem;
-            color: #81818b;
+            color: #71717a;
         }
         pre {
             overflow-x: auto;
@@ -107,17 +183,27 @@
             color: #dbeafe;
             font-size: 0.92rem;
         }
+        .empty-state {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem 1.1rem;
+            background: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 12px;
+            color: #a1a1aa;
+        }
         .footer {
-            margin-top: 2.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #1f2937;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #27272a;
             color: #71717a;
-            font-size: 0.92rem;
+            font-size: 0.9rem;
         }
         @media (max-width: 760px) {
-            .container { padding: 1.2rem; }
-            .hero h1 { font-size: 1.9rem; }
+            .container { padding: 1.15rem; }
+            .hero h1 { font-size: 2rem; }
             .cmd { grid-template-columns: 1fr; }
+            .search-meta { flex-direction: column; }
         }
     </style>
 </head>
@@ -127,109 +213,136 @@
 
         <header class="hero">
             <h1>OpenClaw Command Reference</h1>
-            <p>Practical OpenClaw CLI commands, built from Morty&rsquo;s research and verified against local <code>openclaw help</code> output inside the Beelink VM.</p>
+            <p>A cleaner quick-reference for the most useful OpenClaw CLI commands, grouped by what you are actually trying to do.</p>
         </header>
 
-        <div class="tip-box">
-            <strong>Tip:</strong> Commands marked with <code>*</code> have subcommands. Run <code>openclaw &lt;command&gt; --help</code> for the full surface.
+        <div class="search-wrap">
+            <input id="searchInput" class="search-input" type="search" placeholder="Search commands, topics, or actions..." aria-label="Search OpenClaw commands">
+            <div class="search-meta">
+                <span>Use this page like a shortcut sheet. Search filters commands live.</span>
+                <span id="resultsCount">Showing all commands</span>
+            </div>
         </div>
 
-        <section class="section">
-            <h2>Core health and setup</h2>
+        <div class="info-box">
+            <strong>Tip:</strong> Commands marked with <code>*</code> have subcommands. Run <code>openclaw &lt;command&gt; --help</code> when you want the deeper surface.
+        </div>
+
+        <nav class="toc" aria-label="Sections">
+            <a href="#getting-started"><span class="toc-title">Getting started</span><span class="toc-desc">Setup, health, config, docs, dashboard</span></a>
+            <a href="#gateway-control"><span class="toc-title">Gateway control</span><span class="toc-desc">Start, stop, restart, probe, install</span></a>
+            <a href="#messages-channels"><span class="toc-title">Messages and channels</span><span class="toc-desc">Send messages and manage chat integrations</span></a>
+            <a href="#agents-memory"><span class="toc-title">Agents and memory</span><span class="toc-desc">Agents, sessions, skills, models, tasks</span></a>
+            <a href="#devices-nodes"><span class="toc-title">Devices and nodes</span><span class="toc-desc">Pairing, devices, QR, node management</span></a>
+            <a href="#automation"><span class="toc-title">Automation</span><span class="toc-desc">Hooks, cron, plugins, webhooks, system events</span></a>
+            <a href="#security-maintenance"><span class="toc-title">Security and maintenance</span><span class="toc-desc">Security, updates, backups, approvals</span></a>
+            <a href="#first-commands"><span class="toc-title">Starter set</span><span class="toc-desc">A small set of commands worth memorizing</span></a>
+        </nav>
+
+        <section class="section" id="getting-started" data-section>
+            <h2>Getting started</h2>
+            <p class="section-intro">Use these first when you are checking health, onboarding a new setup, or trying to understand the current config.</p>
             <div class="cmd-list">
-                <div class="cmd"><div class="cmd-name"><code>openclaw help</code></div><div class="cmd-desc">Show top-level CLI help and available commands.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw status</code></div><div class="cmd-desc">Show channel health and recent session recipients.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw status --all</code></div><div class="cmd-desc">Run a fuller read-only diagnosis.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw status --deep</code></div><div class="cmd-desc">Probe configured channels more deeply.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw doctor</code></div><div class="cmd-desc">Run health checks and safe quick fixes.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw doctor --fix</code></div><div class="cmd-desc">Apply recommended repairs automatically.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw health</code></div><div class="cmd-desc">Fetch health from the running gateway.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw setup</code></div><div class="cmd-desc">Initialize local config and agent workspace.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw onboard</code></div><div class="cmd-desc">Interactive onboarding for gateway, workspace, and skills.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw configure</code></div><div class="cmd-desc">Interactive configuration for credentials, channels, gateway, and defaults.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw config *</code></div><div class="cmd-desc">Non-interactive config helpers like <code>get</code>, <code>set</code>, <code>unset</code>, <code>file</code>, and <code>validate</code>.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw docs &lt;query&gt;</code></div><div class="cmd-desc">Search the live OpenClaw docs.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw dashboard</code></div><div class="cmd-desc">Open the Control UI.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw logs</code></div><div class="cmd-desc">Tail gateway file logs via RPC.</div></div>
+                <div class="cmd" data-search="help top-level cli commands"><div class="cmd-name"><code>openclaw help</code></div><div class="cmd-desc">Show top-level CLI help and available commands.</div></div>
+                <div class="cmd" data-search="status channel health sessions"><div class="cmd-name"><code>openclaw status</code></div><div class="cmd-desc">Show channel health and recent session recipients.</div></div>
+                <div class="cmd" data-search="status all diagnosis"><div class="cmd-name"><code>openclaw status --all</code></div><div class="cmd-desc">Run a fuller read-only diagnosis.</div></div>
+                <div class="cmd" data-search="status deep probe"><div class="cmd-name"><code>openclaw status --deep</code></div><div class="cmd-desc">Probe configured channels more deeply.</div></div>
+                <div class="cmd" data-search="doctor health checks fixes"><div class="cmd-name"><code>openclaw doctor</code></div><div class="cmd-desc">Run health checks and safe quick fixes.</div></div>
+                <div class="cmd" data-search="doctor fix repairs"><div class="cmd-name"><code>openclaw doctor --fix</code></div><div class="cmd-desc">Apply recommended repairs automatically.</div></div>
+                <div class="cmd" data-search="health running gateway"><div class="cmd-name"><code>openclaw health</code></div><div class="cmd-desc">Fetch health from the running gateway.</div></div>
+                <div class="cmd" data-search="setup initialize local config workspace"><div class="cmd-name"><code>openclaw setup</code></div><div class="cmd-desc">Initialize local config and agent workspace.</div></div>
+                <div class="cmd" data-search="onboard onboarding interactive"><div class="cmd-name"><code>openclaw onboard</code></div><div class="cmd-desc">Interactive onboarding for gateway, workspace, and skills.</div></div>
+                <div class="cmd" data-search="configure interactive credentials channels gateway defaults"><div class="cmd-name"><code>openclaw configure</code></div><div class="cmd-desc">Interactive configuration for credentials, channels, gateway, and defaults.</div></div>
+                <div class="cmd" data-search="config get set unset validate file"><div class="cmd-name"><code>openclaw config *</code></div><div class="cmd-desc">Non-interactive config helpers like <code>get</code>, <code>set</code>, <code>unset</code>, <code>file</code>, and <code>validate</code>.</div></div>
+                <div class="cmd" data-search="docs search documentation"><div class="cmd-name"><code>openclaw docs &lt;query&gt;</code></div><div class="cmd-desc">Search the live OpenClaw docs.</div></div>
+                <div class="cmd" data-search="dashboard control ui"><div class="cmd-name"><code>openclaw dashboard</code></div><div class="cmd-desc">Open the Control UI.</div></div>
+                <div class="cmd" data-search="logs tail gateway"><div class="cmd-name"><code>openclaw logs</code></div><div class="cmd-desc">Tail gateway file logs via RPC.</div></div>
             </div>
         </section>
 
-        <section class="section">
+        <section class="section" id="gateway-control" data-section>
             <h2>Gateway control</h2>
+            <p class="section-intro">Use these when the service needs to be started, restarted, probed, or run in the foreground for debugging.</p>
             <div class="cmd-list">
-                <div class="cmd"><div class="cmd-name"><code>openclaw gateway status</code></div><div class="cmd-desc">Show gateway service status and probe reachability.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw gateway start</code></div><div class="cmd-desc">Start the gateway service.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw gateway stop</code></div><div class="cmd-desc">Stop the gateway service.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw gateway restart</code></div><div class="cmd-desc">Restart the gateway service.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw gateway health</code></div><div class="cmd-desc">Fetch gateway health.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw gateway probe</code></div><div class="cmd-desc">Show reachability, discovery, health, and status summary.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw gateway discover</code></div><div class="cmd-desc">Find local and wide-area gateway beacons.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw gateway install</code></div><div class="cmd-desc">Install the gateway service.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw gateway run</code></div><div class="cmd-desc">Run the gateway in the foreground.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw gateway call &lt;method&gt;</code></div><div class="cmd-desc">Call a gateway RPC method directly.</div></div>
+                <div class="cmd" data-search="gateway status service reachability"><div class="cmd-name"><code>openclaw gateway status</code></div><div class="cmd-desc">Show gateway service status and probe reachability.</div></div>
+                <div class="cmd" data-search="gateway start service"><div class="cmd-name"><code>openclaw gateway start</code></div><div class="cmd-desc">Start the gateway service.</div></div>
+                <div class="cmd" data-search="gateway stop service"><div class="cmd-name"><code>openclaw gateway stop</code></div><div class="cmd-desc">Stop the gateway service.</div></div>
+                <div class="cmd" data-search="gateway restart service"><div class="cmd-name"><code>openclaw gateway restart</code></div><div class="cmd-desc">Restart the gateway service.</div></div>
+                <div class="cmd" data-search="gateway health"><div class="cmd-name"><code>openclaw gateway health</code></div><div class="cmd-desc">Fetch gateway health.</div></div>
+                <div class="cmd" data-search="gateway probe discovery summary"><div class="cmd-name"><code>openclaw gateway probe</code></div><div class="cmd-desc">Show reachability, discovery, health, and status summary.</div></div>
+                <div class="cmd" data-search="gateway discover beacons"><div class="cmd-name"><code>openclaw gateway discover</code></div><div class="cmd-desc">Find local and wide-area gateway beacons.</div></div>
+                <div class="cmd" data-search="gateway install"><div class="cmd-name"><code>openclaw gateway install</code></div><div class="cmd-desc">Install the gateway service.</div></div>
+                <div class="cmd" data-search="gateway run foreground debug"><div class="cmd-name"><code>openclaw gateway run</code></div><div class="cmd-desc">Run the gateway in the foreground.</div></div>
+                <div class="cmd" data-search="gateway call rpc method"><div class="cmd-name"><code>openclaw gateway call &lt;method&gt;</code></div><div class="cmd-desc">Call a gateway RPC method directly.</div></div>
             </div>
         </section>
 
-        <section class="section">
-            <h2>Messaging and channels</h2>
+        <section class="section" id="messages-channels" data-section>
+            <h2>Messages and channels</h2>
+            <p class="section-intro">Use these when you are connecting chat services, sending messages, or working with channel-specific IDs and routing.</p>
             <div class="cmd-list">
-                <div class="cmd"><div class="cmd-name"><code>openclaw channels *</code></div><div class="cmd-desc">Manage connected chat channels like Discord, Telegram, or WhatsApp.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw message *</code></div><div class="cmd-desc">Send, read, and manage messages.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw message send --target &lt;target&gt; --message "..."</code></div><div class="cmd-desc">Send a message through a configured channel.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw agent</code></div><div class="cmd-desc">Run one agent turn via the gateway.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw directory *</code></div><div class="cmd-desc">Look up contact and group IDs for supported channels.</div></div>
+                <div class="cmd" data-search="channels discord telegram whatsapp integrations"><div class="cmd-name"><code>openclaw channels *</code></div><div class="cmd-desc">Manage connected chat channels like Discord, Telegram, or WhatsApp.</div></div>
+                <div class="cmd" data-search="message send read manage"><div class="cmd-name"><code>openclaw message *</code></div><div class="cmd-desc">Send, read, and manage messages.</div></div>
+                <div class="cmd" data-search="message send target channel"><div class="cmd-name"><code>openclaw message send --target &lt;target&gt; --message "..."</code></div><div class="cmd-desc">Send a message through a configured channel.</div></div>
+                <div class="cmd" data-search="agent single turn gateway"><div class="cmd-name"><code>openclaw agent</code></div><div class="cmd-desc">Run one agent turn via the gateway.</div></div>
+                <div class="cmd" data-search="directory contact group ids"><div class="cmd-name"><code>openclaw directory *</code></div><div class="cmd-desc">Look up contact and group IDs for supported channels.</div></div>
             </div>
         </section>
 
-        <section class="section">
+        <section class="section" id="agents-memory" data-section>
             <h2>Agents, memory, and sessions</h2>
+            <p class="section-intro">Use these for agent creation, routing, memory inspection, model management, and checking stored sessions or tasks.</p>
             <div class="cmd-list">
-                <div class="cmd"><div class="cmd-name"><code>openclaw agents *</code></div><div class="cmd-desc">Manage isolated agents, workspaces, auth, and routing.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw sessions *</code></div><div class="cmd-desc">List stored conversation sessions.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw memory</code></div><div class="cmd-desc">Search, inspect, and reindex memory files.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw skills *</code></div><div class="cmd-desc">List and inspect available skills.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw models *</code></div><div class="cmd-desc">Discover, scan, and configure models.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw tasks *</code></div><div class="cmd-desc">Inspect durable background task state.</div></div>
+                <div class="cmd" data-search="agents workspaces routing auth"><div class="cmd-name"><code>openclaw agents *</code></div><div class="cmd-desc">Manage isolated agents, workspaces, auth, and routing.</div></div>
+                <div class="cmd" data-search="sessions list history"><div class="cmd-name"><code>openclaw sessions *</code></div><div class="cmd-desc">List stored conversation sessions.</div></div>
+                <div class="cmd" data-search="memory search inspect reindex"><div class="cmd-name"><code>openclaw memory</code></div><div class="cmd-desc">Search, inspect, and reindex memory files.</div></div>
+                <div class="cmd" data-search="skills list inspect"><div class="cmd-name"><code>openclaw skills *</code></div><div class="cmd-desc">List and inspect available skills.</div></div>
+                <div class="cmd" data-search="models scan configure"><div class="cmd-name"><code>openclaw models *</code></div><div class="cmd-desc">Discover, scan, and configure models.</div></div>
+                <div class="cmd" data-search="tasks background state"><div class="cmd-name"><code>openclaw tasks *</code></div><div class="cmd-desc">Inspect durable background task state.</div></div>
             </div>
         </section>
 
-        <section class="section">
-            <h2>Devices, pairing, and nodes</h2>
+        <section class="section" id="devices-nodes" data-section>
+            <h2>Devices and nodes</h2>
+            <p class="section-intro">Use these for pairing hardware, managing nodes, and handling QR-based device linking.</p>
             <div class="cmd-list">
-                <div class="cmd"><div class="cmd-name"><code>openclaw devices *</code></div><div class="cmd-desc">Device pairing and token management.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw nodes *</code></div><div class="cmd-desc">Manage gateway-owned node pairing and commands.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw node *</code></div><div class="cmd-desc">Run and manage the headless node host service.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw pairing *</code></div><div class="cmd-desc">Approve inbound secure DM pairing requests.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw qr</code></div><div class="cmd-desc">Generate a mobile pairing QR/setup code.</div></div>
+                <div class="cmd" data-search="devices pairing token management"><div class="cmd-name"><code>openclaw devices *</code></div><div class="cmd-desc">Device pairing and token management.</div></div>
+                <div class="cmd" data-search="nodes manage owned node pairing commands"><div class="cmd-name"><code>openclaw nodes *</code></div><div class="cmd-desc">Manage gateway-owned node pairing and commands.</div></div>
+                <div class="cmd" data-search="node host service"><div class="cmd-name"><code>openclaw node *</code></div><div class="cmd-desc">Run and manage the headless node host service.</div></div>
+                <div class="cmd" data-search="pairing secure dm requests"><div class="cmd-name"><code>openclaw pairing *</code></div><div class="cmd-desc">Approve inbound secure DM pairing requests.</div></div>
+                <div class="cmd" data-search="qr pairing mobile"><div class="cmd-name"><code>openclaw qr</code></div><div class="cmd-desc">Generate a mobile pairing QR/setup code.</div></div>
             </div>
         </section>
 
-        <section class="section">
-            <h2>Security, updates, and maintenance</h2>
+        <section class="section" id="automation" data-section>
+            <h2>Automation</h2>
+            <p class="section-intro">Use these when you want the system doing work on its own through schedules, hooks, plugins, or webhook-driven actions.</p>
             <div class="cmd-list">
-                <div class="cmd"><div class="cmd-name"><code>openclaw security *</code></div><div class="cmd-desc">Security tools and local config audits.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw update *</code></div><div class="cmd-desc">Update OpenClaw and inspect update channel status.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw backup *</code></div><div class="cmd-desc">Create and verify local backup archives.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw approvals *</code></div><div class="cmd-desc">Manage exec approvals.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw exec-policy *</code></div><div class="cmd-desc">Show or sync requested exec policy.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw reset</code></div><div class="cmd-desc">Reset local config and state while keeping the CLI installed.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw uninstall</code></div><div class="cmd-desc">Uninstall the gateway service and local data while leaving the CLI installed.</div></div>
+                <div class="cmd" data-search="cron jobs scheduler"><div class="cmd-name"><code>openclaw cron *</code></div><div class="cmd-desc">Manage cron jobs via the gateway scheduler.</div></div>
+                <div class="cmd" data-search="system events heartbeat presence"><div class="cmd-name"><code>openclaw system *</code></div><div class="cmd-desc">System events, heartbeat, and presence.</div></div>
+                <div class="cmd" data-search="hooks internal agent hooks"><div class="cmd-name"><code>openclaw hooks *</code></div><div class="cmd-desc">Manage internal agent hooks.</div></div>
+                <div class="cmd" data-search="plugins extensions"><div class="cmd-name"><code>openclaw plugins *</code></div><div class="cmd-desc">Manage OpenClaw plugins and extensions.</div></div>
+                <div class="cmd" data-search="webhooks integrations"><div class="cmd-name"><code>openclaw webhooks *</code></div><div class="cmd-desc">Webhook helpers and integrations.</div></div>
             </div>
         </section>
 
-        <section class="section">
-            <h2>Automation and scheduled work</h2>
+        <section class="section" id="security-maintenance" data-section>
+            <h2>Security and maintenance</h2>
+            <p class="section-intro">Use these for audits, updates, backups, approvals, and cleanup.</p>
             <div class="cmd-list">
-                <div class="cmd"><div class="cmd-name"><code>openclaw cron *</code></div><div class="cmd-desc">Manage cron jobs via the gateway scheduler.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw system *</code></div><div class="cmd-desc">System events, heartbeat, and presence.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw hooks *</code></div><div class="cmd-desc">Manage internal agent hooks.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw plugins *</code></div><div class="cmd-desc">Manage OpenClaw plugins and extensions.</div></div>
-                <div class="cmd"><div class="cmd-name"><code>openclaw webhooks *</code></div><div class="cmd-desc">Webhook helpers and integrations.</div></div>
+                <div class="cmd" data-search="security audit config"><div class="cmd-name"><code>openclaw security *</code></div><div class="cmd-desc">Security tools and local config audits.</div></div>
+                <div class="cmd" data-search="update inspect version channel"><div class="cmd-name"><code>openclaw update *</code></div><div class="cmd-desc">Update OpenClaw and inspect update channel status.</div></div>
+                <div class="cmd" data-search="backup archive verify"><div class="cmd-name"><code>openclaw backup *</code></div><div class="cmd-desc">Create and verify local backup archives.</div></div>
+                <div class="cmd" data-search="approvals exec approvals"><div class="cmd-name"><code>openclaw approvals *</code></div><div class="cmd-desc">Manage exec approvals.</div></div>
+                <div class="cmd" data-search="exec policy sync"><div class="cmd-name"><code>openclaw exec-policy *</code></div><div class="cmd-desc">Show or sync requested exec policy.</div></div>
+                <div class="cmd" data-search="reset local config state"><div class="cmd-name"><code>openclaw reset</code></div><div class="cmd-desc">Reset local config and state while keeping the CLI installed.</div></div>
+                <div class="cmd" data-search="uninstall service local data"><div class="cmd-name"><code>openclaw uninstall</code></div><div class="cmd-desc">Uninstall the gateway service and local data while leaving the CLI installed.</div></div>
             </div>
         </section>
 
-        <section class="section">
-            <h2>Handy first commands</h2>
+        <section class="section" id="first-commands" data-section>
+            <h2>Starter set</h2>
+            <p class="section-intro">A small set of commands worth remembering when you just want to get your bearings fast.</p>
             <pre><code>openclaw help
 openclaw status
 openclaw doctor
@@ -240,9 +353,55 @@ openclaw message send --help
 openclaw docs gateway</code></pre>
         </section>
 
+        <div id="emptyState" class="empty-state">
+            No matches found. Try a broader search like <code>gateway</code>, <code>discord</code>, <code>agents</code>, or <code>memory</code>.
+        </div>
+
         <div class="footer">
-            Source: <code>/home/openclaw/.openclaw/workspace-rick/shared/openclaw-commands.md</code> on the Beelink OpenClaw VM.
+            OpenClaw command quick-reference page.
         </div>
     </div>
+
+    <script>
+        const input = document.getElementById("searchInput");
+        const commands = Array.from(document.querySelectorAll(".cmd"));
+        const sections = Array.from(document.querySelectorAll("[data-section]"));
+        const resultsCount = document.getElementById("resultsCount");
+        const emptyState = document.getElementById("emptyState");
+
+        function updateSearch() {
+            const query = input.value.trim().toLowerCase();
+            let visibleCount = 0;
+
+            commands.forEach((cmd) => {
+                const text = (cmd.dataset.search || "") + " " + cmd.textContent.toLowerCase();
+                const match = !query || text.includes(query);
+                cmd.classList.toggle("hidden", !match);
+                if (match) visibleCount += 1;
+            });
+
+            let visibleSections = 0;
+            sections.forEach((section) => {
+                const hasVisible = section.querySelector(".cmd:not(.hidden), pre");
+                const hasCmdVisible = section.querySelector(".cmd:not(.hidden)");
+                const keepVisible = query ? !!hasCmdVisible || section.id === "first-commands" && !query : true;
+                section.classList.toggle("hidden", query && !hasCmdVisible && section.id !== "first-commands");
+                if (!section.classList.contains("hidden")) visibleSections += 1;
+            });
+
+            if (!query) {
+                resultsCount.textContent = "Showing all commands";
+                emptyState.style.display = "none";
+                return;
+            }
+
+            resultsCount.textContent = visibleCount === 1
+                ? "1 matching command"
+                : `${visibleCount} matching commands`;
+            emptyState.style.display = visibleCount === 0 ? "block" : "none";
+        }
+
+        input.addEventListener("input", updateSearch);
+    </script>
 </body>
 </html>
