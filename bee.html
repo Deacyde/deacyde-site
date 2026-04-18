@@ -60,6 +60,24 @@
             color: var(--text-muted);
             line-height: 1.7;
         }
+        .copy-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 0.75rem;
+        }
+        .copy-btn {
+            appearance: none;
+            border: 1px solid var(--accent);
+            background: var(--accent-glow);
+            color: var(--accent);
+            border-radius: 999px;
+            padding: 0.55rem 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .copy-btn:hover {
+            filter: brightness(1.1);
+        }
         .doc-card ul, .doc-card ol {
             margin-left: 1.25rem;
         }
@@ -115,7 +133,7 @@
         <div class="container">
             <div class="badge">Temporary page</div>
             <h1>Beelink SSH Access</h1>
-            <p>Open this page on the Beelink and paste the PowerShell block below into a PowerShell window running as <strong>deacyde-minipc</strong>. This adds the Fedora machine public key so Copilot can SSH in from this box.</p>
+            <p>Open this page on the Beelink and paste the PowerShell block below into a <strong>PowerShell window running as Administrator</strong> while signed in as <strong>deacyde-minipc</strong>. This adds the Fedora machine public key so Copilot can SSH in from this box.</p>
         </div>
     </section>
 
@@ -138,7 +156,10 @@
 
                 <div class="doc-card">
                     <h2>PowerShell to run on the Beelink</h2>
-<pre><code>$pub = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDbsaKyg1yPB+f3jGRkLPMTDGXvP8VT19hFoUa7E1Lgr deacyde@fedora'
+                    <div class="copy-row">
+                        <button class="copy-btn" id="copyBeeScript" type="button">Copy PowerShell</button>
+                    </div>
+<pre><code id="beeScript">$pub = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDbsaKyg1yPB+f3jGRkLPMTDGXvP8VT19hFoUa7E1Lgr deacyde@fedora'
 
 $cap = Get-WindowsCapability -Online | Where-Object Name -like 'OpenSSH.Server*'
 if ($cap.State -ne 'Installed') {
@@ -180,6 +201,9 @@ Write-Host ''
 Write-Host 'Done. SSH key added for:' $env:USERNAME
 Write-Host 'Host:' $env:COMPUTERNAME
 Write-Host 'IP test target: 192.168.1.66'</code></pre>
+                    <div class="note">
+                        Yes — that one block is intended to do the whole setup: install/enable OpenSSH Server if needed, open the firewall rule, add the key, and fix permissions.
+                    </div>
                 </div>
 
                 <div class="doc-card">
@@ -200,6 +224,21 @@ Get-Content $env:USERPROFILE\.ssh\authorized_keys</code></pre>
         const navLinks = document.getElementById('navLinks');
         if (navToggle && navLinks) {
             navToggle.addEventListener('click', () => navLinks.classList.toggle('active'));
+        }
+        const copyBeeScript = document.getElementById('copyBeeScript');
+        const beeScript = document.getElementById('beeScript');
+        if (copyBeeScript && beeScript) {
+            copyBeeScript.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(beeScript.textContent);
+                    copyBeeScript.textContent = 'Copied';
+                    setTimeout(() => {
+                        copyBeeScript.textContent = 'Copy PowerShell';
+                    }, 1500);
+                } catch (err) {
+                    copyBeeScript.textContent = 'Copy failed';
+                }
+            });
         }
     </script>
 </body>
