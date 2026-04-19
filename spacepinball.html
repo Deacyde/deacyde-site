@@ -177,6 +177,12 @@
                 this.canvas.width = this.width;
                 this.canvas.height = this.height;
 
+                // Load images
+                this.images = {};
+                this.imagesLoaded = 0;
+                this.imagesToLoad = 5;
+                this.loadImages();
+
                 // Game state
                 this.score = 0;
                 this.highScore = parseInt(localStorage.getItem('spacepinball_highscore') || '0');
@@ -220,8 +226,40 @@
                 this.keys = {};
                 this.setupControls();
 
-                // Start
+                // Start will be called after images load
                 this.updateUI();
+            }
+
+            loadImages() {
+                const imageFiles = {
+                    background: 'assets/spacepinball/spacepinball-background.png',
+                    ball: 'assets/spacepinball/spacepinball-ball.png',
+                    bumpers: 'assets/spacepinball/spacepinball-bumpers.png',
+                    flipper: 'assets/spacepinball/spacepinball-flipper.png',
+                    powerups: 'assets/spacepinball/spacepinball-powerups.png'
+                };
+
+                Object.keys(imageFiles).forEach(key => {
+                    const img = new Image();
+                    img.onload = () => {
+                        this.images[key] = img;
+                        this.imagesLoaded++;
+                        if (this.imagesLoaded === this.imagesToLoad) {
+                            this.startGame();
+                        }
+                    };
+                    img.onerror = () => {
+                        console.error(`Failed to load ${key}: ${imageFiles[key]}`);
+                        this.imagesLoaded++;
+                        if (this.imagesLoaded === this.imagesToLoad) {
+                            this.startGame();
+                        }
+                    };
+                    img.src = imageFiles[key];
+                });
+            }
+
+            startGame() {
                 this.launchBall();
                 this.gameLoop();
             }
@@ -488,33 +526,41 @@
             }
 
             draw() {
-                // Clear with trail effect
-                this.ctx.fillStyle = 'rgba(10, 10, 31, 0.3)';
-                this.ctx.fillRect(0, 0, this.width, this.height);
-
-                // Draw space background effect
-                this.ctx.fillStyle = 'rgba(0, 255, 255, 0.05)';
-                for (let i = 0; i < 50; i++) {
-                    const x = Math.random() * this.width;
-                    const y = Math.random() * this.height;
-                    this.ctx.fillRect(x, y, 1, 1);
+                // Draw background image
+                if (this.images.background) {
+                    this.ctx.drawImage(this.images.background, 0, 0, this.width, this.height);
+                } else {
+                    // Fallback
+                    this.ctx.fillStyle = 'rgba(10, 10, 31, 0.3)';
+                    this.ctx.fillRect(0, 0, this.width, this.height);
                 }
 
                 // Draw bumpers
-                this.bumpers.forEach(bumper => {
-                    this.ctx.beginPath();
-                    this.ctx.arc(bumper.x, bumper.y, bumper.radius, 0, Math.PI * 2);
-                    this.ctx.fillStyle = bumper.color;
-                    this.ctx.fill();
-                    this.ctx.strokeStyle = '#ffffff';
-                    this.ctx.lineWidth = 3;
-                    this.ctx.stroke();
-                    
-                    // Glow effect
-                    this.ctx.shadowBlur = 20;
-                    this.ctx.shadowColor = bumper.color;
-                    this.ctx.stroke();
-                    this.ctx.shadowBlur = 0;
+                this.bumpers.forEach((bumper, index) => {
+                    if (this.images.bumpers) {
+                        const bumperWidth = 128;
+                        const bumperHeight = 128;
+                        const sourceX = index * bumperWidth;
+                        this.ctx.drawImage(
+                            this.images.bumpers,
+                            sourceX, 0, bumperWidth, bumperHeight,
+                            bumper.x - bumper.radius, bumper.y - bumper.radius,
+                            bumper.radius * 2, bumper.radius * 2
+                        );
+                    } else {
+                        // Fallback to circles
+                        this.ctx.beginPath();
+                        this.ctx.arc(bumper.x, bumper.y, bumper.radius, 0, Math.PI * 2);
+                        this.ctx.fillStyle = bumper.color;
+                        this.ctx.fill();
+                        this.ctx.strokeStyle = '#ffffff';
+                        this.ctx.lineWidth = 3;
+                        this.ctx.stroke();
+                        this.ctx.shadowBlur = 20;
+                        this.ctx.shadowColor = bumper.color;
+                        this.ctx.stroke();
+                        this.ctx.shadowBlur = 0;
+                    }
                 });
 
                 // Draw portals
@@ -540,42 +586,77 @@
                 });
 
                 // Draw flippers
-                Object.values(this.flippers).forEach(flipper => {
+                Object.entries(this.flippers).forEach(([side, flipper]) => {
                     this.ctx.save();
                     this.ctx.translate(flipper.x, flipper.y);
                     this.ctx.rotate(flipper.angle);
                     
-                    this.ctx.fillStyle = flipper.active ? '#ffffff' : '#888888';
-                    this.ctx.fillRect(-flipper.width / 2, -flipper.height / 2, flipper.width, flipper.height);
-                    
-                    this.ctx.strokeStyle = '#00ffff';
-                    this.ctx.lineWidth = 2;
-                    this.ctx.strokeRect(-flipper.width / 2, -flipper.height / 2, flipper.width, flipper.height);
+                    if (this.images.flipper) {
+                        const flipperWidth = flipper.width;
+                        const flipperHeight = flipper.height;
+                        
+                        // Mirror for left flipper
+                        if (side === 'left') {
+                            this.ctx.scale(-1, 1);
+                        }
+                        
+                        this.ctx.globalAlpha = flipper.active ? 1.0 : 0.7;
+                        this.ctx.drawImage(
+                            this.images.flipper,
+                            -flipperWidth / 2, -flipperHeight / 2,
+                            flipperWidth, flipperHeight
+                        );
+                        this.ctx.globalAlpha = 1.0;
+                    } else {
+                        // Fallback
+                        this.ctx.fillStyle = flipper.active ? '#ffffff' : '#888888';
+                        this.ctx.fillRect(-flipper.width / 2, -flipper.height / 2, flipper.width, flipper.height);
+                        this.ctx.strokeStyle = '#00ffff';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.strokeRect(-flipper.width / 2, -flipper.height / 2, flipper.width, flipper.height);
+                    }
                     
                     this.ctx.restore();
                 });
 
                 // Draw powerups
                 this.powerups.forEach(powerup => {
-                    const colors = {
-                        multiplier: '#ff00ff',
-                        slowtime: '#00ffff',
-                        extraball: '#ffff00'
-                    };
+                    const powerupIndex = {
+                        multiplier: 0,
+                        slowtime: 1,
+                        extraball: 2
+                    }[powerup.type];
                     
-                    this.ctx.beginPath();
-                    this.ctx.arc(powerup.x, powerup.y, powerup.radius, 0, Math.PI * 2);
-                    this.ctx.fillStyle = colors[powerup.type];
-                    this.ctx.fill();
-                    this.ctx.strokeStyle = '#ffffff';
-                    this.ctx.lineWidth = 2;
-                    this.ctx.stroke();
-                    
-                    // Label
-                    this.ctx.fillStyle = '#000000';
-                    this.ctx.font = '10px Arial';
-                    this.ctx.textAlign = 'center';
-                    this.ctx.fillText(powerup.type[0].toUpperCase(), powerup.x, powerup.y + 3);
+                    if (this.images.powerups) {
+                        const iconSize = 32;
+                        const sourceX = powerupIndex * iconSize;
+                        this.ctx.drawImage(
+                            this.images.powerups,
+                            sourceX, 0, iconSize, iconSize,
+                            powerup.x - powerup.radius, powerup.y - powerup.radius,
+                            powerup.radius * 2, powerup.radius * 2
+                        );
+                    } else {
+                        // Fallback
+                        const colors = {
+                            multiplier: '#ff00ff',
+                            slowtime: '#00ffff',
+                            extraball: '#ffff00'
+                        };
+                        
+                        this.ctx.beginPath();
+                        this.ctx.arc(powerup.x, powerup.y, powerup.radius, 0, Math.PI * 2);
+                        this.ctx.fillStyle = colors[powerup.type];
+                        this.ctx.fill();
+                        this.ctx.strokeStyle = '#ffffff';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.stroke();
+                        
+                        this.ctx.fillStyle = '#000000';
+                        this.ctx.font = '10px Arial';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.fillText(powerup.type[0].toUpperCase(), powerup.x, powerup.y + 3);
+                    }
                 });
 
                 // Draw particles
@@ -590,16 +671,25 @@
 
                 // Draw ball
                 if (this.ball) {
-                    this.ctx.beginPath();
-                    this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI * 2);
-                    this.ctx.fillStyle = '#ffffff';
-                    this.ctx.fill();
-                    
-                    // Glow
-                    this.ctx.shadowBlur = 15;
-                    this.ctx.shadowColor = '#00ffff';
-                    this.ctx.stroke();
-                    this.ctx.shadowBlur = 0;
+                    if (this.images.ball) {
+                        const ballSize = this.ball.radius * 2;
+                        this.ctx.drawImage(
+                            this.images.ball,
+                            this.ball.x - this.ball.radius,
+                            this.ball.y - this.ball.radius,
+                            ballSize, ballSize
+                        );
+                    } else {
+                        // Fallback
+                        this.ctx.beginPath();
+                        this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI * 2);
+                        this.ctx.fillStyle = '#ffffff';
+                        this.ctx.fill();
+                        this.ctx.shadowBlur = 15;
+                        this.ctx.shadowColor = '#00ffff';
+                        this.ctx.stroke();
+                        this.ctx.shadowBlur = 0;
+                    }
                 }
 
                 // Draw launch indicator
