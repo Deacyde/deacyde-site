@@ -195,17 +195,17 @@
                 this.ball = null;
                 this.ballReady = true;
 
-                // Flippers
+                // Flippers - positioned lower for better visibility
                 this.flippers = {
-                    left: { x: 200, y: 720, angle: -0.3, active: false, width: 80, height: 15 },
-                    right: { x: 400, y: 720, angle: 0.3, active: false, width: 80, height: 15 }
+                    left: { x: 180, y: 680, angle: -0.4, restAngle: -0.4, activeAngle: -1.0, active: false, width: 100, height: 20 },
+                    right: { x: 420, y: 680, angle: 0.4, restAngle: 0.4, activeAngle: 1.0, active: false, width: 100, height: 20 }
                 };
 
                 // Bumpers
                 this.bumpers = [
-                    { x: 200, y: 200, radius: 40, color: '#ff00ff' },
-                    { x: 400, y: 180, radius: 40, color: '#00ffff' },
-                    { x: 300, y: 280, radius: 40, color: '#ffff00' }
+                    { x: 200, y: 200, radius: 50, color: '#ff00ff' },
+                    { x: 400, y: 180, radius: 50, color: '#00ffff' },
+                    { x: 300, y: 280, radius: 50, color: '#ffff00' }
                 ];
 
                 // Portals
@@ -286,10 +286,10 @@
                 
                 this.ball = {
                     x: this.width - 50,
-                    y: 650,
+                    y: 600,
                     vx: -8 + Math.random() * 2,
                     vy: -15,
-                    radius: 8
+                    radius: 12
                 };
                 this.ballReady = false;
             }
@@ -343,19 +343,19 @@
                 // Left flipper
                 if (this.keys['a']) {
                     this.flippers.left.active = true;
-                    this.flippers.left.angle = Math.max(this.flippers.left.angle - 0.15, -0.8);
+                    this.flippers.left.angle = Math.max(this.flippers.left.angle - 0.2, this.flippers.left.activeAngle);
                 } else {
                     this.flippers.left.active = false;
-                    this.flippers.left.angle = Math.min(this.flippers.left.angle + 0.1, -0.3);
+                    this.flippers.left.angle = Math.min(this.flippers.left.angle + 0.15, this.flippers.left.restAngle);
                 }
 
                 // Right flipper
                 if (this.keys['d']) {
                     this.flippers.right.active = true;
-                    this.flippers.right.angle = Math.min(this.flippers.right.angle + 0.15, 0.8);
+                    this.flippers.right.angle = Math.min(this.flippers.right.angle + 0.2, this.flippers.right.activeAngle);
                 } else {
                     this.flippers.right.active = false;
-                    this.flippers.right.angle = Math.max(this.flippers.right.angle - 0.1, 0.3);
+                    this.flippers.right.angle = Math.max(this.flippers.right.angle - 0.15, this.flippers.right.restAngle);
                 }
             }
 
@@ -380,16 +380,38 @@
                     this.ball.y = this.ball.radius;
                 }
 
-                // Bottom death zone
-                if (this.ball.y > this.height + 50) {
-                    this.ballsRemaining--;
-                    this.updateUI();
-                    
-                    if (this.ballsRemaining <= 0) {
-                        this.gameOver();
+                // Bottom death zone - but only if ball is between the flippers gap
+                const leftFlipperRightEdge = this.flippers.left.x + 50;
+                const rightFlipperLeftEdge = this.flippers.right.x - 50;
+                
+                if (this.ball.y > 750) {
+                    // Check if ball is in the gap between flippers
+                    if (this.ball.x > leftFlipperRightEdge && this.ball.x < rightFlipperLeftEdge) {
+                        // Ball fell through - death
+                        this.ballsRemaining--;
+                        this.updateUI();
+                        
+                        if (this.ballsRemaining <= 0) {
+                            this.gameOver();
+                        } else {
+                            this.ball = null;
+                            this.ballReady = true;
+                        }
+                    } else if (this.ball.y > this.height + 50) {
+                        // Ball went way too far - death anyway
+                        this.ballsRemaining--;
+                        this.updateUI();
+                        
+                        if (this.ballsRemaining <= 0) {
+                            this.gameOver();
+                        } else {
+                            this.ball = null;
+                            this.ballReady = true;
+                        }
                     } else {
-                        this.ball = null;
-                        this.ballReady = true;
+                        // Bounce off bottom wall (sides of table)
+                        this.ball.vy *= -0.3;
+                        this.ball.y = 750;
                     }
                 }
 
@@ -436,19 +458,34 @@
                     }
                 });
 
-                // Flipper collisions
+                // Flipper collisions - improved rectangular collision
                 Object.values(this.flippers).forEach(flipper => {
+                    // Simplified rectangular collision zone
+                    const flipperHalfWidth = flipper.width / 2;
+                    const flipperHalfHeight = flipper.height / 2 + 10; // Extra collision buffer
+                    
+                    // Transform ball position relative to flipper rotation
                     const dx = this.ball.x - flipper.x;
                     const dy = this.ball.y - flipper.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < this.ball.radius + 50 && Math.abs(dy) < 20) {
+                    const angle = -flipper.angle;
+                    const rotatedX = dx * Math.cos(angle) - dy * Math.sin(angle);
+                    const rotatedY = dx * Math.sin(angle) + dy * Math.cos(angle);
+                    
+                    // Check if ball is in flipper bounds
+                    if (Math.abs(rotatedX) < flipperHalfWidth + this.ball.radius && 
+                        Math.abs(rotatedY) < flipperHalfHeight + this.ball.radius) {
+                        
                         if (flipper.active) {
-                            this.ball.vy = -18;
-                            this.ball.vx = (this.ball.x - flipper.x) * 0.3;
-                            this.createParticles(this.ball.x, this.ball.y, '#ffffff', 5);
+                            // Strong hit when flipper is active
+                            this.ball.vy = -20;
+                            this.ball.vx = (this.ball.x - flipper.x) * 0.4;
+                            this.ball.y = flipper.y - flipperHalfHeight - this.ball.radius - 2;
+                            this.createParticles(this.ball.x, this.ball.y, '#ffffff', 8);
                         } else {
-                            this.ball.vy *= -0.5;
+                            // Weak bounce on inactive flipper
+                            this.ball.vy = -Math.abs(this.ball.vy) * 0.6;
+                            this.ball.vx = (this.ball.x - flipper.x) * 0.2;
+                            this.ball.y = flipper.y - flipperHalfHeight - this.ball.radius - 2;
                         }
                     }
                 });
