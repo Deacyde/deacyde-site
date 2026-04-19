@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpacePinball - Cosmic Junkyard Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a1f 0%, #1a0a2e 50%, #0a0a1f 100%);
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            color: #00ffff;
+        }
+
+        #gameContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+        }
+
+        canvas {
+            border: 3px solid #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            border-radius: 10px;
+        }
+
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            z-index: 100;
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .ui-item {
+            text-align: center;
+        }
+
+        .ui-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .ui-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+        }
+
+        #multiplier {
+            color: #ff00ff;
+            text-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #00ffff;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #ff00ff;
+            text-align: center;
+            display: none;
+            z-index: 200;
+        }
+
+        #gameOver h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #ff00ff;
+            text-shadow: 0 0 20px rgba(255, 0, 255, 0.8);
+        }
+
+        #gameOver button {
+            background: linear-gradient(135deg, #ff00ff, #00ffff);
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            color: white;
+            cursor: pointer;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        #gameOver button:hover {
+            transform: scale(1.1);
+        }
+
+        .powerup-active {
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="ui">
+            <div class="ui-item">
+                <div class="ui-label">Score</div>
+                <div class="ui-value" id="score">0</div>
+            </div>
+            <div class="ui-item">
+                <div class="ui-label">High Score</div>
+                <div class="ui-value" id="highScore">0</div>
+            </div>
+            <div class="ui-item">
+                <div class="ui-label">Multiplier</div>
+                <div class="ui-value" id="multiplier">x1</div>
+            </div>
+            <div class="ui-item">
+                <div class="ui-label">Balls</div>
+                <div class="ui-value" id="balls">3</div>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="controls">
+            <strong>Controls:</strong> Left Flipper [A] | Right Flipper [D] | Launch [SPACE] | New Game [R]
+        </div>
+
+        <div id="gameOver">
+            <h2>GAME OVER</h2>
+            <div class="ui-label">Final Score</div>
+            <div class="ui-value" id="finalScore">0</div>
+            <button onclick="game.newGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        class SpacePinball {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // Canvas setup
+                this.width = 600;
+                this.height = 800;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+
+                // Game state
+                this.score = 0;
+                this.highScore = parseInt(localStorage.getItem('spacepinball_highscore') || '0');
+                this.multiplier = 1;
+                this.ballsRemaining = 3;
+                this.gameActive = true;
+
+                // Physics
+                this.gravity = 0.5;
+                this.ball = null;
+                this.ballReady = true;
+
+                // Flippers
+                this.flippers = {
+                    left: { x: 200, y: 720, angle: -0.3, active: false, width: 80, height: 15 },
+                    right: { x: 400, y: 720, angle: 0.3, active: false, width: 80, height: 15 }
+                };
+
+                // Bumpers
+                this.bumpers = [
+                    { x: 200, y: 200, radius: 40, color: '#ff00ff' },
+                    { x: 400, y: 180, radius: 40, color: '#00ffff' },
+                    { x: 300, y: 280, radius: 40, color: '#ffff00' }
+                ];
+
+                // Portals
+                this.portals = [
+                    { x: 100, y: 400, radius: 30, targetX: 500, targetY: 350 },
+                    { x: 500, y: 350, radius: 30, targetX: 100, targetY: 400 }
+                ];
+
+                // Power-ups
+                this.powerups = [];
+                this.activePowerup = null;
+                this.powerupTimer = 0;
+
+                // Particles
+                this.particles = [];
+
+                // Controls
+                this.keys = {};
+                this.setupControls();
+
+                // Start
+                this.updateUI();
+                this.launchBall();
+                this.gameLoop();
+            }
+
+            setupControls() {
+                window.addEventListener('keydown', (e) => {
+                    this.keys[e.key.toLowerCase()] = true;
+                    
+                    if (e.key.toLowerCase() === ' ' && this.ballReady) {
+                        this.launchBall();
+                    }
+                    if (e.key.toLowerCase() === 'r') {
+                        this.newGame();
+                    }
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    this.keys[e.key.toLowerCase()] = false;
+                });
+            }
+
+            launchBall() {
+                if (!this.ballReady) return;
+                
+                this.ball = {
+                    x: this.width - 50,
+                    y: 650,
+                    vx: -8 + Math.random() * 2,
+                    vy: -15,
+                    radius: 8
+                };
+                this.ballReady = false;
+            }
+
+            spawnPowerup(x, y) {
+                const types = ['multiplier', 'slowtime', 'extraball'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                
+                this.powerups.push({
+                    x: x,
+                    y: y,
+                    type: type,
+                    vy: 2,
+                    radius: 15,
+                    lifetime: 200
+                });
+            }
+
+            activatePowerup(type) {
+                this.activePowerup = type;
+                this.powerupTimer = 300; // 5 seconds at 60fps
+
+                if (type === 'multiplier') {
+                    this.multiplier = 2;
+                    document.getElementById('multiplier').classList.add('powerup-active');
+                } else if (type === 'slowtime') {
+                    this.gravity = 0.25;
+                } else if (type === 'extraball') {
+                    this.ballsRemaining++;
+                }
+
+                this.updateUI();
+            }
+
+            createParticles(x, y, color, count = 10) {
+                for (let i = 0; i < count; i++) {
+                    const angle = (Math.PI * 2 * i) / count;
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * (2 + Math.random() * 3),
+                        vy: Math.sin(angle) * (2 + Math.random() * 3),
+                        life: 30,
+                        color: color,
+                        radius: 2 + Math.random() * 3
+                    });
+                }
+            }
+
+            updateFlippers() {
+                // Left flipper
+                if (this.keys['a']) {
+                    this.flippers.left.active = true;
+                    this.flippers.left.angle = Math.max(this.flippers.left.angle - 0.15, -0.8);
+                } else {
+                    this.flippers.left.active = false;
+                    this.flippers.left.angle = Math.min(this.flippers.left.angle + 0.1, -0.3);
+                }
+
+                // Right flipper
+                if (this.keys['d']) {
+                    this.flippers.right.active = true;
+                    this.flippers.right.angle = Math.min(this.flippers.right.angle + 0.15, 0.8);
+                } else {
+                    this.flippers.right.active = false;
+                    this.flippers.right.angle = Math.max(this.flippers.right.angle - 0.1, 0.3);
+                }
+            }
+
+            updateBall() {
+                if (!this.ball) return;
+
+                // Apply gravity
+                this.ball.vy += this.gravity;
+
+                // Update position
+                this.ball.x += this.ball.vx;
+                this.ball.y += this.ball.vy;
+
+                // Wall collisions
+                if (this.ball.x - this.ball.radius < 0 || this.ball.x + this.ball.radius > this.width) {
+                    this.ball.vx *= -0.9;
+                    this.ball.x = Math.max(this.ball.radius, Math.min(this.width - this.ball.radius, this.ball.x));
+                }
+
+                if (this.ball.y - this.ball.radius < 0) {
+                    this.ball.vy *= -0.9;
+                    this.ball.y = this.ball.radius;
+                }
+
+                // Bottom death zone
+                if (this.ball.y > this.height + 50) {
+                    this.ballsRemaining--;
+                    this.updateUI();
+                    
+                    if (this.ballsRemaining <= 0) {
+                        this.gameOver();
+                    } else {
+                        this.ball = null;
+                        this.ballReady = true;
+                    }
+                }
+
+                // Bumper collisions
+                this.bumpers.forEach(bumper => {
+                    const dx = this.ball.x - bumper.x;
+                    const dy = this.ball.y - bumper.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < this.ball.radius + bumper.radius) {
+                        // Reflect ball
+                        const angle = Math.atan2(dy, dx);
+                        const speed = Math.sqrt(this.ball.vx * this.ball.vx + this.ball.vy * this.ball.vy);
+                        this.ball.vx = Math.cos(angle) * (speed + 3);
+                        this.ball.vy = Math.sin(angle) * (speed + 3);
+
+                        // Move ball outside bumper
+                        const overlap = this.ball.radius + bumper.radius - dist;
+                        this.ball.x += Math.cos(angle) * overlap;
+                        this.ball.y += Math.sin(angle) * overlap;
+
+                        // Score and effects
+                        this.addScore(100);
+                        this.createParticles(bumper.x, bumper.y, bumper.color);
+
+                        // Spawn powerup randomly
+                        if (Math.random() < 0.15) {
+                            this.spawnPowerup(bumper.x, bumper.y);
+                        }
+                    }
+                });
+
+                // Portal collisions
+                this.portals.forEach(portal => {
+                    const dx = this.ball.x - portal.x;
+                    const dy = this.ball.y - portal.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < this.ball.radius + portal.radius) {
+                        this.ball.x = portal.targetX;
+                        this.ball.y = portal.targetY;
+                        this.createParticles(portal.x, portal.y, '#00ffff');
+                        this.addScore(250);
+                    }
+                });
+
+                // Flipper collisions
+                Object.values(this.flippers).forEach(flipper => {
+                    const dx = this.ball.x - flipper.x;
+                    const dy = this.ball.y - flipper.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < this.ball.radius + 50 && Math.abs(dy) < 20) {
+                        if (flipper.active) {
+                            this.ball.vy = -18;
+                            this.ball.vx = (this.ball.x - flipper.x) * 0.3;
+                            this.createParticles(this.ball.x, this.ball.y, '#ffffff', 5);
+                        } else {
+                            this.ball.vy *= -0.5;
+                        }
+                    }
+                });
+
+                // Speed limit
+                const speed = Math.sqrt(this.ball.vx * this.ball.vx + this.ball.vy * this.ball.vy);
+                if (speed > 20) {
+                    this.ball.vx = (this.ball.vx / speed) * 20;
+                    this.ball.vy = (this.ball.vy / speed) * 20;
+                }
+            }
+
+            updatePowerups() {
+                // Update powerup positions
+                this.powerups = this.powerups.filter(powerup => {
+                    powerup.y += powerup.vy;
+                    powerup.lifetime--;
+
+                    // Check collision with ball
+                    if (this.ball) {
+                        const dx = this.ball.x - powerup.x;
+                        const dy = this.ball.y - powerup.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < this.ball.radius + powerup.radius) {
+                            this.activatePowerup(powerup.type);
+                            this.createParticles(powerup.x, powerup.y, '#ff00ff');
+                            return false;
+                        }
+                    }
+
+                    return powerup.lifetime > 0 && powerup.y < this.height + 20;
+                });
+
+                // Update active powerup timer
+                if (this.powerupTimer > 0) {
+                    this.powerupTimer--;
+                    if (this.powerupTimer === 0) {
+                        if (this.activePowerup === 'multiplier') {
+                            this.multiplier = 1;
+                            document.getElementById('multiplier').classList.remove('powerup-active');
+                        } else if (this.activePowerup === 'slowtime') {
+                            this.gravity = 0.5;
+                        }
+                        this.activePowerup = null;
+                        this.updateUI();
+                    }
+                }
+            }
+
+            updateParticles() {
+                this.particles = this.particles.filter(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.2;
+                    p.life--;
+                    return p.life > 0;
+                });
+            }
+
+            addScore(points) {
+                this.score += points * this.multiplier;
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                    localStorage.setItem('spacepinball_highscore', this.highScore);
+                }
+                this.updateUI();
+            }
+
+            updateUI() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('highScore').textContent = this.highScore;
+                document.getElementById('multiplier').textContent = 'x' + this.multiplier;
+                document.getElementById('balls').textContent = this.ballsRemaining;
+            }
+
+            draw() {
+                // Clear with trail effect
+                this.ctx.fillStyle = 'rgba(10, 10, 31, 0.3)';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                // Draw space background effect
+                this.ctx.fillStyle = 'rgba(0, 255, 255, 0.05)';
+                for (let i = 0; i < 50; i++) {
+                    const x = Math.random() * this.width;
+                    const y = Math.random() * this.height;
+                    this.ctx.fillRect(x, y, 1, 1);
+                }
+
+                // Draw bumpers
+                this.bumpers.forEach(bumper => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(bumper.x, bumper.y, bumper.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = bumper.color;
+                    this.ctx.fill();
+                    this.ctx.strokeStyle = '#ffffff';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.stroke();
+                    
+                    // Glow effect
+                    this.ctx.shadowBlur = 20;
+                    this.ctx.shadowColor = bumper.color;
+                    this.ctx.stroke();
+                    this.ctx.shadowBlur = 0;
+                });
+
+                // Draw portals
+                this.portals.forEach((portal, i) => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(portal.x, portal.y, portal.radius, 0, Math.PI * 2);
+                    this.ctx.strokeStyle = '#00ffff';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.stroke();
+                    
+                    // Swirl effect
+                    const time = Date.now() * 0.001;
+                    for (let j = 0; j < 3; j++) {
+                        this.ctx.beginPath();
+                        this.ctx.arc(
+                            portal.x + Math.cos(time + j) * 10,
+                            portal.y + Math.sin(time + j) * 10,
+                            5, 0, Math.PI * 2
+                        );
+                        this.ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
+                        this.ctx.fill();
+                    }
+                });
+
+                // Draw flippers
+                Object.values(this.flippers).forEach(flipper => {
+                    this.ctx.save();
+                    this.ctx.translate(flipper.x, flipper.y);
+                    this.ctx.rotate(flipper.angle);
+                    
+                    this.ctx.fillStyle = flipper.active ? '#ffffff' : '#888888';
+                    this.ctx.fillRect(-flipper.width / 2, -flipper.height / 2, flipper.width, flipper.height);
+                    
+                    this.ctx.strokeStyle = '#00ffff';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(-flipper.width / 2, -flipper.height / 2, flipper.width, flipper.height);
+                    
+                    this.ctx.restore();
+                });
+
+                // Draw powerups
+                this.powerups.forEach(powerup => {
+                    const colors = {
+                        multiplier: '#ff00ff',
+                        slowtime: '#00ffff',
+                        extraball: '#ffff00'
+                    };
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(powerup.x, powerup.y, powerup.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = colors[powerup.type];
+                    this.ctx.fill();
+                    this.ctx.strokeStyle = '#ffffff';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.stroke();
+                    
+                    // Label
+                    this.ctx.fillStyle = '#000000';
+                    this.ctx.font = '10px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(powerup.type[0].toUpperCase(), powerup.x, powerup.y + 3);
+                });
+
+                // Draw particles
+                this.particles.forEach(p => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.globalAlpha = p.life / 30;
+                    this.ctx.fill();
+                    this.ctx.globalAlpha = 1;
+                });
+
+                // Draw ball
+                if (this.ball) {
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = '#ffffff';
+                    this.ctx.fill();
+                    
+                    // Glow
+                    this.ctx.shadowBlur = 15;
+                    this.ctx.shadowColor = '#00ffff';
+                    this.ctx.stroke();
+                    this.ctx.shadowBlur = 0;
+                }
+
+                // Draw launch indicator
+                if (this.ballReady) {
+                    this.ctx.fillStyle = '#ffff00';
+                    this.ctx.font = '20px Courier New';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('PRESS SPACE TO LAUNCH', this.width / 2, this.height - 100);
+                }
+            }
+
+            gameLoop() {
+                if (!this.gameActive) return;
+
+                this.updateFlippers();
+                this.updateBall();
+                this.updatePowerups();
+                this.updateParticles();
+                this.draw();
+
+                requestAnimationFrame(() => this.gameLoop());
+            }
+
+            gameOver() {
+                this.gameActive = false;
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('gameOver').style.display = 'block';
+            }
+
+            newGame() {
+                this.score = 0;
+                this.multiplier = 1;
+                this.ballsRemaining = 3;
+                this.gameActive = true;
+                this.ball = null;
+                this.ballReady = true;
+                this.powerups = [];
+                this.particles = [];
+                this.activePowerup = null;
+                this.powerupTimer = 0;
+                this.gravity = 0.5;
+
+                document.getElementById('gameOver').style.display = 'none';
+                document.getElementById('multiplier').classList.remove('powerup-active');
+                
+                this.updateUI();
+                this.gameLoop();
+            }
+        }
+
+        // Start game
+        const game = new SpacePinball();
+    </script>
+</body>
+</html>
