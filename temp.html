@@ -9,8 +9,8 @@
     </style>
 </head>
 <body>
-    <h2>Show exact contents of authorized_keys:</h2>
-    <pre id="commands">cat -A ~/.ssh/authorized_keys</pre>
+    <h2>Test if authorized_keys format is valid:</h2>
+    <pre id="commands">ssh-keygen -l -f ~/.ssh/authorized_keys</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
 </body>
 </html>
