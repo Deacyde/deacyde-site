@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Install Real OpenClaw</title>
+    <title>Install OpenClaw</title>
     <style>
         body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
         pre { background: #2d2d2d; padding: 15px; border-radius: 5px; font-size: 16px; }
@@ -9,9 +9,12 @@
     </style>
 </head>
 <body>
-    <h2>Install correct OpenClaw:</h2>
-    <pre id="commands">sudo npm uninstall -g openclaw
-sudo npm install -g @openclaw/cli
+    <h2>Install OpenClaw from source:</h2>
+    <pre id="commands">cd ~
+git clone https://github.com/openclaw/openclaw.git
+cd openclaw
+npm install
+sudo npm link
 openclaw --version</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
 </body>
