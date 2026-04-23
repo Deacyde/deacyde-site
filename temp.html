@@ -9,11 +9,9 @@
     </style>
 </head>
 <body>
-    <h2>Setup pnpm and link OpenClaw:</h2>
-    <pre id="commands">pnpm setup
-source ~/.bashrc
-cd ~/openclaw
-sudo pnpm link --global
+    <h2>Link OpenClaw without sudo:</h2>
+    <pre id="commands">cd ~/openclaw
+pnpm link --global
 openclaw --version</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
 </body>
