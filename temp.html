@@ -9,9 +9,8 @@
     </style>
 </head>
 <body>
-    <h2>Check for Match blocks restricting keys:</h2>
-    <pre id="commands">grep -i "match\|authorizedkeys" /etc/ssh/sshd_config | grep -v "^#"
-cat /etc/ssh/sshd_config.d/*.conf 2>/dev/null | head -50</pre>
+    <h2>Show exact contents of authorized_keys:</h2>
+    <pre id="commands">cat -A ~/.ssh/authorized_keys</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
 </body>
 </html>
