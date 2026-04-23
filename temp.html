@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Install OpenClaw</title>
+    <title>Check Install</title>
     <style>
         body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
         pre { background: #2d2d2d; padding: 15px; border-radius: 5px; font-size: 16px; }
@@ -9,13 +9,11 @@
     </style>
 </head>
 <body>
-    <h2>Install OpenClaw (2-3 minutes):</h2>
-    <pre id="commands">sudo apt update
-sudo apt install -y curl
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
-sudo npm install -g openclaw
-openclaw --version</pre>
+    <h2>Check what's installed:</h2>
+    <pre id="commands">node --version
+npm --version
+which openclaw
+sudo npm install -g openclaw --verbose</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
 </body>
 </html>
