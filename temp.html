@@ -9,10 +9,8 @@
     </style>
 </head>
 <body>
-    <h2>Check SSH key and permissions:</h2>
-    <pre id="commands">ls -ld ~ ~/.ssh ~/.ssh/authorized_keys
-cat ~/.ssh/authorized_keys
-sudo journalctl -u ssh -n 30 --no-pager | tail -20</pre>
+    <h2>Watch SSH logs while I connect:</h2>
+    <pre id="commands">sudo tail -f /var/log/auth.log</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
 </body>
 </html>
