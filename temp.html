@@ -9,10 +9,8 @@
     </style>
 </head>
 <body>
-    <h2>Enable SSH debug logging:</h2>
-    <pre id="commands">sudo sed -i 's/#LogLevel INFO/LogLevel DEBUG3/' /etc/ssh/sshd_config
-sudo systemctl restart ssh
-echo "Debug enabled - now I'll try to connect"</pre>
+    <h2>Check PubkeyAcceptedKeyTypes setting:</h2>
+    <pre id="commands">grep -i "PubkeyAccepted\|HostKey" /etc/ssh/sshd_config</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
 </body>
 </html>
