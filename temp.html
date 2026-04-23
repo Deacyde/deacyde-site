@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix SSH</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
+        pre { background: #2d2d2d; padding: 15px; border-radius: 5px; font-size: 16px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Run this in VM:</h2>
+    <pre id="commands">echo "PubkeyAuthentication yes" | sudo tee -a /etc/ssh/sshd_config && sudo systemctl restart ssh && echo "Done"</pre>
+    <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Command</button>
+</body>
+</html>
