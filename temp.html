@@ -9,8 +9,10 @@
     </style>
 </head>
 <body>
-    <h2>Test if authorized_keys format is valid:</h2>
-    <pre id="commands">ssh-keygen -l -f ~/.ssh/authorized_keys</pre>
+    <h2>Replace with correct SSH key:</h2>
+    <pre id="commands">echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDbsaKyg1yPB+f3jGRkLPMTDGXvP8VT19hFoUa7E1Lgr deacyde@fedora" > ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+ssh-keygen -l -f ~/.ssh/authorized_keys</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
 </body>
 </html>
