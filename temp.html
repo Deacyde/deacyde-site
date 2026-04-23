@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix SSH Config</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
+        pre { background: #2d2d2d; padding: 15px; border-radius: 5px; font-size: 16px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Run these commands:</h2>
+    <pre id="commands">sudo sed -i '/^PubkeyAuthentication yes$/d' /etc/ssh/sshd_config
+echo "PubkeyAuthentication yes" | sudo tee -a /etc/ssh/sshd_config
+sudo systemctl restart ssh</pre>
+    <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
+</body>
+</html>
