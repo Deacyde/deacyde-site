@@ -9,12 +9,11 @@
     </style>
 </head>
 <body>
-    <h2>Install OpenClaw (uses pnpm):</h2>
-    <pre id="commands">sudo npm install -g pnpm
-cd ~
-git clone https://github.com/openclaw/openclaw.git
-cd openclaw
-pnpm install
+    <h2>Upgrade Node.js to v22 then finish OpenClaw:</h2>
+    <pre id="commands">curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash -
+sudo apt-get install -y nodejs
+node --version
+cd ~/openclaw
 pnpm build
 sudo pnpm link --global
 openclaw --version</pre>
