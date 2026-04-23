@@ -9,8 +9,9 @@
     </style>
 </head>
 <body>
-    <h2>Check PubkeyAcceptedKeyTypes setting:</h2>
-    <pre id="commands">grep -i "PubkeyAccepted\|HostKey" /etc/ssh/sshd_config</pre>
+    <h2>Check for Match blocks restricting keys:</h2>
+    <pre id="commands">grep -i "match\|authorizedkeys" /etc/ssh/sshd_config | grep -v "^#"
+cat /etc/ssh/sshd_config.d/*.conf 2>/dev/null | head -50</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
 </body>
 </html>
