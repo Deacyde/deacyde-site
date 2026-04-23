@@ -9,12 +9,10 @@
     </style>
 </head>
 <body>
-    <h2>Upgrade Node.js to v22 then finish OpenClaw:</h2>
-    <pre id="commands">curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash -
-sudo apt-get install -y nodejs
-node --version
+    <h2>Setup pnpm and link OpenClaw:</h2>
+    <pre id="commands">pnpm setup
+source ~/.bashrc
 cd ~/openclaw
-pnpm build
 sudo pnpm link --global
 openclaw --version</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
