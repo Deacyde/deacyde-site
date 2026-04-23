@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Install OpenClaw</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
+        pre { background: #2d2d2d; padding: 15px; border-radius: 5px; font-size: 16px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Install OpenClaw (2-3 minutes):</h2>
+    <pre id="commands">curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+sudo npm install -g openclaw
+openclaw --version</pre>
+    <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
+</body>
+</html>
