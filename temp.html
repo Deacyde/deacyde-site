@@ -9,8 +9,9 @@
     </style>
 </head>
 <body>
-    <h2>Watch SSH logs while I connect:</h2>
-    <pre id="commands">sudo tail -f /var/log/auth.log</pre>
+    <h2>Check sshd_config for debug settings:</h2>
+    <pre id="commands">grep -i "loglevel\|debug" /etc/ssh/sshd_config
+cat /etc/ssh/sshd_config.d/*.conf 2>/dev/null</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
 </body>
 </html>
