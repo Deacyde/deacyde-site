@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SSH Config Commands</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
+        pre { background: #2d2d2d; padding: 15px; border-radius: 5px; font-size: 16px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Enable SSH key authentication:</h2>
+    <pre id="commands">sudo systemctl restart ssh
+sudo sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+sudo systemctl restart ssh</pre>
+    <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
+</body>
+</html>
