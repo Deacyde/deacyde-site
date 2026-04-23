@@ -9,13 +9,14 @@
     </style>
 </head>
 <body>
-    <h2>Install git then OpenClaw:</h2>
-    <pre id="commands">sudo apt install -y git
+    <h2>Install OpenClaw (uses pnpm):</h2>
+    <pre id="commands">sudo npm install -g pnpm
 cd ~
 git clone https://github.com/openclaw/openclaw.git
 cd openclaw
-npm install
-sudo npm link
+pnpm install
+pnpm build
+sudo pnpm link --global
 openclaw --version</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
 </body>
