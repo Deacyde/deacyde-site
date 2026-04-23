@@ -9,10 +9,8 @@
     </style>
 </head>
 <body>
-    <h2>Link OpenClaw without sudo:</h2>
-    <pre id="commands">cd ~/openclaw
-pnpm link --global
-openclaw --version</pre>
+    <h2>Check SSH auth logs:</h2>
+    <pre id="commands">sudo journalctl -u ssh -n 50 --no-pager | grep -i "auth\|key\|fail"</pre>
     <button onclick="navigator.clipboard.writeText(document.getElementById('commands').textContent)">Copy Commands</button>
 </body>
 </html>
