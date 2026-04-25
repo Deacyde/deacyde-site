@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Starlight VM SSH Setup</title>
+    <style>
+        body { font-family: monospace; padding: 40px; background: #1e1e1e; color: #00ff00; }
+        .command { background: #000; padding: 20px; border: 2px solid #00ff00; margin: 20px 0; cursor: pointer; }
+        .command:hover { border-color: #00ff88; }
+        pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; user-select: all; }
+        h1 { color: #00ff00; }
+        p { color: #00ff00; }
+    </style>
+</head>
+<body>
+    <h1>🌟 Starlight VM SSH Key Setup</h1>
+    <p>Click each command box to select, then copy/paste into Starlight VM console:</p>
+    
+    <div class="command" onclick="selectText(this)">
+        <pre>mkdir -p ~/.ssh</pre>
+    </div>
+    
+    <div class="command" onclick="selectText(this)">
+        <pre>chmod 700 ~/.ssh</pre>
+    </div>
+    
+    <div class="command" onclick="selectText(this)">
+        <pre>echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDbsaKyg1yPB+f3jGRkLPMTDGXvP8VT19hFoUa7E1Lgr deacyde@fedora" >> ~/.ssh/authorized_keys</pre>
+    </div>
+    
+    <div class="command" onclick="selectText(this)">
+        <pre>chmod 600 ~/.ssh/authorized_keys</pre>
+    </div>
+    
+    <div class="command" onclick="selectText(this)">
+        <pre>cat ~/.ssh/authorized_keys</pre>
+    </div>
+    
+    <p>✅ After running all commands, tell Copilot: <strong>"key added"</strong></p>
+    
+    <script>
+        function selectText(element) {
+            const range = document.createRange();
+            range.selectNodeContents(element.querySelector('pre'));
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    </script>
+</body>
+</html>
