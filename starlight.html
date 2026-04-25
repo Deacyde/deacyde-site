@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Starlight VM SSH Setup</title>
+    <title>Starlight VM - Enable Sudo</title>
     <style>
         body { font-family: monospace; padding: 40px; background: #1e1e1e; color: #00ff00; }
         .command { background: #000; padding: 20px; border: 2px solid #00ff00; margin: 20px 0; cursor: pointer; }
@@ -13,54 +13,14 @@
     </style>
 </head>
 <body>
-    <h1>🌟 Starlight VM SSH Setup</h1>
-    <p>Click each command box to select, then copy/paste into Starlight VM console:</p>
-    
-    <h2>Step 1: Install & Start SSH Server</h2>
+    <h1>🌟 Starlight VM - Enable Passwordless Sudo</h1>
+    <p>Run this ONE command in Starlight VM console:</p>
     
     <div class="command" onclick="selectText(this)">
-        <pre>sudo apt update</pre>
+        <pre>echo "starlight ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/starlight && sudo chmod 440 /etc/sudoers.d/starlight</pre>
     </div>
     
-    <div class="command" onclick="selectText(this)">
-        <pre>sudo apt install openssh-server -y</pre>
-    </div>
-    
-    <div class="command" onclick="selectText(this)">
-        <pre>sudo systemctl start ssh</pre>
-    </div>
-    
-    <div class="command" onclick="selectText(this)">
-        <pre>sudo systemctl enable ssh</pre>
-    </div>
-    
-    <div class="command" onclick="selectText(this)">
-        <pre>sudo systemctl status ssh</pre>
-    </div>
-    
-    <h2>Step 2: Add Copilot SSH Key</h2>
-    
-    <div class="command" onclick="selectText(this)">
-        <pre>mkdir -p ~/.ssh</pre>
-    </div>
-    
-    <div class="command" onclick="selectText(this)">
-        <pre>chmod 700 ~/.ssh</pre>
-    </div>
-    
-    <div class="command" onclick="selectText(this)">
-        <pre>echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDbsaKyg1yPB+f3jGRkLPMTDGXvP8VT19hFoUa7E1Lgr deacyde@fedora" >> ~/.ssh/authorized_keys</pre>
-    </div>
-    
-    <div class="command" onclick="selectText(this)">
-        <pre>chmod 600 ~/.ssh/authorized_keys</pre>
-    </div>
-    
-    <div class="command" onclick="selectText(this)">
-        <pre>cat ~/.ssh/authorized_keys</pre>
-    </div>
-    
-    <p>✅ After running all commands, tell Copilot: <strong>"ssh ready"</strong></p>
+    <p>✅ After running, tell Copilot: <strong>"sudo enabled"</strong></p>
     
     <script>
         function selectText(element) {
