@@ -8,12 +8,37 @@
         .command:hover { border-color: #00ff88; }
         pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; user-select: all; }
         h1 { color: #00ff00; }
+        h2 { color: #ffaa00; }
         p { color: #00ff00; }
     </style>
 </head>
 <body>
-    <h1>🌟 Starlight VM SSH Key Setup</h1>
+    <h1>🌟 Starlight VM SSH Setup</h1>
     <p>Click each command box to select, then copy/paste into Starlight VM console:</p>
+    
+    <h2>Step 1: Install & Start SSH Server</h2>
+    
+    <div class="command" onclick="selectText(this)">
+        <pre>sudo apt update</pre>
+    </div>
+    
+    <div class="command" onclick="selectText(this)">
+        <pre>sudo apt install openssh-server -y</pre>
+    </div>
+    
+    <div class="command" onclick="selectText(this)">
+        <pre>sudo systemctl start ssh</pre>
+    </div>
+    
+    <div class="command" onclick="selectText(this)">
+        <pre>sudo systemctl enable ssh</pre>
+    </div>
+    
+    <div class="command" onclick="selectText(this)">
+        <pre>sudo systemctl status ssh</pre>
+    </div>
+    
+    <h2>Step 2: Add Copilot SSH Key</h2>
     
     <div class="command" onclick="selectText(this)">
         <pre>mkdir -p ~/.ssh</pre>
@@ -35,7 +60,7 @@
         <pre>cat ~/.ssh/authorized_keys</pre>
     </div>
     
-    <p>✅ After running all commands, tell Copilot: <strong>"key added"</strong></p>
+    <p>✅ After running all commands, tell Copilot: <strong>"ssh ready"</strong></p>
     
     <script>
         function selectText(element) {
