@@ -30,12 +30,38 @@
             color: #e06c75;
             font-family: 'Courier New', monospace;
         }
+        .code-block {
+            position: relative;
+            margin: 15px 0;
+        }
         pre {
             background: #2d2d2d;
             padding: 15px;
+            padding-right: 60px;
             border-radius: 5px;
             overflow-x: auto;
             border-left: 3px solid #61dafb;
+            margin: 0;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #61dafb;
+            color: #1e1e1e;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background: #4fa8c5;
+        }
+        .copy-btn.copied {
+            background: #98c379;
         }
         .step {
             background: #2a2a2a;
@@ -44,36 +70,12 @@
             border-radius: 5px;
             border-left: 4px solid #98c379;
         }
-        .api-key {
-            background: #3a3a3a;
-            padding: 20px;
-            margin-top: 30px;
-            border-radius: 5px;
-            border: 2px solid #e5c07b;
-        }
-        .api-key h3 {
-            color: #e5c07b;
-            margin-top: 0;
-        }
-        .key-box {
-            background: #2d2d2d;
-            padding: 10px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            word-break: break-all;
-            color: #61dafb;
-            user-select: all;
-        }
         .warning {
             background: #3a2a2a;
             border-left: 4px solid #e06c75;
             padding: 15px;
             margin: 20px 0;
             border-radius: 5px;
-        }
-        .success {
-            color: #98c379;
-            font-weight: bold;
         }
     </style>
 </head>
@@ -91,8 +93,11 @@
 
     <div class="step">
         <h2>Step 2: Run Agent Init</h2>
-        <pre>cd ~/openclaw
-node dist/index.js agents init</pre>
+        <div class="code-block">
+            <pre><code>cd ~/openclaw
+node dist/index.js agents init</code></pre>
+            <button class="copy-btn" onclick="copyCode(this, 'cd ~/openclaw\nnode dist/index.js agents init')">Copy</button>
+        </div>
     </div>
 
     <div class="step">
@@ -100,7 +105,7 @@ node dist/index.js agents init</pre>
         <ul>
             <li><strong>Agent name:</strong> <code>starlight</code></li>
             <li><strong>Model:</strong> Choose <code>OpenAI gpt-4o-mini</code></li>
-            <li><strong>API key:</strong> Paste from terminal below</li>
+            <li><strong>API key:</strong> Get from Copilot terminal</li>
             <li><strong>Enable Discord:</strong> Yes</li>
             <li><strong>Discord token:</strong> (paste your bot token)</li>
         </ul>
@@ -115,19 +120,32 @@ node dist/index.js agents init</pre>
     <div class="step">
         <h2>Step 5: Disable GUI</h2>
         <p>After Copilot confirms setup is complete, run:</p>
-        <pre>sudo systemctl set-default multi-user.target
-sudo systemctl stop gdm3</pre>
-    </div>
-
-    <div class="api-key">
-        <h3>🔑 Get API Key from Terminal</h3>
-        <p>The API key has been provided in your terminal session for security.</p>
-        <p style="color: #e5c07b;">Copy it from there and paste into the wizard.</p>
+        <div class="code-block">
+            <pre><code>sudo systemctl set-default multi-user.target
+sudo systemctl stop gdm3</code></pre>
+            <button class="copy-btn" onclick="copyCode(this, 'sudo systemctl set-default multi-user.target\nsudo systemctl stop gdm3')">Copy</button>
+        </div>
     </div>
 
     <div class="warning" style="margin-top: 30px;">
         <strong>📁 Backup Location:</strong> Personality files are saved at <code>~/starlight-personality-backup/</code>
     </div>
 
+    <script>
+        function copyCode(button, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '✓ Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy. Please select and copy manually.');
+            });
+        }
+    </script>
 </body>
 </html>
