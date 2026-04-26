@@ -92,21 +92,23 @@
     </div>
 
     <div class="step">
-        <h2>Step 2: Run Agent Init</h2>
+        <h2>Step 2: Run Onboard Wizard</h2>
         <div class="code-block">
-            <pre><code>cd ~/openclaw
-node dist/index.js agents init</code></pre>
-            <button class="copy-btn" onclick="copyCode(this, 'cd ~/openclaw\nnode dist/index.js agents init')">Copy</button>
+            <pre><code>source ~/.nvm/nvm.sh
+cd ~/openclaw
+node dist/index.js onboard</code></pre>
+            <button class="copy-btn" onclick="copyCode(this, 'source ~/.nvm/nvm.sh\ncd ~/openclaw\nnode dist/index.js onboard')">Copy</button>
         </div>
     </div>
 
     <div class="step">
         <h2>Step 3: Follow the Wizard</h2>
         <ul>
-            <li><strong>Agent name:</strong> <code>starlight</code></li>
-            <li><strong>Model:</strong> Choose <code>OpenAI gpt-4o-mini</code></li>
-            <li><strong>API key:</strong> Get from Copilot terminal</li>
-            <li><strong>Enable Discord:</strong> Yes</li>
+            <li><strong>Mode:</strong> local (default)</li>
+            <li><strong>Auth choice:</strong> openai-api-key</li>
+            <li><strong>OpenAI API key:</strong> Check <code>~/Desktop/starlight-setup-FULL.html</code></li>
+            <li><strong>Model:</strong> gpt-4o-mini (or default)</li>
+            <li><strong>Discord:</strong> Yes</li>
             <li><strong>Discord token:</strong> (paste your bot token)</li>
         </ul>
     </div>
