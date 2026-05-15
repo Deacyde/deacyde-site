@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rob's Farewell Wall</title>
+  <style>
+    :root {
+      --bg1: #12002f;
+      --bg2: #001a44;
+      --pink: #ff4fd8;
+      --cyan: #66f7ff;
+      --yellow: #fff36b;
+      --lime: #9cff57;
+      --white: #fff;
+      --panel: rgba(0, 0, 0, 0.72);
+      --border: #fff36b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--white);
+      font-family: "Comic Sans MS", "Trebuchet MS", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 79, 216, 0.35), transparent 20%),
+        radial-gradient(circle at 80% 10%, rgba(102, 247, 255, 0.3), transparent 20%),
+        radial-gradient(circle at 50% 80%, rgba(156, 255, 87, 0.22), transparent 18%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      background-attachment: fixed;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.18;
+      background-image:
+        linear-gradient(transparent 96%, rgba(255,255,255,0.18) 100%),
+        linear-gradient(90deg, transparent 96%, rgba(255,255,255,0.12) 100%);
+      background-size: 28px 28px;
+    }
+
+    a { color: var(--cyan); }
+
+    .wrap {
+      width: min(1180px, calc(100% - 20px));
+      margin: 0 auto;
+      padding: 10px 0 30px;
+    }
+
+    .banner, .section, .toolbar, .guestbook {
+      background: var(--panel);
+      border: 4px ridge var(--border);
+      box-shadow: 0 0 18px rgba(0, 0, 0, 0.45);
+    }
+
+    .banner {
+      margin-top: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stars {
+      color: var(--yellow);
+      letter-spacing: 2px;
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 5vw, 4.4rem);
+      color: var(--pink);
+      text-shadow: 2px 2px 0 #000, 0 0 14px rgba(255, 79, 216, 0.85);
+    }
+
+    .sub {
+      margin: 10px auto 0;
+      max-width: 760px;
+      color: #f4edff;
+      line-height: 1.6;
+      font-size: 1.06rem;
+    }
+
+    marquee {
+      margin-top: 14px;
+      color: var(--yellow);
+      font-weight: 700;
+    }
+
+    .blink {
+      animation: blink 1s step-start infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    .toolbar, .section, .guestbook {
+      margin-top: 18px;
+      padding: 16px;
+    }
+
+    .toolbar h2, .section h2, .guestbook h2 {
+      margin: 0 0 12px;
+      color: var(--lime);
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      border: 3px outset #fff;
+      background: linear-gradient(180deg, #fff36b, #ffb347);
+      color: #111;
+      font-weight: 700;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.98rem;
+      min-width: 140px;
+    }
+
+    button:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .hint {
+      color: #d7dbff;
+      margin-top: 10px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .hero-grid, .wall, .memory-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero-grid {
+      grid-template-columns: 1.15fr 0.85fr;
+    }
+
+    .memory-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .wall {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .card {
+      background: rgba(20, 29, 57, 0.95);
+      border: 3px groove #8edbff;
+      padding: 12px;
+      min-height: 180px;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      color: var(--yellow);
+      font-size: 1.1rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: #ecf0ff;
+      line-height: 1.55;
+    }
+
+    .media {
+      aspect-ratio: 4 / 3;
+      width: 100%;
+      border: 3px ridge #ff79e8;
+      background: #050816;
+      object-fit: cover;
+    }
+
+    audio.media {
+      aspect-ratio: auto;
+      height: 54px;
+      background: #101a33;
+      padding: 6px;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-bottom: 8px;
+      padding: 4px 8px;
+      background: #1a0f35;
+      border: 2px solid #8edbff;
+      color: #8edbff;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .counter {
+      margin-top: 12px;
+      color: #000;
+      background: #fff;
+      display: inline-block;
+      padding: 5px 10px;
+      border: 3px inset #ddd;
+      font-weight: 700;
+    }
+
+    .form-panel {
+      display: none;
+      margin-top: 14px;
+      background: rgba(9, 14, 33, 0.96);
+      border: 3px dashed #fff36b;
+      padding: 14px;
+    }
+
+    .form-panel.active { display: block; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .form-grid .full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 4px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 2px inset #ddd;
+      padding: 9px;
+      font: inherit;
+      background: #fffef2;
+      color: #111;
+    }
+
+    textarea { min-height: 90px; resize: vertical; }
+
+    .footer-note {
+      margin-top: 18px;
+      color: #fbe8ff;
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 860px) {
+      .hero-grid, .memory-grid, .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="banner">
+      <div class="stars">★ ★ ★ ★ ★ ★ ★ ★ ★ ★</div>
+      <div class="blink" style="color:#66f7ff;font-weight:700;">WELCOME TO ROB'S GOING AWAY WALL</div>
+      <h1>ROB SUCKS!</h1>
+      <p class="sub">
+        An old-school internet tribute page for <strong>Rob from insightsoftware</strong>.
+        This mockup is built like a goofy Geocities memory shrine with a media wall for farewell videos,
+        audio clips, team photos, and reaction GIFs.
+      </p>
+      <marquee behavior="alternate" scrollamount="6">Thanks for the leadership • Thanks for the laughs • Thanks for the calm in the chaos • Good luck on the next adventure!</marquee>
+      <div class="counter">Visitor Counter: 000042</div>
+    </div>
+
+    <div class="toolbar">
+      <h2>Wall Controls</h2>
+      <div class="button-row">
+        <button type="button" data-type="image">Add Image</button>
+        <button type="button" data-type="gif">Add GIF</button>
+        <button type="button" data-type="video">Add Video</button>
+        <button type="button" data-type="audio">Add Audio</button>
+        <button type="button" id="resetWall">Reset Added Wall Items</button>
+      </div>
+      <div class="hint">
+        Mockup mode: use public URLs for media and a short caption. New items land in the wall below and are saved in this browser.
+      </div>
+
+      <div class="form-panel" id="formPanel">
+        <div class="form-grid">
+          <div>
+            <label for="mediaType">Type</label>
+            <select id="mediaType">
+              <option value="image">Image</option>
+              <option value="gif">GIF</option>
+              <option value="video">Video</option>
+              <option value="audio">Audio</option>
+            </select>
+          </div>
+          <div>
+            <label for="mediaTitle">Title</label>
+            <input id="mediaTitle" type="text" placeholder="Ex: Team lunch memory">
+          </div>
+          <div class="full">
+            <label for="mediaUrl">Media URL</label>
+            <input id="mediaUrl" type="text" placeholder="https://example.com/file.mp4">
+          </div>
+          <div class="full">
+            <label for="mediaCaption">Caption / note</label>
+            <textarea id="mediaCaption" placeholder="What this memory means, who added it, or a quick thank-you note."></textarea>
+          </div>
+        </div>
+        <div class="button-row" style="margin-top:10px;">
+          <button type="button" id="addToWall">Add To Wall</button>
+          <button type="button" id="cancelForm">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Main Tribute Zone</h2>
+      <div class="hero-grid">
+        <div class="card">
+          <span class="tag">Featured video slot</span>
+          <video class="media" controls poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600'%3E%3Crect width='100%25' height='100%25' fill='%23070b18'/%3E%3Ctext x='50%25' y='46%25' dominant-baseline='middle' text-anchor='middle' fill='%23fff36b' font-family='Arial' font-size='36'%3EFarewell Video Placeholder%3C/text%3E%3Ctext x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' fill='%2366f7ff' font-family='Arial' font-size='22'%3EDrop in a montage or team send-off clip%3C/text%3E%3C/svg%3E"></video>
+        </div>
+        <div class="card">
+          <span class="tag">Guestbook message</span>
+          <h3>One of the good ones</h3>
+          <p>
+            Thanks for the steady hand, the perspective, and the way you helped people feel a little less stressed
+            just by being in the room. This whole page is intentionally ridiculous, but the appreciation is real.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Memory Cards</h2>
+      <div class="memory-grid">
+        <div class="card">
+          <span class="tag">Project memory</span>
+          <h3>Launch day energy</h3>
+          <p>Mockup card for a story about a release, a save, a deadline, or a moment where Rob kept things moving.</p>
+        </div>
+        <div class="card">
+          <span class="tag">Team moment</span>
+          <h3>Hallway quote of the year</h3>
+          <p>Mockup spot for an inside joke, a legendary one-liner, or that thing everyone still repeats.</p>
+        </div>
+        <div class="card">
+          <span class="tag">Send-off note</span>
+          <h3>What’s next</h3>
+          <p>A clean place to drop a goodbye message, future wish, or “don’t be a stranger” note.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="guestbook">
+      <h2>Rob Wall of Fame</h2>
+      <div class="hint">Images, GIFs, videos, and audio notes show up here. Built-in mock items are below to show the layout.</div>
+      <div class="wall" id="wall"></div>
+    </div>
+
+    <div class="footer-note">
+      Mockup page only — easy to swap placeholders for real media later.
+    </div>
+  </div>
+
+  <script>
+    const storageKey = "rob-geocities-wall-items";
+    const defaults = [
+      {
+        type: "gif",
+        title: "Celebration GIF Slot",
+        url: "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif",
+        caption: "Use this area for reaction GIFs and goofy team energy."
+      },
+      {
+        type: "image",
+        title: "Team Photo Placeholder",
+        url: "https://placehold.co/800x600/20134d/fff36b?text=Team+Photo",
+        caption: "Swap in a real team photo, office picture, or candid moment."
+      },
+      {
+        type: "audio",
+        title: "Voice Note Placeholder",
+        url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+        caption: "Mock audio slot for short goodbye messages."
+      }
+    ];
+
+    const wall = document.getElementById("wall");
+    const formPanel = document.getElementById("formPanel");
+    const typeField = document.getElementById("mediaType");
+    const titleField = document.getElementById("mediaTitle");
+    const urlField = document.getElementById("mediaUrl");
+    const captionField = document.getElementById("mediaCaption");
+
+    function loadItems() {
+      try {
+        return JSON.parse(localStorage.getItem(storageKey) || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function saveItems(items) {
+      localStorage.setItem(storageKey, JSON.stringify(items));
+    }
+
+    function itemCard(item) {
+      const card = document.createElement("div");
+      card.className = "card";
+      let media = "";
+
+      if (item.type === "video") {
+        media = `<video class="media" controls src="${escapeAttr(item.url)}"></video>`;
+      } else if (item.type === "audio") {
+        media = `<audio class="media" controls src="${escapeAttr(item.url)}"></audio>`;
+      } else {
+        media = `<img class="media" src="${escapeAttr(item.url)}" alt="${escapeAttr(item.title)}">`;
+      }
+
+      card.innerHTML = `
+        <span class="tag">${escapeHtml(item.type)}</span>
+        ${media}
+        <h3>${escapeHtml(item.title || "Untitled memory")}</h3>
+        <p>${escapeHtml(item.caption || "")}</p>
+      `;
+      return card;
+    }
+
+    function render() {
+      wall.innerHTML = "";
+      const items = [...defaults, ...loadItems()];
+      items.forEach(item => wall.appendChild(itemCard(item)));
+    }
+
+    function openForm(type) {
+      formPanel.classList.add("active");
+      typeField.value = type;
+      titleField.focus();
+    }
+
+    function closeForm() {
+      formPanel.classList.remove("active");
+      titleField.value = "";
+      urlField.value = "";
+      captionField.value = "";
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function escapeAttr(value) {
+      return String(value).replaceAll('"', "&quot;");
+    }
+
+    document.querySelectorAll("[data-type]").forEach(button => {
+      button.addEventListener("click", () => openForm(button.dataset.type));
+    });
+
+    document.getElementById("cancelForm").addEventListener("click", closeForm);
+
+    document.getElementById("addToWall").addEventListener("click", () => {
+      const item = {
+        type: typeField.value,
+        title: titleField.value.trim(),
+        url: urlField.value.trim(),
+        caption: captionField.value.trim()
+      };
+
+      if (!item.url) {
+        alert("Add a media URL first.");
+        return;
+      }
+
+      const items = loadItems();
+      items.push(item);
+      saveItems(items);
+      render();
+      closeForm();
+    });
+
+    document.getElementById("resetWall").addEventListener("click", () => {
+      if (!confirm("Clear the wall items you added in this browser?")) return;
+      localStorage.removeItem(storageKey);
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
