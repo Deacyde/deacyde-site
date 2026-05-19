@@ -198,6 +198,7 @@
 
   <script>
     const STATUS_URL = 'http://192.168.1.66:8099/status';
+    const LOCAL_DASHBOARD_URL = 'http://192.168.1.66:8099/';
     const LOCAL_LINKS = [
       { label: 'Open 192.168.1.66 status', url: 'http://192.168.1.66:8099/status' },
       { label: 'Open 192.168.1.66 root', url: 'http://192.168.1.66:8099/' },
@@ -232,7 +233,30 @@
       el.className = 'eq-service-status ' + (running ? 'running' : 'stopped');
     }
 
+    function canFetchLocalStatus() {
+      return window.location.protocol === 'http:';
+    }
+
+    function showLocalGatewayNotice() {
+      const pill = document.getElementById('pill');
+      pill.className = 'status-pill offline';
+      pill.innerHTML = '<span class="dot"></span> Local only';
+
+      const errWrap = document.getElementById('error-wrap');
+      errWrap.style.display = '';
+      errWrap.innerHTML = `⚠ This page is loaded over HTTPS, so your browser blocks direct requests to the Beelink's local HTTP status service. Use <a href="${LOCAL_DASHBOARD_URL}" target="_blank" rel="noopener noreferrer">the local dashboard</a> while on your home network.`;
+
+      document.getElementById('grid').style.display = 'none';
+      document.getElementById('eq-section').style.display = 'none';
+      document.getElementById('updated').textContent = 'Open the local dashboard to view live status';
+    }
+
     async function load() {
+      if (!canFetchLocalStatus()) {
+        showLocalGatewayNotice();
+        return;
+      }
+
       document.getElementById('updated').textContent = 'Refreshing…';
       try {
         const res = await fetch(STATUS_URL, { signal: AbortSignal.timeout(8000) });
@@ -336,11 +360,13 @@
     renderLocalLinks();
     load();
 
-    // Load security module from Beelink — only reachable on local network
-    var s = document.createElement('script');
-    s.src = 'http://192.168.1.66:8099/security-scan.js';
-    s.onerror = function() {}; // silently fail if not on local network
-    document.body.appendChild(s);
+    if (canFetchLocalStatus()) {
+      // Load security module from Beelink — only reachable on local network
+      var s = document.createElement('script');
+      s.src = 'http://192.168.1.66:8099/security-scan.js';
+      s.onerror = function() {}; // silently fail if not on local network
+      document.body.appendChild(s);
+    }
   </script>
 
   <!-- Security section — populated by security-scan.js if on local network -->
